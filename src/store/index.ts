@@ -1,40 +1,48 @@
-'use client';
-
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
-import type { PersistConfig } from 'redux-persist/es/types';
-import storage from 'redux-persist/lib/storage'; // usa localStorage en web
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 
-// Importa tu slice de usuario
-import userReducer from '@/store/slices/userSlice';
+import userReducer from './slices/userSlice';
+// Si usás RTK Query:
+import { baseApi } from './api/baseApi';
 
-// --- Reducers raíz ---
 const rootReducer = combineReducers({
   user: userReducer,
+  // RTK Query reducer (quitá esto si no usás RTKQ)
+  [baseApi.reducerPath]: baseApi.reducer,
 });
 
-// --- Configuración de persistencia ---
-const persistConfig: PersistConfig<ReturnType<typeof rootReducer>> = {
+const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['user'], // reducers que se persistirán
+  // Ejemplo: no persistir cache RTKQ
+  blacklist: [baseApi.reducerPath],
 };
 
-// --- Reducer persistente ---
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// --- Store ---
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // requerido por redux-persist
-    }),
+      // Necesario para redux-persist
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(baseApi.middleware), // quitá esto si no usás RTKQ
 });
 
-// --- Persistor ---
 export const persistor = persistStore(store);
 
-// --- Tipos globales ---
+// Tipos
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
