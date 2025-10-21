@@ -1,0 +1,3 @@
+// jest.setup.js
+// Aprende más: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
