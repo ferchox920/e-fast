@@ -1,3 +1,4 @@
+// src/store/api/authApi.ts
 import { baseApi } from './baseApi';
 import type { UserRead } from '@/types/user';
 
@@ -21,14 +22,19 @@ type RefreshBody = { refresh_token: string };
 type VerifyEmailBody = { email: string };
 
 export const authApi = baseApi.injectEndpoints({
+  // <- Clave para evitar el error de “override already-existing endpointName ...”
+  overrideExisting: true,
+
   endpoints: (build) => ({
     // /auth/login usa OAuth2PasswordRequestForm (username + password) x-www-form-urlencoded
-    // /auth/login (OAuth2PasswordRequestForm)
-    login: build.mutation<TokenPair, { email: string; password: string }>({
+    login: build.mutation<TokenPair, LoginBody>({
       query: ({ email, password }) => ({
         url: '/auth/login',
         method: 'POST',
         body: new URLSearchParams({ username: email, password }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
       }),
       invalidatesTags: ['User'],
     }),
@@ -51,7 +57,6 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
   }),
-  overrideExisting: false,
 });
 
 export const { useLoginMutation, useRefreshMutation, useRequestVerifyEmailMutation } = authApi;
