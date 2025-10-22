@@ -1,12 +1,13 @@
-// tailwind.config.ts
-import type { Config } from 'tailwindcss';
-
-export default {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}', // Cubre layout.tsx, page.tsx, etc.
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}', // Cubre Header.tsx, Footer.tsx, etc.
-    // './src/pages/**/*.{js,ts,jsx,tsx,mdx}', // Probablemente innecesario con App Router
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}', // <-- importante si tu código vive en /src
   ],
-  theme: { extend: {} },
+  theme: {
+    extend: {},
+  },
   plugins: [],
-} satisfies Config;
+};

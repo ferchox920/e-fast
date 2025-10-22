@@ -1,5 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* tu base global, reset, etc. */
+/* tus estilos globales opcionales */

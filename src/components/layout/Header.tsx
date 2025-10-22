@@ -1,19 +1,11 @@
-'use client'; // <--- Add this line at the top
+'use client';
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { clearUser, setUser } from '@/store/slices/userSlice'; // Import setUser
+import { clearUser, setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
-// Importa tus hooks de API para categorías y carrito
-// import { useGetCategoriesQuery } from '@/store/api/categoriesApi'; // Asumiendo que existe
-// import { useGetCartQuery } from '@/store/api/cartApi'; // Asumiendo que existe
 
-// --- Iconos (Ejemplo usando Heroicons o similar) ---
-// Necesitarías instalar @heroicons/react
-// import { ShoppingCartIcon, UserCircleIcon, MagnifyingGlassIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-
-// --- Placeholder para Iconos si no tienes una librería ---
 const PlaceholderIcon = ({ name }: { name: string }) => (
   <span className="inline-block w-6 h-6 border rounded text-xs leading-none text-center pt-1">
     {name.substring(0, 1)}
@@ -24,84 +16,62 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.current);
   const token = useAppSelector((state) => state.user.token);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Para móvil
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- Datos de APIs ---
-  // Descomenta y ajusta si tienes estos endpoints en RTK Query
-  // const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery();
-  // const { data: cart, isLoading: isLoadingCart } = useGetCartQuery(undefined, {
-  //   skip: !token, // Solo busca el carrito si hay token (o ajusta para guest cart)
-  // });
   const [triggerFetchMe, { data: fetchedUser, isFetching: isFetchingMe }] = useLazyMeQuery();
 
-  // --- Mock Data (reemplazar con datos de API) ---
   const categories = [
     { id: '1', name: 'Categoría 1', slug: 'categoria-1' },
     { id: '2', name: 'Categoría 2', slug: 'categoria-2' },
     { id: '3', name: 'Categoría 3', slug: 'categoria-3' },
   ];
-  const cartItemCount = 2; // Ejemplo, vendría de cart?.items.length o similar
+  const cartItemCount = 2;
 
-  // Efecto para cargar datos del usuario si hay token pero no usuario en el estado
   useEffect(() => {
-    if (token && !user && !isFetchingMe) {
-      triggerFetchMe();
-    }
-    // Actualiza el usuario en Redux si la query lazy devuelve datos
-    if (fetchedUser) {
-      dispatch(setUser(fetchedUser));
-    }
+    if (token && !user && !isFetchingMe) triggerFetchMe();
+    if (fetchedUser) dispatch(setUser(fetchedUser));
   }, [token, user, isFetchingMe, triggerFetchMe, fetchedUser, dispatch]);
 
   const handleLogout = () => {
     dispatch(clearUser());
-    // Opcional: Redirigir a la home o página de login
   };
 
   return (
     <header className="w-full border-b bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo y Menú Móvil */}
           <div className="flex items-center">
-            {/* Botón Hamburguesa (Móvil) */}
             <div className="md:hidden mr-2">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
               >
-                {/* {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />} */}
                 <PlaceholderIcon name={isMenuOpen ? 'X' : 'M'} />
               </button>
             </div>
-            {/* Logo */}
             <Link href="/" className="font-bold text-xl text-indigo-600">
               MyApp
             </Link>
           </div>
 
-          {/* Navegación Principal (Desktop) */}
           <nav className="hidden md:flex space-x-6 items-center">
-            {/* Desplegable de Categorías (Ejemplo simple) */}
             <div className="relative group">
               <button className="text-gray-500 hover:text-gray-900">Categorías</button>
               <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">
                 <div className="py-1" role="menu" aria-orientation="vertical">
-                  {categories?.map((cat) => (
+                  {categories.map((cat) => (
                     <Link
                       key={cat.id}
-                      href={`/categorias/${cat.slug}`} // Ajusta la ruta según tu estructura
+                      href={`/categorias/${cat.slug}`}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       role="menuitem"
                     >
                       {cat.name}
                     </Link>
                   ))}
-                  {/*isLoadingCategories && <span className="block px-4 py-2 text-sm text-gray-500">Cargando...</span>*/}
                 </div>
               </div>
             </div>
-            {/* Otros enlaces */}
             <Link href="/ofertas" className="text-gray-500 hover:text-gray-900">
               Ofertas
             </Link>
@@ -110,17 +80,12 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Iconos Derecha */}
           <div className="flex items-center space-x-4">
-            {/* Buscador (Icono placeholder) */}
             <button className="text-gray-400 hover:text-gray-500">
-              {/* <MagnifyingGlassIcon className="h-6 w-6" /> */}
               <PlaceholderIcon name="S" />
             </button>
 
-            {/* Carrito */}
             <Link href="/carrito" className="relative text-gray-400 hover:text-gray-500">
-              {/* <ShoppingCartIcon className="h-6 w-6" /> */}
               <PlaceholderIcon name="C" />
               {cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
@@ -129,29 +94,26 @@ export default function Header() {
               )}
             </Link>
 
-            {/* Usuario / Login */}
             <div className="relative">
               {user ? (
                 <div className="relative group">
                   <button className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    {/* <UserCircleIcon className="h-8 w-8 text-gray-400 group-hover:text-gray-500" /> */}
                     <PlaceholderIcon name="U" />
                   </button>
-                  {/* Menú desplegable del usuario */}
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">
                     <div className="py-1" role="menu" aria-orientation="vertical">
                       <span className="block px-4 py-2 text-sm text-gray-500 italic truncate">
                         {user.email}
                       </span>
                       <Link
-                        href="/mi-cuenta" // Ajusta la ruta
+                        href="/mi-cuenta"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         role="menuitem"
                       >
                         Mi Cuenta
                       </Link>
                       <Link
-                        href="/mis-pedidos" // Ajusta la ruta
+                        href="/mis-pedidos"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         role="menuitem"
                       >
@@ -180,17 +142,15 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Menú Móvil Desplegable */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-t border-b shadow-lg">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {/* Repetir enlaces relevantes para móvil */}
-            {categories?.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={`mobile-${cat.id}`}
                 href={`/categorias/${cat.slug}`}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                onClick={() => setIsMenuOpen(false)} // Cerrar menú al hacer clic
+                onClick={() => setIsMenuOpen(false)}
               >
                 {cat.name}
               </Link>
