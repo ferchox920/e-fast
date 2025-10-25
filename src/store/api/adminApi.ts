@@ -29,13 +29,14 @@ export const adminApi = baseApi.injectEndpoints({
         url: '/admin/users',
         params: { page, page_size },
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.items.map(({ id }) => ({ type: 'User' as const, id })),
-              { type: 'UserList' as const, id: 'LIST' },
-            ]
-          : [{ type: 'UserList' as const, id: 'LIST' }],
+      providesTags: (result) => {
+        const items = result?.items ?? [];
+
+        return [
+          ...items.map(({ id }) => ({ type: 'User' as const, id })),
+          { type: 'UserList' as const, id: 'LIST' },
+        ];
+      },
     }),
 
     createUserAdmin: build.mutation<UserRead, CreateUserAdminBody>({

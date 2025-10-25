@@ -336,7 +336,7 @@ export default function AdminPlayground() {
           </p>
         )}
 
-        {data && data.items.length > 0 && (
+        {(data?.items?.length ?? 0) > 0 && (
           <div className="overflow-x-auto border rounded-lg shadow-sm">
             <table className="w-full min-w-[600px]">
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -350,7 +350,7 @@ export default function AdminPlayground() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.items.map((user) => (
+                {(data?.items ?? []).map((user) => (
                   <UserRow
                     key={user.id}
                     user={user}
@@ -365,7 +365,7 @@ export default function AdminPlayground() {
           </div>
         )}
 
-        {data && data.items.length === 0 && !isLoading && (
+        {data && (data.items?.length ?? 0) === 0 && !isLoading && (
           <p className="text-gray-500 text-center py-4">No se encontraron usuarios.</p>
         )}
 
@@ -373,9 +373,9 @@ export default function AdminPlayground() {
         {data && data.total > 0 && (
           <div className="flex justify-between items-center text-sm pt-2 text-gray-600">
             <div>
-              Mostrando {data.items.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} -{' '}
-              {(currentPage - 1) * pageSize + data.items.length} de {data.total}. Página{' '}
-              {currentPage} de {data.pages}.
+              Mostrando {(data?.items?.length ?? 0) > 0 ? (currentPage - 1) * pageSize + 1 : 0} -{' '}
+              {(currentPage - 1) * pageSize + (data?.items?.length ?? 0)} de {data?.total ?? 0}.
+              Página {currentPage} de {data.pages}.
             </div>
             <div className="space-x-2">
               <button
