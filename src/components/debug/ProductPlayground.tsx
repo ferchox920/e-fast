@@ -138,7 +138,7 @@ export default function ProductPlayground() {
       }
       alert('Las características deben ser un objeto JSON (ej: {"color":"rojo"})');
       return undefined;
-    } catch (err) {
+    } catch {
       alert('JSON inválido para atributos de la variante.');
       return undefined;
     }
