@@ -25,8 +25,16 @@ export interface ProductImageRead {
   url: Url;
   alt_text?: string | null;
   is_primary: boolean;
+  sort_order: number;
   created_at?: ISODateTime | null;
   updated_at?: ISODateTime | null;
+}
+
+export interface ProductImageCreate {
+  url: Url;
+  alt_text?: string | null;
+  is_primary?: boolean;
+  sort_order?: number;
 }
 
 export interface ProductVariantBase {
@@ -61,7 +69,7 @@ export interface ProductRead extends ProductBase {
   id: UUID | string;
   created_at?: ISODateTime | null;
   updated_at?: ISODateTime | null;
-  images?: ProductImageRead[];
+  images: ProductImageRead[];
   variants?: ProductVariantRead[];
   primary_image?: ProductImageRead | null;
 }

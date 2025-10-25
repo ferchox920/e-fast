@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`ProductDetailClient snapshots renders error state with retry button 1`] = `
+<DocumentFragment>
+  <section
+    class="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6"
+  >
+    <header
+      class="space-y-2"
+    >
+      <p
+        class="text-sm text-neutral-500"
+      >
+        Producto
+      </p>
+      <h1
+        class="text-3xl font-semibold tracking-tight text-neutral-900"
+      >
+        Cargando producto...
+      </h1>
+    </header>
+    <div
+      class="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+    >
+      <p>
+        No pudimos cargar el producto. Codigo: 500
+      </p>
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-md border border-red-600 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+        type="button"
+      >
+        Reintentar
+      </button>
+    </div>
+    <div
+      class="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500"
+    >
+      Este producto no tiene imagenes disponibles.
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`ProductDetailClient snapshots renders loading state snapshot 1`] = `
+<DocumentFragment>
+  <section
+    class="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6"
+  >
+    <header
+      class="space-y-2"
+    >
+      <p
+        class="text-sm text-neutral-500"
+      >
+        Producto
+      </p>
+      <h1
+        class="text-3xl font-semibold tracking-tight text-neutral-900"
+      >
+        Cargando producto...
+      </h1>
+    </header>
+    <div
+      class="space-y-3"
+      data-testid="product-gallery-skeleton"
+    >
+      <div
+        aria-hidden="true"
+        class="aspect-[4/3] w-full animate-pulse rounded-lg bg-neutral-200"
+      />
+      <div
+        class="flex gap-2"
+      >
+        <div
+          aria-hidden="true"
+          class="h-20 w-20 animate-pulse rounded-md bg-neutral-200"
+        />
+        <div
+          aria-hidden="true"
+          class="h-20 w-20 animate-pulse rounded-md bg-neutral-200"
+        />
+        <div
+          aria-hidden="true"
+          class="h-20 w-20 animate-pulse rounded-md bg-neutral-200"
+        />
+        <div
+          aria-hidden="true"
+          class="h-20 w-20 animate-pulse rounded-md bg-neutral-200"
+        />
+      </div>
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`ProductDetailClient snapshots shows anomaly warning when multiple primary images 1`] = `
+<DocumentFragment>
+  <section
+    class="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6"
+  >
+    <header
+      class="space-y-2"
+    >
+      <p
+        class="text-sm text-neutral-500"
+      >
+        Producto
+      </p>
+      <h1
+        class="text-3xl font-semibold tracking-tight text-neutral-900"
+      >
+        Producto Demo
+      </h1>
+    </header>
+    <div
+      class="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700"
+    >
+      <p>
+        Se recibieron varias imagenes principales. Se mostrara la primera segun sort_order.
+      </p>
+    </div>
+    <div
+      class="space-y-3"
+    >
+      <figure
+        class="relative aspect-4/3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50"
+      >
+        <img
+          alt="Imagen 1"
+          class="size-full object-cover"
+          data-testid="product-gallery-main-image"
+          id="product-gallery-main-image"
+          loading="lazy"
+          src="https://example.com/1.jpg"
+        />
+        <figcaption
+          class="sr-only"
+        >
+          Imagen 1
+        </figcaption>
+      </figure>
+      <div
+        aria-label="Imagenes del producto"
+        class="flex gap-2 overflow-x-auto"
+        data-testid="product-gallery-thumbnails"
+        role="listbox"
+      >
+        <button
+          aria-controls="product-gallery-main-image"
+          aria-pressed="true"
+          aria-selected="true"
+          class="relative size-20 shrink-0 overflow-hidden rounded-md border transition focus:outline-none focus:ring-2 focus:ring-neutral-600 ring-2 ring-neutral-900 border-neutral-900"
+          data-gallery-thumb="true"
+          role="option"
+          type="button"
+        >
+          <span
+            class="sr-only"
+          >
+            Imagen seleccionada: Imagen 1
+          </span>
+          <img
+            alt="Imagen 1"
+            class="size-full object-cover"
+            loading="lazy"
+            src="https://example.com/1.jpg"
+          />
+        </button>
+        <button
+          aria-controls="product-gallery-main-image"
+          aria-pressed="false"
+          aria-selected="false"
+          class="relative size-20 shrink-0 overflow-hidden rounded-md border transition focus:outline-none focus:ring-2 focus:ring-neutral-600 border-neutral-200"
+          data-gallery-thumb="true"
+          role="option"
+          type="button"
+        >
+          <span
+            class="sr-only"
+          >
+            Seleccionar imagen: Imagen 2
+          </span>
+          <img
+            alt="Imagen 2"
+            class="size-full object-cover"
+            loading="lazy"
+            src="https://example.com/2.jpg"
+          />
+        </button>
+      </div>
+    </div>
+    <article
+      class="space-y-4"
+    >
+      <p
+        class="text-base text-neutral-700 leading-relaxed"
+      >
+        Descripcion demo
+      </p>
+      <dl
+        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+      >
+        <div
+          class="rounded-lg border border-neutral-200 bg-white p-4"
+        >
+          <dt
+            class="text-xs uppercase tracking-wide text-neutral-500"
+          >
+            Precio
+          </dt>
+          <dd
+            class="text-xl font-semibold text-neutral-900"
+          >
+            199,00 US$
+          </dd>
+        </div>
+        <div
+          class="rounded-lg border border-neutral-200 bg-white p-4"
+        >
+          <dt
+            class="text-xs uppercase tracking-wide text-neutral-500"
+          >
+            Estado
+          </dt>
+          <dd
+            class="text-sm text-neutral-800"
+          >
+            Inactivo
+          </dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+</DocumentFragment>
+`;

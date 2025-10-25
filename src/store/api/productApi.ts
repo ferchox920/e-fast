@@ -3,6 +3,7 @@ import { baseApi } from './baseApi';
 import type {
   PaginatedProducts,
   ProductCreate,
+  ProductImageCreate,
   ProductImageRead,
   ProductListParams,
   ProductRead,
@@ -34,11 +35,7 @@ type DeleteVariantArgs = {
 
 type AddImageArgs = {
   productId: string;
-  body: {
-    url: string;
-    alt_text?: string | null;
-    is_primary?: boolean;
-  };
+  body: ProductImageCreate;
 };
 
 type SetPrimaryImageArgs = {
@@ -145,12 +142,11 @@ export const productApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: (result, error, { productId }) => {
-        return [
-          { type: 'Product' as const, id: result?.product_id ?? productId },
-          ...(result?.id ? [{ type: 'ProductImage' as const, id: result.id }] : []),
-        ];
-      },
+      invalidatesTags: (result, error, { productId }) => [
+        { type: 'Product' as const, id: result?.product_id ?? productId },
+        { type: 'ProductList', id: 'LIST' },
+        ...(result?.id ? [{ type: 'ProductImage' as const, id: result.id }] : []),
+      ],
     }),
 
     setPrimaryImage: build.mutation<ProductRead, SetPrimaryImageArgs>({
