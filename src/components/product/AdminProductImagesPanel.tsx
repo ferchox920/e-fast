@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 
 import {
   productApi,
@@ -42,17 +43,11 @@ function sendTelemetry(event: string, payload: Record<string, unknown>) {
 }
 
 function getErrorMessage(error: unknown): string {
-  if (!error) {
-    return 'Error desconocido';
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
+  if (!error) return 'Error desconocido';
+  if (typeof error === 'string') return error;
 
   if (typeof error === 'object') {
     const fetchError = error as FetchBaseQueryError & { data?: unknown };
-
     if ('status' in fetchError) {
       const status = fetchError.status;
       const payload = 'data' in fetchError ? fetchError.data : undefined;
@@ -60,32 +55,20 @@ function getErrorMessage(error: unknown): string {
       if (payload && typeof payload === 'object' && payload !== null && 'detail' in payload) {
         return `Error ${String(status)}: ${String((payload as { detail: unknown }).detail)}`;
       }
-
       if (payload && typeof payload === 'string') {
         return `Error ${String(status)}: ${payload}`;
       }
-
       return `Error ${String(status)}`;
     }
   }
-
   return 'No se pudo completar la accion';
 }
 
 function sortImages(images: ProductImageRead[]): ProductImageRead[] {
   return [...images].sort((a, b) => {
-    if (a.is_primary && !b.is_primary) {
-      return -1;
-    }
-
-    if (!a.is_primary && b.is_primary) {
-      return 1;
-    }
-
-    if (a.sort_order !== b.sort_order) {
-      return a.sort_order - b.sort_order;
-    }
-
+    if (a.is_primary && !b.is_primary) return -1;
+    if (!a.is_primary && b.is_primary) return 1;
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
     return String(a.id).localeCompare(String(b.id));
   });
 }
@@ -117,34 +100,24 @@ export function AdminProductImagesPanel({
   );
 
   const anomalyMessages = useMemo(() => {
-    if (!sortedImages.length) {
-      return [] as string[];
-    }
-
+    if (!sortedImages.length) return [] as string[];
     const messages: string[] = [];
-
     if (primaryCount === 0) {
       messages.push(
         'No hay imagen principal definida. Se mostrara la primera imagen ordenada como fallback.',
       );
     }
-
     if (primaryCount > 1) {
       messages.push(
         'Hay varias imagenes marcadas como principales. Se usara la primera segun sort_order.',
       );
     }
-
     return messages;
   }, [primaryCount, sortedImages]);
 
   useEffect(() => {
-    if (!status) {
-      return;
-    }
-
+    if (!status) return;
     const timer = setTimeout(() => setStatus(null), 3500);
-
     return () => clearTimeout(timer);
   }, [status]);
 
@@ -165,7 +138,6 @@ export function AdminProductImagesPanel({
         }),
       );
     }
-
     onImagesChange?.(nextImages);
   };
 
@@ -249,9 +221,7 @@ export function AdminProductImagesPanel({
         <button
           type="button"
           onClick={() => {
-            if (isReadOnly) {
-              return;
-            }
+            if (isReadOnly) return;
             setIsFormOpen((value) => !value);
             resetForm();
           }}
@@ -298,9 +268,7 @@ export function AdminProductImagesPanel({
           className="space-y-4 rounded-md border border-neutral-200 bg-neutral-50 p-4"
           onSubmit={(event) => {
             event.preventDefault();
-            if (addImageState.isLoading || isReadOnly) {
-              return;
-            }
+            if (addImageState.isLoading || isReadOnly) return;
             void handleAddImage();
           }}
         >
@@ -391,10 +359,12 @@ export function AdminProductImagesPanel({
                 }`}
               >
                 <div className="relative aspect-4/3 bg-neutral-100">
-                  <img
+                  <Image
                     src={image.url}
                     alt={image.alt_text ?? FALLBACK_ALT}
-                    className="size-full object-cover"
+                    fill
+                    sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                    className="object-cover"
                     loading="lazy"
                   />
                   {isActive ? (
@@ -423,7 +393,6 @@ export function AdminProductImagesPanel({
                         setStatus({ type: 'error', message: disabledMessage });
                         return;
                       }
-
                       void handleSetPrimary(image.id);
                     }}
                     disabled={isActive || setPrimaryImageState.isLoading || isReadOnly}

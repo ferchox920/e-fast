@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { KeyboardEvent } from 'react';
+import Image from 'next/image';
 
 import type { ProductImageRead } from '@/types/product';
 
@@ -70,12 +71,14 @@ export function ProductGallery({ images }: ProductGalleryProps) {
     <div className="space-y-3">
       <figure className="relative aspect-4/3 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
         {activeImage ? (
-          <img
+          <Image
             id={mainImageId}
             key={activeImage.id}
             src={activeImage.url}
             alt={activeImage.alt_text ?? FALLBACK_ALT}
-            className="size-full object-cover"
+            fill
+            sizes="(min-width:1024px) 640px, (min-width:640px) 560px, 100vw"
+            className="object-cover"
             loading="lazy"
             data-testid="product-gallery-main-image"
           />
@@ -102,7 +105,6 @@ export function ProductGallery({ images }: ProductGalleryProps) {
               type="button"
               role="option"
               aria-selected={isActive}
-              aria-pressed={isActive}
               aria-controls={mainImageId}
               data-gallery-thumb="true"
               onClick={() => setActiveImageId(image.id)}
@@ -115,10 +117,12 @@ export function ProductGallery({ images }: ProductGalleryProps) {
                 {isActive ? 'Imagen seleccionada: ' : 'Seleccionar imagen: '}
                 {image.alt_text ?? FALLBACK_ALT}
               </span>
-              <img
+              <Image
                 src={image.url}
                 alt={image.alt_text ?? `${FALLBACK_ALT} ${index + 1}`}
-                className="size-full object-cover"
+                width={80}
+                height={80}
+                className="object-cover"
                 loading="lazy"
               />
             </button>
