@@ -36,7 +36,6 @@ function sendTelemetry(event: string, payload: Record<string, unknown>) {
     // ignore telemetry errors
   } finally {
     if (typeof console !== 'undefined') {
-       
       console.info('[telemetry]', event, payload);
     }
   }
@@ -391,7 +390,7 @@ export function AdminProductImagesPanel({
                   isActive ? 'border-amber-400 shadow' : 'border-neutral-200'
                 }`}
               >
-                <div className="relative aspect-[4/3] bg-neutral-100">
+                <div className="relative aspect-4/3 bg-neutral-100">
                   <img
                     src={image.url}
                     alt={image.alt_text ?? FALLBACK_ALT}
