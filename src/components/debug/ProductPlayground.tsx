@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAppSelector } from '@/store/hooks';
+import AdminProductImagesPanel from '@/components/product/AdminProductImagesPanel';
 import {
   useLazyListProductsQuery,
   useLazyGetProductQuery,
@@ -10,8 +11,6 @@ import {
   useCreateVariantMutation,
   useUpdateVariantMutation,
   useDeleteVariantMutation,
-  useAddImageMutation,
-  useSetPrimaryImageMutation,
 } from '@/store/api/productApi';
 import type {
   ProductRead,
@@ -108,19 +107,6 @@ export default function ProductPlayground() {
   const [deleteVariantProductId, setDeleteVariantProductId] = useState('');
   const [deleteVariantSuccess, setDeleteVariantSuccess] = useState(false);
   const [deleteVariantMutation, deleteVariantState] = useDeleteVariantMutation();
-
-  // Images state
-  const [imageProductId, setImageProductId] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imageAlt, setImageAlt] = useState('');
-  const [imageIsPrimary, setImageIsPrimary] = useState(false);
-  const [imageResult, setImageResult] = useState<ProductImageRead | null>(null);
-  const [addImage, addImageState] = useAddImageMutation();
-
-  const [primaryImageProductId, setPrimaryImageProductId] = useState('');
-  const [primaryImageId, setPrimaryImageId] = useState('');
-  const [primaryImageResult, setPrimaryImageResult] = useState<ProductRead | null>(null);
-  const [setPrimaryImage, setPrimaryImageState] = useSetPrimaryImageMutation();
 
   const listLoading = listProductsState.isLoading || listProductsState.isFetching;
   const getProductLoading = getProductState.isLoading || getProductState.isFetching;
@@ -337,52 +323,20 @@ export default function ProductPlayground() {
     }
   };
 
-  const handleAddImage = async () => {
-    if (!isAdmin) {
-      alert(adminDisabledMessage ?? '');
-      return;
-    }
-    if (!imageProductId.trim() || !imageUrl.trim()) {
-      alert('product_id y url son obligatorios.');
-      return;
-    }
-    try {
-      const created = await addImage({
-        productId: imageProductId.trim(),
-        body: {
-          url: imageUrl.trim(),
-          alt_text: imageAlt.trim() || undefined,
-          is_primary: imageIsPrimary || undefined,
-        },
-      }).unwrap();
-      setImageResult(created);
-      alert('Imagen añadida ✅');
-    } catch (err) {
-      handleRtkError(err, 'add-image');
-      setImageResult(null);
-    }
-  };
+  const handleImagesChange = (nextImages: ProductImageRead[]) => {
+    setProductDetail((prev) => {
+      if (!prev) {
+        return prev;
+      }
 
-  const handleSetPrimaryImage = async () => {
-    if (!isAdmin) {
-      alert(adminDisabledMessage ?? '');
-      return;
-    }
-    if (!primaryImageProductId.trim() || !primaryImageId.trim()) {
-      alert('product_id e image_id son obligatorios.');
-      return;
-    }
-    try {
-      const updated = await setPrimaryImage({
-        productId: primaryImageProductId.trim(),
-        imageId: primaryImageId.trim(),
-      }).unwrap();
-      setPrimaryImageResult(updated);
-      alert('Imagen principal actualizada ✅');
-    } catch (err) {
-      handleRtkError(err, 'set-primary-image');
-      setPrimaryImageResult(null);
-    }
+      const primaryImage = nextImages.find((image) => image.is_primary) ?? null;
+
+      return {
+        ...prev,
+        images: nextImages,
+        primary_image: primaryImage,
+      };
+    });
   };
 
   return (
@@ -842,102 +796,28 @@ export default function ProductPlayground() {
       </section>
 
       {/* Imágenes */}
-      <section className="space-y-6 border rounded-lg p-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">
-              {'Añadir imagen (POST /products/{product_id}/images)'}
-            </h3>
-            <button
-              onClick={handleAddImage}
-              disabled={addImageState.isLoading || !isAdmin}
-              className="text-xs px-3 py-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
-            >
-              {addImageState.isLoading ? 'Subiendo...' : 'Añadir imagen'}
-            </button>
-          </div>
-          {!isAdmin && <p className="text-xs text-amber-600">{adminDisabledMessage}</p>}
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="product_id*"
-              value={imageProductId}
-              onChange={(e) => setImageProductId(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="url*"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="alt_text"
-              value={imageAlt}
-              onChange={(e) => setImageAlt(e.target.value)}
-            />
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={imageIsPrimary}
-                onChange={(e) => setImageIsPrimary(e.target.checked)}
-              />
-              ¿Es principal?
-            </label>
-          </div>
-          {addImageState.error && (
-            <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-              {JSON.stringify(addImageState.error, null, 2)}
-            </pre>
-          )}
-          {imageResult && (
-            <pre className="text-xs bg-gray-900 text-gray-100 p-3 rounded overflow-auto max-h-64">
-              {JSON.stringify(imageResult, null, 2)}
-            </pre>
-          )}
+      <section className="space-y-4 border rounded-lg p-4">
+        <div className="flex flex-col gap-1">
+          <h3 className="font-semibold text-gray-700">Gestion de imagenes</h3>
+          <p className="text-sm text-gray-500">
+            Anade nuevas imagenes por URL y define la imagen principal del producto.
+          </p>
         </div>
 
-        <div className="space-y-3 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">
-              {
-                'Marcar imagen como principal (POST /products/{product_id}/images/{image_id}/primary)'
-              }
-            </h3>
-            <button
-              onClick={handleSetPrimaryImage}
-              disabled={setPrimaryImageState.isLoading || !isAdmin}
-              className="text-xs px-3 py-1.5 border rounded bg-white hover:bg-gray-100 disabled:opacity-50"
-            >
-              {setPrimaryImageState.isLoading ? 'Actualizando...' : 'Marcar como principal'}
-            </button>
+        {productDetail ? (
+          <AdminProductImagesPanel
+            productId={String(productDetail.id)}
+            slug={productDetail.slug}
+            images={productDetail.images ?? []}
+            onImagesChange={handleImagesChange}
+            canEdit={isAdmin}
+            disabledMessage={adminDisabledMessage ?? undefined}
+          />
+        ) : (
+          <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-500">
+            Obten primero un producto mediante su slug para poder gestionar sus imagenes.
           </div>
-          {!isAdmin && <p className="text-xs text-amber-600">{adminDisabledMessage}</p>}
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="product_id*"
-              value={primaryImageProductId}
-              onChange={(e) => setPrimaryImageProductId(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="image_id*"
-              value={primaryImageId}
-              onChange={(e) => setPrimaryImageId(e.target.value)}
-            />
-          </div>
-          {setPrimaryImageState.error && (
-            <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-              {JSON.stringify(setPrimaryImageState.error, null, 2)}
-            </pre>
-          )}
-          {primaryImageResult && (
-            <pre className="text-xs bg-white border rounded p-3 overflow-auto max-h-64">
-              {JSON.stringify(primaryImageResult, null, 2)}
-            </pre>
-          )}
-        </div>
+        )}
       </section>
     </section>
   );

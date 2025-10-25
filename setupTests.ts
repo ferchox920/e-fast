@@ -19,6 +19,21 @@ if (!('TransformStream' in global)) {
   global.TransformStream = NodeTransformStream;
 }
 
+if (typeof global.BroadcastChannel === 'undefined') {
+  class BroadcastChannelMock {
+    name: string;
+    constructor(name: string) {
+      this.name = name;
+    }
+    postMessage() {}
+    close() {}
+    addEventListener() {}
+    removeEventListener() {}
+  }
+  // @ts-expect-error - Provide mock for environments without BroadcastChannel.
+  global.BroadcastChannel = BroadcastChannelMock;
+}
+
 let serverInstance: SetupServerApi | null = null;
 
 async function ensureServer() {
