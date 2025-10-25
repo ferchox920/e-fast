@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import type { UserCreate, UserRead } from '@/types/user';
+import type { UserCreate, UserRead, UserUpdate } from '@/types/user';
 
 export type RegisterBody = Pick<UserCreate, 'email' | 'password' | 'full_name'> &
   Partial<UserCreate>;
@@ -25,6 +25,18 @@ export const usersApi = baseApi.injectEndpoints({
       query: () => ({ url: '/users/me' }),
       providesTags: ['User'],
     }),
+
+    /**
+     * PUT /users/me -> Actualiza el perfil del usuario autenticado
+     */
+    updateMe: build.mutation<UserRead, UserUpdate>({
+      query: (body) => ({
+        url: '/users/me',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -32,4 +44,5 @@ export const {
   useRegisterMutation,
   useMeQuery,
   useLazyMeQuery, // 👈 export del hook lazy
+  useUpdateMeMutation,
 } = usersApi;

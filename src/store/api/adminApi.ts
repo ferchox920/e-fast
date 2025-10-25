@@ -25,13 +25,10 @@ interface SetUserActiveParams {
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     listUsers: build.query<Paginated<UserRead>, ListUsersParams>({
-      query: ({ page = 1, page_size = 50 }) => {
-        const offset = (page - 1) * page_size;
-        return {
-          url: '/admin/users',
-          params: { limit: page_size, offset },
-        };
-      },
+      query: ({ page = 1, page_size = 50 }) => ({
+        url: '/admin/users',
+        params: { page, page_size },
+      }),
       providesTags: (result) =>
         result
           ? [
@@ -45,8 +42,7 @@ export const adminApi = baseApi.injectEndpoints({
       query: ({ is_superuser = false, ...body }) => ({
         url: '/admin/users',
         method: 'POST',
-        params: { is_superuser },
-        body,
+        body: { ...body, is_superuser },
       }),
       invalidatesTags: [{ type: 'UserList', id: 'LIST' }],
     }),
@@ -55,7 +51,7 @@ export const adminApi = baseApi.injectEndpoints({
       query: ({ userId, makeAdmin }) => ({
         url: `/admin/users/${userId}/role`,
         method: 'PATCH',
-        params: { make_admin: makeAdmin },
+        body: { make_admin: makeAdmin },
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: 'User', id: userId },
@@ -67,7 +63,7 @@ export const adminApi = baseApi.injectEndpoints({
       query: ({ userId, active }) => ({
         url: `/admin/users/${userId}/active`,
         method: 'PATCH',
-        params: { active },
+        body: { active },
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: 'User', id: userId },
@@ -79,6 +75,7 @@ export const adminApi = baseApi.injectEndpoints({
 
 export const {
   useListUsersQuery,
+  useLazyListUsersQuery,
   useCreateUserAdminMutation,
   useSetUserRoleMutation,
   useSetUserActiveStatusMutation,

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   useLoginMutation,
   useRefreshMutation,
   useRequestVerifyEmailMutation,
 } from '@/store/api/authApi';
-import { useRegisterMutation, useLazyMeQuery } from '@/store/api/usersApi';
+import { useRegisterMutation, useLazyMeQuery, useUpdateMeMutation } from '@/store/api/usersApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setToken, setRefreshToken, setUser, clearUser } from '@/store/slices/userSlice';
 
@@ -15,10 +15,48 @@ import { setToken, setRefreshToken, setUser, clearUser } from '@/store/slices/us
 
 // ✅ En su lugar, importamos SOLO el tipo y creamos un type guard local
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import type { UserRead, UserUpdate } from '@/types/user';
 
 function isFetchBaseQueryError(err: unknown): err is FetchBaseQueryError {
   return typeof err === 'object' && err !== null && 'status' in err;
 }
+
+type ProfileFieldKey = keyof UserUpdate;
+type ProfileFormState = Record<ProfileFieldKey, string>;
+
+type ProfileFieldDefinition = {
+  key: ProfileFieldKey;
+  label: string;
+  type?: string;
+  autoComplete?: string;
+  placeholder?: string;
+};
+
+const blankProfileForm: ProfileFormState = {
+  full_name: '',
+  birthdate: '',
+  avatar_url: '',
+  address_line1: '',
+  address_line2: '',
+  city: '',
+  state: '',
+  postal_code: '',
+  country: '',
+  phone: '',
+};
+
+const profileFieldDefinitions: ReadonlyArray<ProfileFieldDefinition> = [
+  { key: 'full_name', label: 'Nombre completo', autoComplete: 'name' },
+  { key: 'birthdate', label: 'Fecha de nacimiento', type: 'date' },
+  { key: 'avatar_url', label: 'Avatar URL', type: 'url', autoComplete: 'url' },
+  { key: 'address_line1', label: 'Dirección línea 1', autoComplete: 'address-line1' },
+  { key: 'address_line2', label: 'Dirección línea 2', autoComplete: 'address-line2' },
+  { key: 'city', label: 'Ciudad', autoComplete: 'address-level2' },
+  { key: 'state', label: 'Estado / Provincia', autoComplete: 'address-level1' },
+  { key: 'postal_code', label: 'Código postal', autoComplete: 'postal-code' },
+  { key: 'country', label: 'País', autoComplete: 'country-name' },
+  { key: 'phone', label: 'Teléfono', type: 'tel', autoComplete: 'tel' },
+];
 
 export default function UserPlayground() {
   const dispatch = useAppDispatch();
@@ -41,6 +79,17 @@ export default function UserPlayground() {
 
   // Lazy query para /users/me
   const [fetchMe, { isFetching: fetchingMe }] = useLazyMeQuery();
+  const [updateProfile, { isLoading: updatingProfile, error: updateError }] = useUpdateMeMutation();
+
+  const [profileForm, setProfileForm] = useState<ProfileFormState>(() => ({ ...blankProfileForm }));
+
+  useEffect(() => {
+    if (!user) {
+      setProfileForm({ ...blankProfileForm });
+      return;
+    }
+    setProfileForm(toProfileFormValues(user));
+  }, [user]);
 
   const doRegister = async () => {
     try {
@@ -97,6 +146,20 @@ export default function UserPlayground() {
       alert('Solicitud de verificación enviada (si el email existe).');
     } catch (e) {
       handleRtkError(e, 'request-verify');
+    }
+  };
+
+  const doUpdateProfile = async () => {
+    if (!user) return;
+
+    try {
+      const payload = prepareUpdatePayload(profileForm);
+      const updated = await updateProfile(payload).unwrap();
+      dispatch(setUser(updated));
+      setProfileForm(toProfileFormValues(updated));
+      alert('Perfil actualizado ✅');
+    } catch (e) {
+      handleRtkError(e, 'update-profile');
     }
   };
 
@@ -201,6 +264,59 @@ export default function UserPlayground() {
         </button>
       </div>
 
+      {/* Perfil */}
+      <div className="space-y-3 border-t pt-4">
+        <div className="flex flex-wrap items-end gap-2">
+          <h3 className="font-semibold">Perfil</h3>
+          <span className="text-xs text-neutral-500">
+            {user
+              ? 'Edita y guarda los datos del usuario autenticado.'
+              : 'Inicia sesión para editar tu perfil.'}
+          </span>
+        </div>
+        <div className="grid gap-2 md:grid-cols-2">
+          {profileFieldDefinitions.map((field) => (
+            <label key={field.key} className="flex flex-col gap-1 text-sm">
+              <span className="font-medium">{field.label}</span>
+              <input
+                type={field.type ?? 'text'}
+                className="border px-3 py-2 rounded"
+                value={profileForm[field.key]}
+                onChange={(e) =>
+                  setProfileForm((prev) => ({ ...prev, [field.key]: e.target.value }))
+                }
+                autoComplete={field.autoComplete}
+                placeholder={field.placeholder}
+                disabled={!user || updatingProfile}
+              />
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={doUpdateProfile}
+            disabled={!user || updatingProfile}
+            className="border px-3 py-2 rounded hover:bg-neutral-50 disabled:opacity-60"
+          >
+            {updatingProfile ? 'Actualizando…' : 'Actualizar perfil'}
+          </button>
+          <button
+            onClick={() =>
+              setProfileForm(user ? toProfileFormValues(user) : { ...blankProfileForm })
+            }
+            disabled={!user || updatingProfile}
+            className="border px-3 py-2 rounded hover:bg-neutral-50 disabled:opacity-60"
+          >
+            Restablecer
+          </button>
+        </div>
+        {updateError && (
+          <pre className="text-red-600 text-xs overflow-auto">
+            {JSON.stringify(updateError, null, 2)}
+          </pre>
+        )}
+      </div>
+
       {/* Estado */}
       <div className="space-y-1 text-sm">
         <div>
@@ -225,6 +341,31 @@ export default function UserPlayground() {
       )}
     </section>
   );
+}
+
+function toProfileFormValues(source: UserRead | UserUpdate | null | undefined): ProfileFormState {
+  const next: ProfileFormState = { ...blankProfileForm };
+  if (!source) return next;
+
+  for (const { key } of profileFieldDefinitions) {
+    const raw = source[key];
+    next[key] = typeof raw === 'string' ? raw : '';
+  }
+
+  return next;
+}
+
+function prepareUpdatePayload(form: ProfileFormState): UserUpdate {
+  const payload: Partial<Record<ProfileFieldKey, string | null>> = {};
+
+  for (const { key } of profileFieldDefinitions) {
+    const rawValue = form[key];
+    const value = rawValue.trim();
+    const sanitized = value === '' ? null : value;
+    payload[key] = sanitized;
+  }
+
+  return payload as UserUpdate;
 }
 
 function handleRtkError(e: unknown, where: string) {

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import {
-  useListUsersQuery,
+  useLazyListUsersQuery,
   useCreateUserAdminMutation,
   useSetUserRoleMutation,
   useSetUserActiveStatusMutation,
@@ -111,12 +111,10 @@ export default function AdminPlayground() {
   const currentUser = useAppSelector((state) => state.user.current);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Podría hacerse configurable
+  const [hasRequestedUsers, setHasRequestedUsers] = useState(false);
 
   // Hooks de RTK Query para datos y mutaciones
-  const { data, error, isLoading, isFetching, refetch } = useListUsersQuery({
-    page: currentPage,
-    page_size: pageSize,
-  });
+  const [fetchUsers, { data, error, isLoading, isFetching }] = useLazyListUsersQuery();
   const [createUserAdmin, { isLoading: isCreatingUser, error: createUserError }] =
     useCreateUserAdminMutation();
   const [setUserRole, { isLoading: isSettingRole }] = useSetUserRoleMutation();
@@ -142,6 +140,15 @@ export default function AdminPlayground() {
   }
 
   // Handlers para acciones
+  const handleListUsers = async (page = currentPage) => {
+    const targetPage = Math.max(1, page);
+    setHasRequestedUsers(true);
+    if (targetPage !== currentPage) {
+      setCurrentPage(targetPage);
+    }
+    await fetchUsers({ page: targetPage, page_size: pageSize });
+  };
+
   const handleCreateUser = async () => {
     if (!newUserEmail || !newUserPassword) {
       alert('Email y contraseña son requeridos.');
@@ -159,9 +166,11 @@ export default function AdminPlayground() {
       setNewUserName('');
       setNewUserIsAdmin(false);
       alert('Usuario creado exitosamente.');
-      // La lista se actualiza por invalidatesTags, pero si prefieres ir a la pág 1:
-      // if (currentPage !== 1) setCurrentPage(1);
-      // else refetch(); // O forzar refetch si ya estás en la pág 1
+      if (hasRequestedUsers) {
+        const targetPage = currentPage !== 1 ? 1 : currentPage;
+        if (targetPage !== currentPage) setCurrentPage(targetPage);
+        await handleListUsers(targetPage);
+      }
     } catch (err) {
       handleRtkError(err, 'createUserAdmin');
     }
@@ -174,7 +183,9 @@ export default function AdminPlayground() {
     }
     try {
       await setUserRole({ userId, makeAdmin }).unwrap();
-      // Opcional: Mostrar toast de éxito
+      if (hasRequestedUsers) {
+        await handleListUsers(currentPage);
+      }
     } catch (err) {
       handleRtkError(err, 'setUserRole');
     }
@@ -187,7 +198,9 @@ export default function AdminPlayground() {
     }
     try {
       await setUserActiveStatus({ userId, active }).unwrap();
-      // Opcional: Mostrar toast de éxito
+      if (hasRequestedUsers) {
+        await handleListUsers(currentPage);
+      }
     } catch (err) {
       handleRtkError(err, 'setUserActiveStatus');
     }
@@ -195,13 +208,17 @@ export default function AdminPlayground() {
 
   // Handlers de paginación
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
+    if (!data) return;
+    const targetPage = Math.max(1, currentPage - 1);
+    if (targetPage === currentPage) return;
+    void handleListUsers(targetPage);
   };
 
   const handleNextPage = () => {
-    if (data && currentPage < data.pages) {
-      setCurrentPage((prev) => prev + 1);
-    }
+    if (!data) return;
+    if (currentPage >= data.pages) return;
+    const targetPage = currentPage + 1;
+    void handleListUsers(targetPage);
   };
 
   return (
@@ -285,22 +302,38 @@ export default function AdminPlayground() {
 
       {/* --- Sección Listar Usuarios --- */}
       <div className="space-y-2 pt-4">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-2">
           <h3 className="font-semibold text-gray-700">Lista de Usuarios</h3>
-          <button
-            onClick={() => refetch()}
-            disabled={isLoading || isFetching}
-            className="text-xs px-2 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-          >
-            {isFetching ? 'Actualizando...' : 'Refrescar'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleListUsers()}
+              disabled={isLoading || isFetching}
+              className="text-xs px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              {isLoading && !data ? 'Cargando...' : 'Listar Usuarios'}
+            </button>
+            <button
+              onClick={() => handleListUsers(currentPage)}
+              disabled={!hasRequestedUsers || isFetching}
+              className="text-xs px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              {isFetching ? 'Actualizando...' : 'Refrescar'}
+            </button>
+          </div>
         </div>
 
-        {isLoading && <p className="text-gray-500 italic py-4 text-center">Cargando usuarios...</p>}
+        {isLoading && !data && (
+          <p className="text-gray-500 italic py-4 text-center">Cargando usuarios...</p>
+        )}
         {error && (
           <pre className="text-red-600 text-xs overflow-auto bg-red-50 p-2 rounded">
             Error al cargar usuarios: {JSON.stringify(error, null, 2)}
           </pre>
+        )}
+        {!hasRequestedUsers && !isLoading && !data && (
+          <p className="text-gray-500 text-center py-4 text-sm">
+            Usa el botón &quot;Listar Usuarios&quot; para obtener la información.
+          </p>
         )}
 
         {data && data.items.length > 0 && (
