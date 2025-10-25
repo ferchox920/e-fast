@@ -1,9 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-
 import { useGetProductQuery } from '@/store/api/productApi';
-
 import ProductGallery from './ProductGallery';
 import ProductGallerySkeleton from './ProductGallerySkeleton';
 
@@ -18,38 +16,27 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
   });
 
   const isPending = isLoading || isFetching;
-  const anomalyMessages = useMemo(() => {
-    if (!data?.images?.length) {
-      return [] as string[];
-    }
 
+  const anomalyMessages = useMemo(() => {
+    if (!data?.images?.length) return [] as string[];
     const primaryCount = data.images.filter((image) => image.is_primary).length;
     const messages: string[] = [];
-
     if (primaryCount === 0) {
       messages.push(
-        'No hay imagen principal definida. Se mostrara la primera imagen ordenada como fallback.',
+        'No hay imagen principal definida. Se mostrará la primera imagen ordenada como fallback.',
       );
     }
-
     if (primaryCount > 1) {
       messages.push(
-        'Se recibieron varias imagenes principales. Se mostrara la primera segun sort_order.',
+        'Se recibieron varias imágenes principales. Se mostrará la primera según sort_order.',
       );
     }
-
     return messages;
   }, [data?.images]);
 
   const galleryContent = useMemo(() => {
-    if (isPending) {
-      return <ProductGallerySkeleton />;
-    }
-
-    if (!data) {
-      return null;
-    }
-
+    if (isPending) return <ProductGallerySkeleton />;
+    if (!data) return null;
     return <ProductGallery images={data.images} />;
   }, [data, isPending]);
 
@@ -66,7 +53,7 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
         <div className="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           <p>
             No pudimos cargar el producto.{` `}
-            {error && 'status' in error ? `Codigo: ${String(error.status)}` : null}
+            {error && 'status' in error ? `Código: ${String(error.status)}` : null}
           </p>
           <button
             type="button"
@@ -87,15 +74,15 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
       ) : null}
 
       {galleryContent ?? (
-        <div className="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500">
-          Este producto no tiene imagenes disponibles.
+        <div className="flex aspect-4/3 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500">
+          Este producto no tiene imágenes disponibles.
         </div>
       )}
 
       {data && (
         <article className="space-y-4">
           {data.description && (
-            <p className="text-base text-neutral-700 leading-relaxed">{data.description}</p>
+            <p className="text-base leading-relaxed text-neutral-700">{data.description}</p>
           )}
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-lg border border-neutral-200 bg-white p-4">
@@ -103,7 +90,7 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
               <dd className="text-xl font-semibold text-neutral-900">
                 {new Intl.NumberFormat('es-ES', {
                   style: 'currency',
-                  currency: data.currency,
+                  currency: data.currency ?? 'ARS',
                 }).format(data.price)}
               </dd>
             </div>
