@@ -76,7 +76,7 @@ const NotificationListItem = memo(
               {meta.badge}
             </span>
           )}
-          <p className="mt-1 text-sm text-neutral-600 break-words">{message}</p>
+          <p className="mt-1 text-sm text-neutral-600 wrap-break-word">{message}</p>
           <p className="mt-2 text-xs text-neutral-400">{formatRelativeTime(createdAt)}</p>
         </div>
         <button
