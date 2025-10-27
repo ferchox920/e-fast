@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { clearUser, setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 const PlaceholderIcon = ({ name }: { name: string }) => (
   <span className="inline-block w-6 h-6 border rounded text-xs leading-none text-center pt-1">
@@ -84,6 +85,8 @@ export default function Header() {
             <button className="text-gray-400 hover:text-gray-500">
               <PlaceholderIcon name="S" />
             </button>
+
+            <NotificationBell />
 
             <Link href="/carrito" className="relative text-gray-400 hover:text-gray-500">
               <PlaceholderIcon name="C" />
