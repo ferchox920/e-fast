@@ -23,7 +23,7 @@ exports[`ProductDetailClient snapshots renders error state with retry button 1`]
       class="space-y-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"
     >
       <p>
-        No pudimos cargar el producto. Codigo: 500
+        No pudimos cargar el producto. Código: 500
       </p>
       <button
         class="inline-flex items-center justify-center gap-2 rounded-md border border-red-600 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -33,9 +33,9 @@ exports[`ProductDetailClient snapshots renders error state with retry button 1`]
       </button>
     </div>
     <div
-      class="flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500"
+      class="flex aspect-4/3 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-sm text-neutral-500"
     >
-      Este producto no tiene imagenes disponibles.
+      Este producto no tiene imágenes disponibles.
     </div>
   </section>
 </DocumentFragment>
@@ -116,7 +116,7 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
       class="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700"
     >
       <p>
-        Se recibieron varias imagenes principales. Se mostrara la primera segun sort_order.
+        Se recibieron varias imágenes principales. Se mostrará la primera según sort_order.
       </p>
     </div>
     <div
@@ -127,11 +127,16 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
       >
         <img
           alt="Imagen 1"
-          class="size-full object-cover"
+          class="object-cover"
+          data-nimg="fill"
           data-testid="product-gallery-main-image"
+          decoding="async"
           id="product-gallery-main-image"
           loading="lazy"
-          src="https://example.com/1.jpg"
+          sizes="(min-width:1024px) 640px, (min-width:640px) 560px, 100vw"
+          src="/_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=3840&q=75"
+          srcset="/_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=640&q=75 640w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=750&q=75 750w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=828&q=75 828w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=1080&q=75 1080w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=1200&q=75 1200w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=1920&q=75 1920w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=2048&q=75 2048w, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=3840&q=75 3840w"
+          style="position: absolute; height: 100%; width: 100%; left: 0px; top: 0px; right: 0px; bottom: 0px; color: transparent;"
         />
         <figcaption
           class="sr-only"
@@ -147,7 +152,6 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
       >
         <button
           aria-controls="product-gallery-main-image"
-          aria-pressed="true"
           aria-selected="true"
           class="relative size-20 shrink-0 overflow-hidden rounded-md border transition focus:outline-none focus:ring-2 focus:ring-neutral-600 ring-2 ring-neutral-900 border-neutral-900"
           data-gallery-thumb="true"
@@ -161,14 +165,19 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
           </span>
           <img
             alt="Imagen 1"
-            class="size-full object-cover"
+            class="object-cover"
+            data-nimg="1"
+            decoding="async"
+            height="80"
             loading="lazy"
-            src="https://example.com/1.jpg"
+            src="/_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=256&q=75"
+            srcset="/_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=96&q=75 1x, /_next/image?url=https%3A%2F%2Fexample.com%2F1.jpg&w=256&q=75 2x"
+            style="color: transparent;"
+            width="80"
           />
         </button>
         <button
           aria-controls="product-gallery-main-image"
-          aria-pressed="false"
           aria-selected="false"
           class="relative size-20 shrink-0 overflow-hidden rounded-md border transition focus:outline-none focus:ring-2 focus:ring-neutral-600 border-neutral-200"
           data-gallery-thumb="true"
@@ -182,9 +191,15 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
           </span>
           <img
             alt="Imagen 2"
-            class="size-full object-cover"
+            class="object-cover"
+            data-nimg="1"
+            decoding="async"
+            height="80"
             loading="lazy"
-            src="https://example.com/2.jpg"
+            src="/_next/image?url=https%3A%2F%2Fexample.com%2F2.jpg&w=256&q=75"
+            srcset="/_next/image?url=https%3A%2F%2Fexample.com%2F2.jpg&w=96&q=75 1x, /_next/image?url=https%3A%2F%2Fexample.com%2F2.jpg&w=256&q=75 2x"
+            style="color: transparent;"
+            width="80"
           />
         </button>
       </div>
@@ -193,7 +208,7 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
       class="space-y-4"
     >
       <p
-        class="text-base text-neutral-700 leading-relaxed"
+        class="text-base leading-relaxed text-neutral-700"
       >
         Descripcion demo
       </p>
@@ -225,7 +240,7 @@ exports[`ProductDetailClient snapshots shows anomaly warning when multiple prima
           <dd
             class="text-sm text-neutral-800"
           >
-            Inactivo
+            Disponible
           </dd>
         </div>
       </dl>

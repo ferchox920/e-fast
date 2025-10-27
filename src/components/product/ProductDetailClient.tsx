@@ -97,7 +97,7 @@ export function ProductDetailClient({ slug }: ProductDetailClientProps) {
             <div className="rounded-lg border border-neutral-200 bg-white p-4">
               <dt className="text-xs uppercase tracking-wide text-neutral-500">Estado</dt>
               <dd className="text-sm text-neutral-800">
-                {data.is_active ? 'Disponible' : 'Inactivo'}
+                {data.active ? 'Disponible' : 'Inactivo'}
               </dd>
             </div>
           </dl>

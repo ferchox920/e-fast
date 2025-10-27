@@ -86,20 +86,44 @@ export default function ProductPlayground() {
   // Variant creation/update/delete state
   const [variantProductId, setVariantProductId] = useState('');
   const [variantSku, setVariantSku] = useState('');
-  const [variantTitle, setVariantTitle] = useState('');
-  const [variantPrice, setVariantPrice] = useState('');
-  const [variantCurrency, setVariantCurrency] = useState('USD');
-  const [variantStock, setVariantStock] = useState('');
-  const [variantAttributes, setVariantAttributes] = useState('');
+  const [variantSizeLabel, setVariantSizeLabel] = useState('');
+  const [variantColorName, setVariantColorName] = useState('');
+  const [variantColorHex, setVariantColorHex] = useState('');
+  const [variantStockOnHand, setVariantStockOnHand] = useState('0');
+  const [variantStockReserved, setVariantStockReserved] = useState('0');
+  const [variantPriceOverride, setVariantPriceOverride] = useState('');
+  const [variantBarcode, setVariantBarcode] = useState('');
+  const [variantReorderPoint, setVariantReorderPoint] = useState('0');
+  const [variantReorderQty, setVariantReorderQty] = useState('0');
+  const [variantReleaseAt, setVariantReleaseAt] = useState('');
+  const [variantPrimarySupplierId, setVariantPrimarySupplierId] = useState('');
+  const [variantAllowBackorder, setVariantAllowBackorder] = useState(false);
+  const [variantAllowPreorder, setVariantAllowPreorder] = useState(false);
+  const [variantActive, setVariantActive] = useState(true);
   const [variantResult, setVariantResult] = useState<ProductVariantRead | null>(null);
   const [createVariant, createVariantState] = useCreateVariantMutation();
 
   const [updateVariantId, setUpdateVariantId] = useState('');
-  const [updateVariantPrice, setUpdateVariantPrice] = useState('');
-  const [updateVariantCurrency, setUpdateVariantCurrency] = useState('');
-  const [updateVariantTitle, setUpdateVariantTitle] = useState('');
-  const [updateVariantStock, setUpdateVariantStock] = useState('');
-  const [updateVariantAttributes, setUpdateVariantAttributes] = useState('');
+  const [updateVariantSizeLabel, setUpdateVariantSizeLabel] = useState('');
+  const [updateVariantColorName, setUpdateVariantColorName] = useState('');
+  const [updateVariantColorHex, setUpdateVariantColorHex] = useState('');
+  const [updateVariantStockOnHand, setUpdateVariantStockOnHand] = useState('');
+  const [updateVariantStockReserved, setUpdateVariantStockReserved] = useState('');
+  const [updateVariantPriceOverride, setUpdateVariantPriceOverride] = useState('');
+  const [updateVariantBarcode, setUpdateVariantBarcode] = useState('');
+  const [updateVariantReorderPoint, setUpdateVariantReorderPoint] = useState('');
+  const [updateVariantReorderQty, setUpdateVariantReorderQty] = useState('');
+  const [updateVariantReleaseAt, setUpdateVariantReleaseAt] = useState('');
+  const [updateVariantPrimarySupplierId, setUpdateVariantPrimarySupplierId] = useState('');
+  const [updateVariantActive, setUpdateVariantActive] = useState<'unset' | 'true' | 'false'>(
+    'unset',
+  );
+  const [updateVariantAllowBackorder, setUpdateVariantAllowBackorder] = useState<
+    'unset' | 'true' | 'false'
+  >('unset');
+  const [updateVariantAllowPreorder, setUpdateVariantAllowPreorder] = useState<
+    'unset' | 'true' | 'false'
+  >('unset');
   const [updatedVariant, setUpdatedVariant] = useState<ProductVariantRead | null>(null);
   const [updateVariantMutation, updateVariantState] = useUpdateVariantMutation();
 
@@ -115,28 +139,13 @@ export default function ProductPlayground() {
     ? null
     : 'Necesitas un token de administrador para ejecutar esta acción.';
 
-  const parseAttributes = (input: string) => {
-    if (!input.trim()) return undefined;
-    try {
-      const parsed = JSON.parse(input);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        return parsed as Record<string, string | number | boolean | null>;
-      }
-      alert('Las características deben ser un objeto JSON (ej: {"color":"rojo"})');
-      return undefined;
-    } catch {
-      alert('JSON inválido para atributos de la variante.');
-      return undefined;
-    }
-  };
-
   const handleListProducts = async () => {
     try {
       setHasListed(true);
       const params = {
         search: search.trim() || undefined,
-        category_id: categoryId.trim() || undefined,
-        brand_id: brandId.trim() || undefined,
+        category: categoryId.trim() || undefined,
+        brand: brandId.trim() || undefined,
         min_price: minPrice ? Number(minPrice) : undefined,
         max_price: maxPrice ? Number(maxPrice) : undefined,
         limit: limit ? Number(limit) : undefined,
@@ -234,22 +243,63 @@ export default function ProductPlayground() {
       alert(adminDisabledMessage ?? '');
       return;
     }
-    if (!variantProductId.trim() || !variantSku.trim() || !variantPrice) {
-      alert('product_id, SKU y precio son obligatorios.');
+    if (
+      !variantProductId.trim() ||
+      !variantSku.trim() ||
+      !variantSizeLabel.trim() ||
+      !variantColorName.trim()
+    ) {
+      alert('product_id, SKU, size_label y color_name son obligatorios.');
       return;
     }
     try {
-      const attributes = parseAttributes(variantAttributes);
-      if (variantAttributes.trim() && !attributes) return;
-      const currency = (variantCurrency.trim().toUpperCase() || 'USD') as CurrencyCode;
+      const stockOnHand = Number(variantStockOnHand || 0);
+      const stockReserved = Number(variantStockReserved || 0);
+      const reorderPoint = Number(variantReorderPoint || 0);
+      const reorderQty = Number(variantReorderQty || 0);
+      const priceOverride =
+        variantPriceOverride.trim() !== '' ? Number(variantPriceOverride) : undefined;
+
+      if (Number.isNaN(stockOnHand) || Number.isNaN(stockReserved)) {
+        alert('Stock debe ser un número válido.');
+        return;
+      }
+      if (stockReserved > stockOnHand) {
+        alert('stock_reserved no puede exceder stock_on_hand.');
+        return;
+      }
+      if (
+        Number.isNaN(reorderPoint) ||
+        Number.isNaN(reorderQty) ||
+        reorderPoint < 0 ||
+        reorderQty < 0
+      ) {
+        alert('Los campos de reposición deben ser números mayores o iguales a 0.');
+        return;
+      }
+      if (priceOverride !== undefined && Number.isNaN(priceOverride)) {
+        alert('price_override debe ser un número válido.');
+        return;
+      }
+
       const body: ProductVariantCreate = {
         sku: variantSku.trim(),
-        price: Number(variantPrice),
-        currency,
+        size_label: variantSizeLabel.trim(),
+        color_name: variantColorName.trim(),
+        stock_on_hand: stockOnHand,
+        stock_reserved: stockReserved,
+        reorder_point: reorderPoint,
+        reorder_qty: reorderQty,
+        allow_backorder: variantAllowBackorder,
+        allow_preorder: variantAllowPreorder,
+        active: variantActive,
       };
-      if (variantTitle.trim()) body.title = variantTitle.trim();
-      if (variantStock) body.stock_quantity = Number(variantStock);
-      if (attributes) body.attributes = attributes;
+      if (variantColorHex.trim()) body.color_hex = variantColorHex.trim();
+      if (variantBarcode.trim()) body.barcode = variantBarcode.trim();
+      if (priceOverride !== undefined) body.price_override = priceOverride;
+      if (variantReleaseAt.trim()) body.release_at = variantReleaseAt.trim();
+      if (variantPrimarySupplierId.trim())
+        body.primary_supplier_id = variantPrimarySupplierId.trim();
 
       const created = await createVariant({
         productId: variantProductId.trim(),
@@ -273,15 +323,90 @@ export default function ProductPlayground() {
       return;
     }
     const body: ProductVariantUpdate = {};
-    if (updateVariantTitle.trim()) body.title = updateVariantTitle.trim();
-    if (updateVariantPrice) body.price = Number(updateVariantPrice);
-    if (updateVariantCurrency.trim()) {
-      body.currency = updateVariantCurrency.trim().toUpperCase() as CurrencyCode;
+
+    if (updateVariantSizeLabel.trim()) body.size_label = updateVariantSizeLabel.trim();
+    if (updateVariantColorName.trim()) body.color_name = updateVariantColorName.trim();
+    if (updateVariantColorHex.trim()) body.color_hex = updateVariantColorHex.trim();
+
+    if (updateVariantStockOnHand.trim()) {
+      const value = Number(updateVariantStockOnHand);
+      if (Number.isNaN(value)) {
+        alert('stock_on_hand debe ser numérico');
+        return;
+      }
+      body.stock_on_hand = value;
     }
-    if (updateVariantStock) body.stock_quantity = Number(updateVariantStock);
-    const attrs = parseAttributes(updateVariantAttributes);
-    if (updateVariantAttributes.trim() && !attrs) return;
-    if (attrs) body.attributes = attrs;
+
+    if (updateVariantStockReserved.trim()) {
+      const value = Number(updateVariantStockReserved);
+      if (Number.isNaN(value)) {
+        alert('stock_reserved debe ser numérico');
+        return;
+      }
+      body.stock_reserved = value;
+    }
+
+    if (updateVariantPriceOverride.trim()) {
+      const value = Number(updateVariantPriceOverride);
+      if (Number.isNaN(value)) {
+        alert('price_override debe ser numérico');
+        return;
+      }
+      body.price_override = value;
+    }
+
+    if (updateVariantBarcode.trim()) body.barcode = updateVariantBarcode.trim();
+
+    if (updateVariantReorderPoint.trim()) {
+      const value = Number(updateVariantReorderPoint);
+      if (Number.isNaN(value)) {
+        alert('reorder_point debe ser numérico');
+        return;
+      }
+      body.reorder_point = value;
+    }
+
+    if (updateVariantReorderQty.trim()) {
+      const value = Number(updateVariantReorderQty);
+      if (Number.isNaN(value)) {
+        alert('reorder_qty debe ser numérico');
+        return;
+      }
+      body.reorder_qty = value;
+    }
+
+    if (updateVariantReleaseAt.trim()) body.release_at = updateVariantReleaseAt.trim();
+    if (updateVariantPrimarySupplierId.trim())
+      body.primary_supplier_id = updateVariantPrimarySupplierId.trim();
+
+    const activeValue =
+      updateVariantActive === 'unset' ? undefined : updateVariantActive === 'true';
+    if (activeValue !== undefined) body.active = activeValue;
+
+    const allowBackorderValue =
+      updateVariantAllowBackorder === 'unset' ? undefined : updateVariantAllowBackorder === 'true';
+    if (allowBackorderValue !== undefined) body.allow_backorder = allowBackorderValue;
+
+    const allowPreorderValue =
+      updateVariantAllowPreorder === 'unset' ? undefined : updateVariantAllowPreorder === 'true';
+    if (allowPreorderValue !== undefined) body.allow_preorder = allowPreorderValue;
+
+    if (
+      body.stock_on_hand !== undefined &&
+      body.stock_reserved !== undefined &&
+      body.stock_reserved > body.stock_on_hand
+    ) {
+      alert('stock_reserved no puede exceder stock_on_hand');
+      return;
+    }
+
+    if (
+      (body.reorder_point !== undefined && body.reorder_point < 0) ||
+      (body.reorder_qty !== undefined && body.reorder_qty < 0)
+    ) {
+      alert('Los valores de reposición deben ser mayores o iguales a 0.');
+      return;
+    }
 
     if (Object.keys(body).length === 0) {
       alert('Indica al menos un campo a actualizar.');
@@ -374,13 +499,13 @@ export default function ProductPlayground() {
           />
           <input
             className="border px-3 py-2 rounded text-sm"
-            placeholder="category_id"
+            placeholder="category"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
           />
           <input
             className="border px-3 py-2 rounded text-sm"
-            placeholder="brand_id"
+            placeholder="brand"
             value={brandId}
             onChange={(e) => setBrandId(e.target.value)}
           />
@@ -641,37 +766,101 @@ export default function ProductPlayground() {
             />
             <input
               className="border px-3 py-2 rounded text-sm"
-              placeholder="title"
-              value={variantTitle}
-              onChange={(e) => setVariantTitle(e.target.value)}
+              placeholder="size_label*"
+              value={variantSizeLabel}
+              onChange={(e) => setVariantSizeLabel(e.target.value)}
             />
             <input
               className="border px-3 py-2 rounded text-sm"
-              placeholder="price*"
+              placeholder="color_name*"
+              value={variantColorName}
+              onChange={(e) => setVariantColorName(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="color_hex (#RRGGBB)"
+              value={variantColorHex}
+              onChange={(e) => setVariantColorHex(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="barcode"
+              value={variantBarcode}
+              onChange={(e) => setVariantBarcode(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="stock_on_hand"
               type="number"
-              value={variantPrice}
-              onChange={(e) => setVariantPrice(e.target.value)}
+              value={variantStockOnHand}
+              onChange={(e) => setVariantStockOnHand(e.target.value)}
             />
             <input
               className="border px-3 py-2 rounded text-sm"
-              placeholder="currency (USD)"
-              value={variantCurrency}
-              onChange={(e) => setVariantCurrency(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="stock_quantity"
+              placeholder="stock_reserved"
               type="number"
-              value={variantStock}
-              onChange={(e) => setVariantStock(e.target.value)}
+              value={variantStockReserved}
+              onChange={(e) => setVariantStockReserved(e.target.value)}
             />
-            <textarea
-              className="border px-3 py-2 rounded text-sm sm:col-span-2 lg:col-span-3"
-              placeholder='attributes JSON (ej. {"color":"rojo"})'
-              rows={3}
-              value={variantAttributes}
-              onChange={(e) => setVariantAttributes(e.target.value)}
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="reorder_point"
+              type="number"
+              value={variantReorderPoint}
+              onChange={(e) => setVariantReorderPoint(e.target.value)}
             />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="reorder_qty"
+              type="number"
+              value={variantReorderQty}
+              onChange={(e) => setVariantReorderQty(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="price_override"
+              type="number"
+              value={variantPriceOverride}
+              onChange={(e) => setVariantPriceOverride(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="release_at (ISO8601)"
+              value={variantReleaseAt}
+              onChange={(e) => setVariantReleaseAt(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="primary_supplier_id"
+              value={variantPrimarySupplierId}
+              onChange={(e) => setVariantPrimarySupplierId(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={variantAllowBackorder}
+                onChange={(event) => setVariantAllowBackorder(event.target.checked)}
+              />
+              Permitir backorder
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={variantAllowPreorder}
+                onChange={(event) => setVariantAllowPreorder(event.target.checked)}
+              />
+              Permitir preorder
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={variantActive}
+                onChange={(event) => setVariantActive(event.target.checked)}
+              />
+              Variante activa
+            </label>
           </div>
           {createVariantState.error && (
             <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
@@ -688,7 +877,7 @@ export default function ProductPlayground() {
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center gap-2 justify-between">
             <h3 className="font-semibold text-gray-700">
-              {'Actualizar variante (PUT /variants/{variant_id})'}
+              {'Actualizar variante (PUT /products/variants/{variant_id})'}
             </h3>
             <div className="flex gap-2 items-center">
               <input
@@ -710,37 +899,106 @@ export default function ProductPlayground() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <input
               className="border px-3 py-2 rounded text-sm"
-              placeholder="price"
+              placeholder="size_label"
+              value={updateVariantSizeLabel}
+              onChange={(e) => setUpdateVariantSizeLabel(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="color_name"
+              value={updateVariantColorName}
+              onChange={(e) => setUpdateVariantColorName(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="color_hex (#RRGGBB)"
+              value={updateVariantColorHex}
+              onChange={(e) => setUpdateVariantColorHex(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="stock_on_hand"
               type="number"
-              value={updateVariantPrice}
-              onChange={(e) => setUpdateVariantPrice(e.target.value)}
+              value={updateVariantStockOnHand}
+              onChange={(e) => setUpdateVariantStockOnHand(e.target.value)}
             />
             <input
               className="border px-3 py-2 rounded text-sm"
-              placeholder="currency"
-              value={updateVariantCurrency}
-              onChange={(e) => setUpdateVariantCurrency(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="title"
-              value={updateVariantTitle}
-              onChange={(e) => setUpdateVariantTitle(e.target.value)}
-            />
-            <input
-              className="border px-3 py-2 rounded text-sm"
-              placeholder="stock_quantity"
+              placeholder="stock_reserved"
               type="number"
-              value={updateVariantStock}
-              onChange={(e) => setUpdateVariantStock(e.target.value)}
+              value={updateVariantStockReserved}
+              onChange={(e) => setUpdateVariantStockReserved(e.target.value)}
             />
-            <textarea
-              className="border px-3 py-2 rounded text-sm sm:col-span-2 lg:col-span-3"
-              placeholder="attributes JSON"
-              rows={3}
-              value={updateVariantAttributes}
-              onChange={(e) => setUpdateVariantAttributes(e.target.value)}
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="price_override"
+              type="number"
+              value={updateVariantPriceOverride}
+              onChange={(e) => setUpdateVariantPriceOverride(e.target.value)}
             />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="barcode"
+              value={updateVariantBarcode}
+              onChange={(e) => setUpdateVariantBarcode(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="reorder_point"
+              type="number"
+              value={updateVariantReorderPoint}
+              onChange={(e) => setUpdateVariantReorderPoint(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="reorder_qty"
+              type="number"
+              value={updateVariantReorderQty}
+              onChange={(e) => setUpdateVariantReorderQty(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="release_at (ISO8601)"
+              value={updateVariantReleaseAt}
+              onChange={(e) => setUpdateVariantReleaseAt(e.target.value)}
+            />
+            <input
+              className="border px-3 py-2 rounded text-sm"
+              placeholder="primary_supplier_id"
+              value={updateVariantPrimarySupplierId}
+              onChange={(e) => setUpdateVariantPrimarySupplierId(e.target.value)}
+            />
+            <select
+              className="border px-3 py-2 rounded text-sm"
+              value={updateVariantAllowBackorder}
+              onChange={(e) =>
+                setUpdateVariantAllowBackorder(e.target.value as 'unset' | 'true' | 'false')
+              }
+            >
+              <option value="unset">allow_backorder (sin cambio)</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+            <select
+              className="border px-3 py-2 rounded text-sm"
+              value={updateVariantAllowPreorder}
+              onChange={(e) =>
+                setUpdateVariantAllowPreorder(e.target.value as 'unset' | 'true' | 'false')
+              }
+            >
+              <option value="unset">allow_preorder (sin cambio)</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+            <select
+              className="border px-3 py-2 rounded text-sm"
+              value={updateVariantActive}
+              onChange={(e) => setUpdateVariantActive(e.target.value as 'unset' | 'true' | 'false')}
+            >
+              <option value="unset">active (sin cambio)</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
           </div>
           {updateVariantState.error && (
             <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
@@ -757,7 +1015,7 @@ export default function ProductPlayground() {
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center gap-2 justify-between">
             <h3 className="font-semibold text-gray-700">
-              {'Eliminar variante (DELETE /variants/{variant_id})'}
+              {'Eliminar variante (DELETE /products/variants/{variant_id})'}
             </h3>
             <button
               onClick={handleDeleteVariant}
@@ -798,9 +1056,9 @@ export default function ProductPlayground() {
       {/* Imágenes */}
       <section className="space-y-4 border rounded-lg p-4">
         <div className="flex flex-col gap-1">
-          <h3 className="font-semibold text-gray-700">Gestion de imagenes</h3>
+          <h3 className="font-semibold text-gray-700">Gestión de imágenes</h3>
           <p className="text-sm text-gray-500">
-            Anade nuevas imagenes por URL y define la imagen principal del producto.
+            Añade nuevas imágenes por URL y define la imagen principal del producto.
           </p>
         </div>
 
@@ -815,7 +1073,7 @@ export default function ProductPlayground() {
           />
         ) : (
           <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-500">
-            Obten primero un producto mediante su slug para poder gestionar sus imagenes.
+            Obtén primero un producto mediante su slug para poder gestionar sus imágenes.
           </div>
         )}
       </section>

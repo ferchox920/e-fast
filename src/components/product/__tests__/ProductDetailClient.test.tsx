@@ -17,6 +17,7 @@ const baseProduct: ProductRead = {
   description: 'Descripcion demo',
   price: 199,
   currency: 'USD',
+  active: true,
   images: [],
   variants: [],
   created_at: null,
@@ -84,7 +85,7 @@ describe('ProductDetailClient snapshots', () => {
     });
 
     const { getByText, asFragment } = render(<ProductDetailClient slug="my-product" />);
-    expect(getByText(/Se recibieron varias imagenes principales/i)).toBeInTheDocument();
+    expect(getByText(/Se recibieron varias imágenes principales/i)).toBeInTheDocument();
     expect(asFragment()).toMatchSnapshot();
   });
 });

@@ -110,6 +110,7 @@ describe('AdminProductImagesPanel', () => {
       description: null,
       price: 100,
       currency: 'USD',
+      active: true,
       images: updatedImages,
       variants: [],
       created_at: null,

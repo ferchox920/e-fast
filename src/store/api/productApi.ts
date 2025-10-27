@@ -43,12 +43,21 @@ type SetPrimaryImageArgs = {
   imageId: string;
 };
 
+const sanitizeParams = (params: ProductListParams | undefined) => {
+  if (!params) return undefined;
+  return Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== '',
+    ),
+  );
+};
+
 export const productApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     listProducts: build.query<PaginatedProducts, ProductListParams | undefined>({
       query: (params) => ({
         url: '/products',
-        params: params ? params : undefined,
+        params: sanitizeParams(params),
       }),
       providesTags: (result) =>
         result
@@ -87,17 +96,6 @@ export const productApi = baseApi.injectEndpoints({
       ],
     }),
 
-    listVariants: build.query<ProductVariantRead[], string>({
-      query: (productId) => ({
-        url: `/products/${productId}/variants`,
-      }),
-      providesTags: (result, error, productId) => {
-        const variantTags =
-          result?.map((variant) => ({ type: 'ProductVariant' as const, id: variant.id })) ?? [];
-        return [...variantTags, { type: 'Product', id: productId }];
-      },
-    }),
-
     createVariant: build.mutation<ProductVariantRead, CreateVariantArgs>({
       query: ({ productId, body }) => ({
         url: `/products/${productId}/variants`,
@@ -112,7 +110,7 @@ export const productApi = baseApi.injectEndpoints({
 
     updateVariant: build.mutation<ProductVariantRead, UpdateVariantArgs>({
       query: ({ variantId, body }) => ({
-        url: `/variants/${variantId}`,
+        url: `/products/variants/${variantId}`,
         method: 'PUT',
         body,
       }),
@@ -124,7 +122,7 @@ export const productApi = baseApi.injectEndpoints({
 
     deleteVariant: build.mutation<void, DeleteVariantArgs>({
       query: ({ variantId }) => ({
-        url: `/variants/${variantId}`,
+        url: `/products/variants/${variantId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { variantId, productId }) => {
@@ -169,7 +167,6 @@ export const {
   useLazyGetProductQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
-  useListVariantsQuery,
   useCreateVariantMutation,
   useUpdateVariantMutation,
   useDeleteVariantMutation,
