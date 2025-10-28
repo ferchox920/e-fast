@@ -3,10 +3,23 @@ import { http, HttpResponse } from 'msw';
 
 import { notificationsApi } from '../notificationsApi';
 import notificationsReducer from '@/store/slices/notificationsSlice';
-import userReducer from '@/store/slices/userSlice';
+import userReducer, { type UserState } from '@/store/slices/userSlice';
 import { server } from '@/test-utils/msw/server';
 
 const API_BASE = 'http://127.0.0.1:8000/api/v1';
+
+const preloadedUserState: UserState = {
+  current: null,
+  session: {
+    accessToken: 'test-token',
+    refreshToken: null,
+    tokenType: 'bearer',
+    expiresIn: null,
+    expiresAt: null,
+    scopes: [],
+  },
+  status: 'authenticated',
+};
 
 const createStore = () =>
   configureStore({
@@ -18,11 +31,7 @@ const createStore = () =>
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(notificationsApi.middleware),
     preloadedState: {
-      user: {
-        current: null,
-        token: 'test-token',
-        refresh_token: null,
-      },
+      user: preloadedUserState,
     },
   });
 

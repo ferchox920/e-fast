@@ -15,7 +15,9 @@ export function ProductGallery({ images }: ProductGalleryProps) {
     return [...images].sort((a, b) => {
       if (a.is_primary && !b.is_primary) return -1;
       if (!a.is_primary && b.is_primary) return 1;
-      if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+      const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
       return String(a.id).localeCompare(String(b.id));
     });
   }, [images]);

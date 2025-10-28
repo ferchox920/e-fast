@@ -392,8 +392,8 @@ export default function ProductPlayground() {
     if (allowPreorderValue !== undefined) body.allow_preorder = allowPreorderValue;
 
     if (
-      body.stock_on_hand !== undefined &&
-      body.stock_reserved !== undefined &&
+      body.stock_on_hand != null &&
+      body.stock_reserved != null &&
       body.stock_reserved > body.stock_on_hand
     ) {
       alert('stock_reserved no puede exceder stock_on_hand');
@@ -401,8 +401,8 @@ export default function ProductPlayground() {
     }
 
     if (
-      (body.reorder_point !== undefined && body.reorder_point < 0) ||
-      (body.reorder_qty !== undefined && body.reorder_qty < 0)
+      (body.reorder_point != null && body.reorder_point < 0) ||
+      (body.reorder_qty != null && body.reorder_qty < 0)
     ) {
       alert('Los valores de reposición deben ser mayores o iguales a 0.');
       return;
@@ -1065,7 +1065,7 @@ export default function ProductPlayground() {
         {productDetail ? (
           <AdminProductImagesPanel
             productId={String(productDetail.id)}
-            slug={productDetail.slug}
+            slug={productDetail.slug ?? undefined}
             images={productDetail.images ?? []}
             onImagesChange={handleImagesChange}
             canEdit={isAdmin}

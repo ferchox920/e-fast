@@ -16,9 +16,24 @@ import {
   markRead,
   replaceNotification,
 } from '@/store/slices/notificationsSlice';
+import type { NotificationEntity } from '@/notifications/normalize';
 import type { NotificationRead } from '@/types/notifications';
 import type { ConnectionStatus } from '@/realtime/NotificationWSClient';
 import { showErrorToast } from '@/lib/toast';
+
+const NOTIFICATIONS_WS_ENABLED = process.env.NEXT_PUBLIC_NOTIFICATIONS_WS_ENABLED !== 'false';
+
+const EMPTY_NOTIFICATIONS: NotificationEntity[] = [];
+
+const arrayShallowEqual = <T>(a?: readonly T[] | null, b?: readonly T[] | null) => {
+  if (a === b) return true;
+  if (!a || !b) return a === b;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
 
 export interface UseNotificationsListParams {
   limit?: number;
@@ -29,32 +44,47 @@ export const useNotificationsList = (params: UseNotificationsListParams = {}) =>
   const dispatch = useAppDispatch();
 
   const { limit, offset = 0 } = params;
-  const queryState = useListNotificationsQuery({ limit, offset });
+  const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
+  const status = useAppSelector((state) => state.user?.status ?? 'idle');
+  const shouldFetch = Boolean(token && status === 'authenticated');
+
+  const queryState = useListNotificationsQuery({ limit, offset }, { skip: !shouldFetch });
 
   const entities = useAppSelector(selectNotificationEntities);
-  const fallbackItems = useAppSelector((state) => selectNotificationsPage(state, limit, offset));
+  const fallbackItems = useAppSelector(
+    (state) => selectNotificationsPage(state, limit, offset),
+    arrayShallowEqual,
+  );
 
   useEffect(() => {
+    if (!shouldFetch) {
+      return;
+    }
     if (queryState.data?.items?.length) {
       dispatch(upsertMany(queryState.data.items));
     }
-  }, [dispatch, queryState.data?.items]);
+  }, [dispatch, queryState.data?.items, shouldFetch]);
 
   const items = useMemo(() => {
+    if (!shouldFetch) {
+      return EMPTY_NOTIFICATIONS;
+    }
     const result =
       queryState.data?.items?.map((item) => entities[item.id]).filter(Boolean) ?? fallbackItems;
     return result;
-  }, [entities, fallbackItems, queryState.data?.items]);
+  }, [entities, fallbackItems, queryState.data?.items, shouldFetch]);
 
   return {
     items,
-    total: queryState.data?.total ?? fallbackItems.length,
-    limit: queryState.data?.limit ?? limit ?? items.length,
-    offset: queryState.data?.offset ?? offset,
-    isLoading: queryState.isLoading,
-    isFetching: queryState.isFetching,
-    isError: queryState.isError,
-    error: queryState.error,
+    total: shouldFetch ? (queryState.data?.total ?? fallbackItems.length) : 0,
+    limit: shouldFetch
+      ? (queryState.data?.limit ?? limit ?? items.length)
+      : (limit ?? items.length),
+    offset: shouldFetch ? (queryState.data?.offset ?? offset) : offset,
+    isLoading: shouldFetch ? queryState.isLoading : false,
+    isFetching: shouldFetch ? queryState.isFetching : false,
+    isError: shouldFetch ? queryState.isError : false,
+    error: shouldFetch ? queryState.error : undefined,
     refetch: queryState.refetch,
   };
 };
@@ -65,14 +95,15 @@ export const useUnreadCounter = () => {
 
 export const useNotificationStream = () => {
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.user.token);
+  const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
+  const status = useAppSelector((state) => state.user?.status ?? 'idle');
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    if (!token) {
+    if (!NOTIFICATIONS_WS_ENABLED || !token || status !== 'authenticated') {
       notificationWSClient.disconnect();
       return;
     }
@@ -93,7 +124,7 @@ export const useNotificationStream = () => {
       unsubscribe();
       notificationWSClient.disconnect();
     };
-  }, [dispatch, token]);
+  }, [dispatch, status, token]);
 };
 
 export const useNotificationConnectionStatus = () => {

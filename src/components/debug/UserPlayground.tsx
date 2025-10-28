@@ -8,7 +8,13 @@ import {
 } from '@/store/api/authApi';
 import { useRegisterMutation, useLazyMeQuery, useUpdateMeMutation } from '@/store/api/usersApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setToken, setRefreshToken, setUser, clearUser } from '@/store/slices/userSlice';
+import {
+  setSession,
+  updateAccessToken,
+  setUser,
+  clearUser,
+  createEmptySession,
+} from '@/store/slices/userSlice';
 
 // ⛔️ Quitar este import roto:
 // import { isFetchBaseQueryError } from '@reduxjs/toolkit/query';
@@ -60,9 +66,14 @@ const profileFieldDefinitions: ReadonlyArray<ProfileFieldDefinition> = [
 
 export default function UserPlayground() {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((s) => s.user.current);
-  const token = useAppSelector((s) => s.user.token);
-  const refreshTok = useAppSelector((s) => s.user.refresh_token ?? null);
+  const userState = useAppSelector((s) => s.user);
+  const user = userState?.current ?? null;
+  const session = userState?.session ?? createEmptySession();
+  const status = userState?.status ?? (user ? 'authenticated' : 'idle');
+  const token = session.accessToken;
+  const refreshTok = session.refreshToken ?? null;
+  const accessExpiresAt = session.expiresAt ? new Date(session.expiresAt).toISOString() : null;
+  const scopes = session.scopes;
 
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
@@ -100,8 +111,16 @@ export default function UserPlayground() {
       }).unwrap();
 
       const res = await login({ email: regEmail, password: regPassword }).unwrap();
-      dispatch(setToken(res.access_token));
-      dispatch(setRefreshToken(res.refresh_token));
+      dispatch(
+        setSession({
+          accessToken: res.access_token,
+          refreshToken: res.refresh_token,
+          tokenType: res.token_type,
+          expiresIn: res.expires_in,
+          scopes: res.scopes ?? null,
+          issuedAt: Date.now(),
+        }),
+      );
       dispatch(setUser(res.user));
 
       const me = await fetchMe().unwrap();
@@ -116,8 +135,16 @@ export default function UserPlayground() {
   const doLogin = async () => {
     try {
       const res = await login({ email, password }).unwrap();
-      dispatch(setToken(res.access_token));
-      dispatch(setRefreshToken(res.refresh_token));
+      dispatch(
+        setSession({
+          accessToken: res.access_token,
+          refreshToken: res.refresh_token,
+          tokenType: res.token_type,
+          expiresIn: res.expires_in,
+          scopes: res.scopes ?? null,
+          issuedAt: Date.now(),
+        }),
+      );
       dispatch(setUser(res.user));
 
       const me = await fetchMe().unwrap();
@@ -131,7 +158,15 @@ export default function UserPlayground() {
     if (!refreshTok) return;
     try {
       const res = await refresh({ refresh_token: refreshTok }).unwrap();
-      dispatch(setToken(res.access_token));
+      dispatch(
+        updateAccessToken({
+          accessToken: res.access_token,
+          tokenType: res.token_type,
+          expiresIn: res.expires_in,
+          scopes: res.scopes ?? null,
+          issuedAt: Date.now(),
+        }),
+      );
 
       const me = await fetchMe().unwrap();
       dispatch(setUser(me));
@@ -320,12 +355,31 @@ export default function UserPlayground() {
       {/* Estado */}
       <div className="space-y-1 text-sm">
         <div>
+          <span className="font-mono text-xs">status:</span> <code>{status}</code>
+        </div>
+        <div>
+          <span className="font-mono text-xs">token_type:</span>{' '}
+          <code>{session.tokenType ?? '-'}</code>
+        </div>
+        <div>
           <span className="font-mono text-xs">access_token:</span>{' '}
           <code className="break-all">{token ?? '-'}</code>
         </div>
         <div>
           <span className="font-mono text-xs">refresh_token:</span>{' '}
           <code className="break-all">{refreshTok ?? '-'}</code>
+        </div>
+        <div>
+          <span className="font-mono text-xs">expires_in:</span>{' '}
+          <code>{session.expiresIn ?? '-'}</code>
+        </div>
+        <div>
+          <span className="font-mono text-xs">expires_at:</span>{' '}
+          <code className="break-all">{accessExpiresAt ?? '-'}</code>
+        </div>
+        <div>
+          <span className="font-mono text-xs">scopes:</span>{' '}
+          <code className="break-words">{scopes.length ? scopes.join(', ') : '-'}</code>
         </div>
       </div>
 

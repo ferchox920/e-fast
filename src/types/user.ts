@@ -64,10 +64,28 @@ export interface UserRead extends UserBase {
   oauth_picture?: Url | null;
 }
 
+export type TokenType = 'bearer' | string;
+
 /** Token (pydantic: Token) */
 export interface Token {
   access_token: string;
-  token_type: 'bearer';
+  token_type: TokenType;
+}
+
+export interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+  token_type: TokenType;
+  expires_in: number;
+  user: UserRead;
+  scopes?: string[] | null;
+}
+
+export interface TokenRefresh {
+  access_token: string;
+  token_type: TokenType;
+  expires_in: number;
+  scopes?: string[] | null;
 }
 
 /** TokenPayload (pydantic: TokenPayload) */

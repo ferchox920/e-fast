@@ -1,21 +1,6 @@
 // src/store/api/authApi.ts
 import { baseApi } from './baseApi';
-import type { UserRead } from '@/types/user';
-
-// Tipos según tus endpoints de FastAPI
-export type TokenPair = {
-  access_token: string;
-  refresh_token: string;
-  token_type: 'bearer';
-  expires_in: number;
-  user: UserRead;
-};
-
-export type TokenRefresh = {
-  access_token: string;
-  token_type: 'bearer';
-  expires_in: number;
-};
+import type { TokenPair, TokenRefresh } from '@/types/user';
 
 type LoginBody = { email: string; password: string };
 type RefreshBody = { refresh_token: string };

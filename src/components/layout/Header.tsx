@@ -15,8 +15,8 @@ const PlaceholderIcon = ({ name }: { name: string }) => (
 
 export default function Header() {
   const dispatch = useAppDispatch();
-  const user = useAppSelector((state) => state.user.current);
-  const token = useAppSelector((state) => state.user.token);
+  const user = useAppSelector((state) => state.user?.current ?? null);
+  const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [triggerFetchMe, { data: fetchedUser, isFetching: isFetchingMe }] = useLazyMeQuery();
