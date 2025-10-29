@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import ProductGallery from '../ProductGallery';
 import type { ProductImageRead } from '@/types/product';
@@ -29,7 +29,12 @@ describe('ProductGallery accessibility', () => {
     const thumbButtons = screen.getAllByRole('option');
     thumbButtons.forEach((button) => {
       expect(button).toHaveAttribute('aria-selected');
-      expect(button).toHaveAttribute('aria-pressed');
+      expect(button).toHaveAttribute('data-gallery-thumb', 'true');
+      const srOnlyLabel = within(button).getByText(
+        (content, element) =>
+          element?.tagName.toLowerCase() === 'span' && content.toLowerCase().includes('imagen'),
+      );
+      expect(srOnlyLabel).toBeInTheDocument();
     });
 
     const thumbImages = screen.getAllByRole('img');

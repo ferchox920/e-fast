@@ -52,7 +52,6 @@ describe('ProductGallery', () => {
     const thumbnails = screen.getAllByRole('option');
     expect(thumbnails).toHaveLength(baseImages.length);
     expect(thumbnails[0]).toHaveAttribute('aria-selected', 'true');
-    expect(thumbnails[0]).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('allows selecting a different thumbnail via click and keyboard navigation', () => {
@@ -70,7 +69,6 @@ describe('ProductGallery', () => {
 
     expect(thumbnails[1]).toHaveFocus();
     expect(thumbnails[1]).toHaveAttribute('aria-selected', 'true');
-    expect(thumbnails[1]).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('falls back to the first image when none are flagged as primary', () => {
@@ -102,6 +100,6 @@ describe('ProductGallery', () => {
 
     const thumbnails = screen.getAllByRole('option');
     expect(screen.getByAltText('Imagen generica del producto 2')).toBeInTheDocument();
-    expect(thumbnails[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(thumbnails[1]).toHaveAttribute('aria-selected', 'false');
   });
 });
