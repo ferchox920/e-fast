@@ -25,9 +25,7 @@ export default function SearchOverlay({
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') onClose();
     };
 
     const focusTimeout = window.setTimeout(() => {
@@ -50,7 +48,7 @@ export default function SearchOverlay({
 
   return (
     <div
-      className={`fixed inset-0 z-[70] transition-opacity duration-300 ${
+      className={`fixed inset-0 z-70 transition-opacity duration-300 ${
         isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
       aria-hidden={!isOpen}
@@ -75,7 +73,7 @@ export default function SearchOverlay({
             <div className="flex items-center gap-3">
               <Link
                 href={brandHref}
-                className="text-lg font-semibold text-indigo-600 transition hover:text-indigo-700"
+                className="text-lg font-semibold text-indigo-600 transition hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded"
                 onClick={onClose}
               >
                 {brandLabel}
@@ -98,7 +96,7 @@ export default function SearchOverlay({
               <button
                 type="button"
                 onClick={onClose}
-                className="hidden rounded-full border border-transparent px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:inline-flex"
+                className="hidden rounded-full border border-transparent px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:inline-flex"
               >
                 Cerrar
               </button>
@@ -115,7 +113,7 @@ export default function SearchOverlay({
                   <button
                     key={term}
                     type="button"
-                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600 sm:text-sm"
+                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                   >
                     {term}
                   </button>
@@ -127,7 +125,7 @@ export default function SearchOverlay({
           <button
             type="button"
             onClick={onClose}
-            className="flex w-full items-center justify-center border-t border-gray-100 px-5 py-3 text-sm font-medium text-gray-500 transition hover:bg-gray-50 sm:hidden"
+            className="flex w-full items-center justify-center border-t border-gray-100 px-5 py-3 text-sm font-medium text-gray-500 transition hover:bg-gray-50 sm:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
           >
             Cerrar
           </button>

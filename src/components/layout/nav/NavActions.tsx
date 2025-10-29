@@ -6,7 +6,7 @@ import type { UserRead } from '@/types/user';
 import { CartIcon, HeartIcon, SearchIcon, UserIcon } from './icons';
 
 export const ICON_BUTTON_CLASS =
-  'inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-gray-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2';
+  'inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
 
 interface NavActionsProps {
   user: UserRead | null;
@@ -109,7 +109,7 @@ export default function NavActions({
         <CartIcon />
         <span className="sr-only">Carrito de compras</span>
         {cartItemCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 inline-flex min-h-[1.25rem] min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-none text-white">
+          <span className="absolute -top-1.5 -right-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-none text-white">
             {cartItemCount}
           </span>
         )}

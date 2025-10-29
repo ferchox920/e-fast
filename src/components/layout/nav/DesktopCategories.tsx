@@ -47,9 +47,7 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
     (groupId: string) => {
       setActiveGroupId((prev) => {
         const nextValue = prev === groupId ? null : groupId;
-        if (nextValue === null) {
-          clearCloseTimer();
-        }
+        if (nextValue === null) clearCloseTimer();
         return nextValue;
       });
     },
@@ -85,19 +83,21 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
               type="button"
               className={`text-sm font-medium transition ${
                 isActive ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
-              }`}
+              } focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
               onFocus={() => openGroup(group.id)}
               onClick={() => handleToggleClick(group.id)}
+              aria-haspopup="menu"
               aria-expanded={isActive}
               aria-controls={`category-panel-${group.id}`}
             >
               {group.name}
             </button>
+
             <div
               id={`category-panel-${group.id}`}
               onMouseEnter={() => openGroup(group.id)}
               onMouseLeave={scheduleClose}
-              className={`absolute left-0 mt-3 min-w-[240px] rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-200 focus:outline-none ${
+              className={`absolute left-0 mt-3 min-w-60 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-200 focus:outline-none ${
                 isActive
                   ? 'visible translate-y-0 opacity-100'
                   : 'invisible -translate-y-2 opacity-0'
