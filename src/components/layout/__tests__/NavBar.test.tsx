@@ -1,8 +1,14 @@
+import React from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import NavBar, { type NavBarCategoryGroup } from '../NavBar';
 import { renderWithProviders } from '@/test-utils/renderWithProviders';
+
+jest.mock('@/components/cart/MiniCart', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mini-cart-mock" />,
+}));
 
 const categoryGroups: NavBarCategoryGroup[] = [
   {
@@ -40,7 +46,6 @@ describe('NavBar', () => {
         categoryGroups={categoryGroups}
         popularSearches={popularSearches}
         user={null}
-        cartItemCount={0}
       />,
     );
 
@@ -74,7 +79,6 @@ describe('NavBar', () => {
         categoryGroups={categoryGroups}
         popularSearches={popularSearches}
         user={null}
-        cartItemCount={0}
       />,
     );
 
@@ -106,7 +110,6 @@ describe('NavBar', () => {
         categoryGroups={categoryGroups}
         popularSearches={popularSearches}
         user={null}
-        cartItemCount={0}
       />,
     );
 

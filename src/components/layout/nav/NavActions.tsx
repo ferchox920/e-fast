@@ -3,14 +3,12 @@
 import Link from 'next/link';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import type { UserRead } from '@/types/user';
-import { CartIcon, HeartIcon, SearchIcon, UserIcon } from './icons';
-
-export const ICON_BUTTON_CLASS =
-  'inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
+import MiniCart from '@/components/cart/MiniCart';
+import { HeartIcon, SearchIcon, UserIcon } from './icons';
+import { ICON_BUTTON_CLASS } from './constants';
 
 interface NavActionsProps {
   user: UserRead | null;
-  cartItemCount: number;
   onSearchClick: () => void;
   onLogout?: () => void;
   onCloseMenu: () => void;
@@ -18,7 +16,6 @@ interface NavActionsProps {
 
 export default function NavActions({
   user,
-  cartItemCount,
   onSearchClick,
   onLogout,
   onCloseMenu,
@@ -100,20 +97,7 @@ export default function NavActions({
         <span className="sr-only">Lista de deseos</span>
       </Link>
 
-      <Link
-        href="/carrito"
-        className={`${ICON_BUTTON_CLASS} relative`}
-        aria-label={`Abrir carrito (${cartItemCount} articulos)`}
-        onClick={onCloseMenu}
-      >
-        <CartIcon />
-        <span className="sr-only">Carrito de compras</span>
-        {cartItemCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold leading-none text-white">
-            {cartItemCount}
-          </span>
-        )}
-      </Link>
+      <MiniCart onCloseMenu={onCloseMenu} />
     </div>
   );
 }

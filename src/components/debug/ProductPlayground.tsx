@@ -137,7 +137,7 @@ export default function ProductPlayground() {
 
   const adminDisabledMessage = isAdmin
     ? null
-    : 'Necesitas un token de administrador para ejecutar esta acción.';
+    : 'Necesitas un token de administrador para ejecutar esta acciA3n.';
 
   const handleListProducts = async () => {
     try {
@@ -161,7 +161,7 @@ export default function ProductPlayground() {
 
   const handleGetProduct = async () => {
     if (!slug.trim()) {
-      alert('Ingresa un slug válido.');
+      alert('Ingresa un slug vAlido.');
       return;
     }
     try {
@@ -179,7 +179,7 @@ export default function ProductPlayground() {
       return;
     }
     if (!createTitle.trim() || !createPrice) {
-      alert('Título y precio son obligatorios.');
+      alert('TAtulo y precio son obligatorios.');
       return;
     }
     try {
@@ -231,7 +231,7 @@ export default function ProductPlayground() {
         body,
       }).unwrap();
       setUpdateProductResult(updated);
-      alert('Producto actualizado ✅');
+      alert('Producto actualizado a...');
     } catch (err) {
       handleRtkError(err, 'update-product');
       setUpdateProductResult(null);
@@ -261,7 +261,7 @@ export default function ProductPlayground() {
         variantPriceOverride.trim() !== '' ? Number(variantPriceOverride) : undefined;
 
       if (Number.isNaN(stockOnHand) || Number.isNaN(stockReserved)) {
-        alert('Stock debe ser un número válido.');
+        alert('Stock debe ser un nAomero vAlido.');
         return;
       }
       if (stockReserved > stockOnHand) {
@@ -274,11 +274,11 @@ export default function ProductPlayground() {
         reorderPoint < 0 ||
         reorderQty < 0
       ) {
-        alert('Los campos de reposición deben ser números mayores o iguales a 0.');
+        alert('Los campos de reposiciA3n deben ser nAomeros mayores o iguales a 0.');
         return;
       }
       if (priceOverride !== undefined && Number.isNaN(priceOverride)) {
-        alert('price_override debe ser un número válido.');
+        alert('price_override debe ser un nAomero vAlido.');
         return;
       }
 
@@ -306,7 +306,7 @@ export default function ProductPlayground() {
         body,
       }).unwrap();
       setVariantResult(created);
-      alert('Variante creada ✅');
+      alert('Variante creada a...');
     } catch (err) {
       handleRtkError(err, 'create-variant');
       setVariantResult(null);
@@ -331,7 +331,7 @@ export default function ProductPlayground() {
     if (updateVariantStockOnHand.trim()) {
       const value = Number(updateVariantStockOnHand);
       if (Number.isNaN(value)) {
-        alert('stock_on_hand debe ser numérico');
+        alert('stock_on_hand debe ser numArico');
         return;
       }
       body.stock_on_hand = value;
@@ -340,7 +340,7 @@ export default function ProductPlayground() {
     if (updateVariantStockReserved.trim()) {
       const value = Number(updateVariantStockReserved);
       if (Number.isNaN(value)) {
-        alert('stock_reserved debe ser numérico');
+        alert('stock_reserved debe ser numArico');
         return;
       }
       body.stock_reserved = value;
@@ -349,7 +349,7 @@ export default function ProductPlayground() {
     if (updateVariantPriceOverride.trim()) {
       const value = Number(updateVariantPriceOverride);
       if (Number.isNaN(value)) {
-        alert('price_override debe ser numérico');
+        alert('price_override debe ser numArico');
         return;
       }
       body.price_override = value;
@@ -360,7 +360,7 @@ export default function ProductPlayground() {
     if (updateVariantReorderPoint.trim()) {
       const value = Number(updateVariantReorderPoint);
       if (Number.isNaN(value)) {
-        alert('reorder_point debe ser numérico');
+        alert('reorder_point debe ser numArico');
         return;
       }
       body.reorder_point = value;
@@ -369,7 +369,7 @@ export default function ProductPlayground() {
     if (updateVariantReorderQty.trim()) {
       const value = Number(updateVariantReorderQty);
       if (Number.isNaN(value)) {
-        alert('reorder_qty debe ser numérico');
+        alert('reorder_qty debe ser numArico');
         return;
       }
       body.reorder_qty = value;
@@ -404,7 +404,7 @@ export default function ProductPlayground() {
       (body.reorder_point != null && body.reorder_point < 0) ||
       (body.reorder_qty != null && body.reorder_qty < 0)
     ) {
-      alert('Los valores de reposición deben ser mayores o iguales a 0.');
+      alert('Los valores de reposiciA3n deben ser mayores o iguales a 0.');
       return;
     }
 
@@ -418,7 +418,7 @@ export default function ProductPlayground() {
         body,
       }).unwrap();
       setUpdatedVariant(updated);
-      alert('Variante actualizada ✅');
+      alert('Variante actualizada a...');
     } catch (err) {
       handleRtkError(err, 'update-variant');
       setUpdatedVariant(null);
@@ -441,7 +441,7 @@ export default function ProductPlayground() {
         productId: deleteVariantProductId.trim() || undefined,
       }).unwrap();
       setDeleteVariantSuccess(true);
-      alert('Variante eliminada ✅');
+      alert('Variante eliminada a...');
     } catch (err) {
       handleRtkError(err, 'delete-variant');
       setDeleteVariantSuccess(false);
@@ -469,11 +469,11 @@ export default function ProductPlayground() {
       <header>
         <h2 className="text-xl font-semibold text-gray-800">Product Playground</h2>
         <p className="text-sm text-gray-600">
-          Herramienta de pruebas para los endpoints de catálogo (productos, variantes, imágenes).
+          Herramienta de pruebas para los endpoints de catAlogo (productos, variantes, imAgenes).
         </p>
         {!isAdmin && (
           <p className="mt-2 text-xs text-amber-600">
-            Algunas operaciones están deshabilitadas porque este usuario no es administrador.
+            Algunas operaciones estAn deshabilitadas porque este usuario no es administrador.
           </p>
         )}
       </header>
@@ -539,14 +539,25 @@ export default function ProductPlayground() {
           />
         </div>
         {hasListed && !listLoading && !listResult && (
-          <p className="text-xs text-red-600">
-            No se pudo obtener la lista. Revisa la consola para más detalles.
-          </p>
+          <div className="rounded border border-red-200 bg-red-50 p-3 text-xs text-red-600">
+            <p className="font-semibold text-red-700">No se pudo obtener la lista.</p>
+            <p className="mt-1">Revisa la consola para mas detalles e intenta nuevamente.</p>
+            <button
+              type="button"
+              onClick={handleListProducts}
+              className="mt-2 inline-flex items-center justify-center rounded-full border border-red-300 px-3 py-1 font-semibold text-red-600 transition hover:border-red-400 hover:text-red-700"
+            >
+              Reintentar
+            </button>
+          </div>
         )}
         {listProductsState.error && (
-          <pre className="text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
-            {JSON.stringify(listProductsState.error, null, 2)}
-          </pre>
+          <details className="rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+            <summary className="cursor-pointer font-semibold">Detalles del error</summary>
+            <pre className="mt-2 overflow-auto">
+              {JSON.stringify(listProductsState.error, null, 2)}
+            </pre>
+          </details>
         )}
         {listResult && (
           <details className="bg-white border rounded p-3">
@@ -557,6 +568,29 @@ export default function ProductPlayground() {
               {JSON.stringify(listResult, null, 2)}
             </pre>
           </details>
+        )}
+        {listResult && listResult.items.length === 0 && (
+          <div className="rounded border border-neutral-200 bg-white p-3 text-xs text-neutral-600">
+            <p className="font-medium text-neutral-700">
+              No se encontraron productos con los filtros actuales.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('');
+                setCategoryId('');
+                setBrandId('');
+                setMinPrice('');
+                setMaxPrice('');
+                setLimit('10');
+                setOffset('0');
+                setListResult(null);
+              }}
+              className="mt-2 inline-flex items-center justify-center rounded-full border border-neutral-200 px-3 py-1 font-semibold text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900"
+            >
+              Limpiar filtros
+            </button>
+          </div>
         )}
       </section>
 
@@ -1053,12 +1087,12 @@ export default function ProductPlayground() {
         </div>
       </section>
 
-      {/* Imágenes */}
+      {/* ImAgenes */}
       <section className="space-y-4 border rounded-lg p-4">
         <div className="flex flex-col gap-1">
-          <h3 className="font-semibold text-gray-700">Gestión de imágenes</h3>
+          <h3 className="font-semibold text-gray-700">GestiA3n de imAgenes</h3>
           <p className="text-sm text-gray-500">
-            Añade nuevas imágenes por URL y define la imagen principal del producto.
+            AAade nuevas imAgenes por URL y define la imagen principal del producto.
           </p>
         </div>
 
@@ -1073,7 +1107,7 @@ export default function ProductPlayground() {
           />
         ) : (
           <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-500">
-            Obtén primero un producto mediante su slug para poder gestionar sus imágenes.
+            ObtAn primero un producto mediante su slug para poder gestionar sus imAgenes.
           </div>
         )}
       </section>

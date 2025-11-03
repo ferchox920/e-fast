@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
 import type { ProductImageRead, ProductRead } from '@/types/product';
+import { renderWithProviders } from '@/test-utils/renderWithProviders';
 
 jest.mock('@/store/api/productApi', () => ({
   useGetProductQuery: jest.fn(),
@@ -49,7 +49,7 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { asFragment } = render(<ProductDetailClient slug="my-product" />);
+    const { asFragment } = renderWithProviders(<ProductDetailClient slug="my-product" />);
     expect(asFragment()).toMatchSnapshot();
   });
 
@@ -63,7 +63,9 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { asFragment, getByRole } = render(<ProductDetailClient slug="my-product" />);
+    const { asFragment, getByRole } = renderWithProviders(
+      <ProductDetailClient slug="my-product" />,
+    );
     expect(getByRole('button', { name: /Reintentar/i })).toBeInTheDocument();
     expect(asFragment()).toMatchSnapshot();
   });
@@ -84,8 +86,10 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { getByText, asFragment } = render(<ProductDetailClient slug="my-product" />);
-    expect(getByText(/Se recibieron varias imágenes principales/i)).toBeInTheDocument();
+    const { getByText, asFragment } = renderWithProviders(
+      <ProductDetailClient slug="my-product" />,
+    );
+    expect(getByText(/Se recibieron varias imagenes principales/i)).toBeInTheDocument();
     expect(asFragment()).toMatchSnapshot();
   });
 });

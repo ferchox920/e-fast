@@ -34,8 +34,6 @@ export default function Header() {
       ],
     },
   ];
-  const cartItemCount = 2;
-
   useEffect(() => {
     if (token && !user && !isFetchingMe) triggerFetchMe();
     if (fetchedUser) dispatch(setUser(fetchedUser));
@@ -50,7 +48,6 @@ export default function Header() {
       brandHref="/"
       brandLabel="MyApp"
       categoryGroups={categoryGroups}
-      cartItemCount={cartItemCount}
       user={user}
       onLogout={handleLogout}
     />

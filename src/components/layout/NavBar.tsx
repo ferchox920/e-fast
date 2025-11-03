@@ -25,7 +25,6 @@ export interface NavBarProps {
   brandHref?: string;
   brandLabel?: string;
   categoryGroups?: NavBarCategoryGroup[];
-  cartItemCount?: number;
   popularSearches?: string[];
   user: UserRead | null;
   onLogout?: () => void;
@@ -43,7 +42,6 @@ export default function NavBar({
   brandHref = '/',
   brandLabel = 'MyApp',
   categoryGroups = [],
-  cartItemCount = 0,
   popularSearches = DEFAULT_POPULAR_SEARCHES,
   user,
   onLogout,
@@ -95,7 +93,6 @@ export default function NavBar({
 
           <NavActions
             user={user}
-            cartItemCount={cartItemCount}
             onSearchClick={openSearch}
             onLogout={handleLogout}
             onCloseMenu={closeMenu}

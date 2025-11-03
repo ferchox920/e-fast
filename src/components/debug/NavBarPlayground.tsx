@@ -49,7 +49,6 @@ const buildUser = (overrides: Partial<UserRead>): UserRead => ({
 });
 
 export default function NavBarPlayground() {
-  const [cartCount, setCartCount] = useState(3);
   const [brandLabel, setBrandLabel] = useState('MyApp');
   const [showCategories, setShowCategories] = useState(true);
   const [userPreset, setUserPreset] = useState<UserPreset>('anonymous');
@@ -108,7 +107,6 @@ export default function NavBarPlayground() {
               <NavBar
                 brandHref="/"
                 brandLabel={brandLabel}
-                cartItemCount={cartCount}
                 categoryGroups={categoryGroups}
                 popularSearches={popularSearches}
                 user={user}
@@ -126,7 +124,6 @@ export default function NavBarPlayground() {
                 <NavBar
                   brandHref="/"
                   brandLabel={brandLabel}
-                  cartItemCount={cartCount}
                   categoryGroups={categoryGroups}
                   popularSearches={popularSearches}
                   user={user}
@@ -153,17 +150,6 @@ export default function NavBarPlayground() {
               onChange={(event) => setBrandLabel(event.target.value)}
               className="rounded border px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               placeholder="Nombre comercial"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm text-neutral-700">
-            Items en carrito
-            <input
-              type="number"
-              min={0}
-              value={cartCount}
-              onChange={(event) => setCartCount(Number(event.target.value))}
-              className="rounded border px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </label>
 
