@@ -4,7 +4,7 @@ export function ProductGallerySkeleton() {
   return (
     <div className="space-y-3" data-testid="product-gallery-skeleton">
       <div
-        className="aspect-[4/3] w-full animate-pulse rounded-lg bg-neutral-200"
+        className="aspect-4/3 w-full animate-pulse rounded-lg bg-neutral-200"
         aria-hidden="true"
       />
       <div className="flex gap-2">

@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useGetProductQuery } from '@/store/api/productApi';
+import { useGetProductBySlugQuery } from '@/store/api/productApi';
 import ProductGallery from './ProductGallery';
 import ProductGallerySkeleton from './ProductGallerySkeleton';
+import ProductQuestions from './ProductQuestions';
 import type { ProductRead } from '@/types/product';
 import { useCreateOrGetCartMutation, useAddCartItemMutation } from '@/store/api/cartApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -33,13 +34,11 @@ const getErrorMessage = (err: unknown, fallback: string) => {
 export function ProductDetailClient({ slug, initialProduct }: ProductDetailClientProps) {
   const dispatch = useAppDispatch();
   const wishIds = useAppSelector(selectWishIds);
-  const { data, currentData, isLoading, isFetching, isError, error, refetch } = useGetProductQuery(
-    slug,
-    {
+  const { data, currentData, isLoading, isFetching, isError, error, refetch } =
+    useGetProductBySlugQuery(slug, {
       skip: !slug,
       refetchOnMountOrArgChange: true,
-    },
-  );
+    });
 
   const product = data ?? currentData ?? initialProduct ?? null;
   const productIdValue = product?.id ?? initialProduct?.id ?? null;
@@ -103,11 +102,100 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
     [variants, selectedVariantId],
   );
 
+  useEffect(() => {
+    if (!variants.length) return;
+    if (selectedVariant) return;
+    const fallbackVariant = variants[0] ?? null;
+    if (fallbackVariant) {
+      setSelectedVariantId(String(fallbackVariant.id));
+    }
+  }, [variants, selectedVariant]);
+
+  const sizeOptions = useMemo(() => {
+    const sizes = new Set<string>();
+    variants.forEach((variant) => {
+      if (variant.size_label) sizes.add(variant.size_label);
+    });
+    return Array.from(sizes);
+  }, [variants]);
+
+  const selectedSize = selectedVariant?.size_label ?? null;
+  const selectedColor = selectedVariant?.color_name ?? null;
+
+  const colorOptions = useMemo(() => {
+    const matchingVariants = selectedSize
+      ? variants.filter((variant) => variant.size_label === selectedSize)
+      : variants;
+    const colors = new Set<string>();
+    matchingVariants.forEach((variant) => {
+      if (variant.color_name) colors.add(variant.color_name);
+    });
+    return Array.from(colors);
+  }, [variants, selectedSize]);
+
+  const hasStructuredOptions = sizeOptions.length > 0 || colorOptions.length > 0;
+
+  const currencyCode = (product?.currency ?? 'USD') as string;
+  const priceFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [currencyCode],
+  );
+
+  const displayPrice = selectedVariant?.price_override ?? product?.price ?? 0;
+  const formattedPrice = priceFormatter.format(displayPrice);
+  const basePrice = product?.price ?? null;
+  const variantSku = selectedVariant?.sku ?? null;
+  const availableStock = selectedVariant
+    ? Math.max(selectedVariant.stock_on_hand - selectedVariant.stock_reserved, 0)
+    : null;
+
   const decreaseQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1));
   const increaseQuantity = () => setQuantity((prev) => Math.min(prev + 1, 99));
   const handleToggleFavorite = () => {
     if (!productId) return;
     dispatch(toggleWish(productId));
+  };
+
+  const handleSizeChange = (value: string) => {
+    if (!variants.length) return;
+    if (!value) {
+      const fallbackVariant = variants[0] ?? null;
+      setSelectedVariantId(fallbackVariant ? String(fallbackVariant.id) : null);
+      return;
+    }
+    const currentColor = selectedVariant?.color_name ?? null;
+    const nextVariant =
+      variants.find(
+        (variant) =>
+          variant.size_label === value &&
+          (currentColor ? variant.color_name === currentColor : true),
+      ) ?? variants.find((variant) => variant.size_label === value);
+    setSelectedVariantId(nextVariant ? String(nextVariant.id) : null);
+  };
+
+  const handleColorChange = (value: string) => {
+    if (!variants.length) return;
+    if (!value) {
+      const fallbackVariant =
+        variants.find((variant) => variant.size_label === selectedVariant?.size_label) ??
+        variants[0] ??
+        null;
+      setSelectedVariantId(fallbackVariant ? String(fallbackVariant.id) : null);
+      return;
+    }
+    const currentSize = selectedVariant?.size_label ?? null;
+    const nextVariant =
+      variants.find(
+        (variant) =>
+          (currentSize ? variant.size_label === currentSize : true) && variant.color_name === value,
+      ) ?? variants.find((variant) => variant.color_name === value);
+    setSelectedVariantId(nextVariant ? String(nextVariant.id) : null);
   };
 
   const handleAddToCart = async () => {
@@ -136,6 +224,30 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
 
   const isProcessing = ensuringCart || addingCartItem;
   const addDisabled = isProcessing || !selectedVariant;
+
+  if (isPending && !product) {
+    return (
+      <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <p className="text-sm text-neutral-500">Producto</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+              Cargando producto...
+            </h1>
+          </div>
+          <div className="h-10 w-36 animate-pulse rounded-full border border-neutral-200 bg-neutral-100" />
+        </header>
+
+        <ProductGallerySkeleton />
+
+        <div className="space-y-3 rounded-2xl border border-neutral-200 bg-white p-6">
+          <div className="h-4 w-2/3 animate-pulse rounded bg-neutral-200" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-neutral-200" />
+          <div className="h-4 w-1/3 animate-pulse rounded bg-neutral-200" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
@@ -228,20 +340,90 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
 
             {variants.length > 0 ? (
               <>
-                <label className="flex flex-col gap-2 text-sm text-neutral-700">
-                  Variante
-                  <select
-                    value={selectedVariantId ?? ''}
-                    onChange={(event) => setSelectedVariantId(event.target.value)}
-                    className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                  >
-                    {variants.map((variant) => (
-                      <option key={variant.id} value={String(variant.id)}>
-                        {`${variant.size_label} - ${variant.color_name}`}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                {hasStructuredOptions ? (
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                    {sizeOptions.length > 0 && (
+                      <label className="flex flex-col gap-2 text-sm text-neutral-700 md:w-48">
+                        Talla
+                        <select
+                          value={selectedSize ?? ''}
+                          onChange={(event) => handleSizeChange(event.target.value)}
+                          className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                        >
+                          {sizeOptions.length > 1 ? (
+                            <option value="">Selecciona una talla</option>
+                          ) : null}
+                          {sizeOptions.map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                    {colorOptions.length > 0 && (
+                      <label className="flex flex-col gap-2 text-sm text-neutral-700 md:w-48">
+                        Color
+                        <select
+                          value={selectedColor ?? ''}
+                          onChange={(event) => handleColorChange(event.target.value)}
+                          className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                        >
+                          {colorOptions.length > 1 ? (
+                            <option value="">Selecciona un color</option>
+                          ) : null}
+                          {colorOptions.map((color) => (
+                            <option key={color} value={color}>
+                              {color}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    )}
+                  </div>
+                ) : (
+                  <label className="flex flex-col gap-2 text-sm text-neutral-700">
+                    Variante
+                    <select
+                      value={selectedVariantId ?? ''}
+                      onChange={(event) => setSelectedVariantId(event.target.value)}
+                      className="rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    >
+                      {variants.map((variant) => (
+                        <option key={variant.id} value={String(variant.id)}>
+                          {`${variant.size_label} - ${variant.color_name}`}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+
+                <div className="grid gap-3 rounded-xl border border-neutral-100 bg-neutral-50 p-4 text-sm text-neutral-700 sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-neutral-400">Precio</p>
+                    <p className="text-base font-semibold text-neutral-900">{formattedPrice}</p>
+                    {selectedVariant?.price_override && basePrice !== null ? (
+                      <span className="text-xs text-neutral-500">
+                        Precio base: {priceFormatter.format(basePrice)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-neutral-400">SKU</p>
+                    <p className="font-medium text-neutral-800">{variantSku ?? 'No disponible'}</p>
+                    {selectedVariant?.barcode ? (
+                      <span className="text-xs text-neutral-500">
+                        Barcode: {selectedVariant.barcode}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-neutral-400">Stock</p>
+                    <p className="font-medium text-neutral-800">
+                      {availableStock !== null ? `${availableStock} unidades` : 'Sin datos'}
+                    </p>
+                  </div>
+                </div>
 
                 <div className="flex items-center gap-3 text-sm text-neutral-700">
                   <span>Cantidad</span>
@@ -300,11 +482,11 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
               <div className="rounded-lg border border-neutral-200 bg-white p-4">
                 <dt className="text-xs uppercase tracking-wide text-neutral-500">Precio</dt>
                 <dd className="text-xl font-semibold text-neutral-900">
-                  {new Intl.NumberFormat('es-ES', {
-                    style: 'currency',
-                    currency: product.currency ?? 'ARS',
-                  }).format(product.price)}
+                  {priceFormatter.format(product.price)}
                 </dd>
+                {selectedVariant?.price_override ? (
+                  <p className="mt-1 text-xs text-neutral-500">Precio variante: {formattedPrice}</p>
+                ) : null}
               </div>
               <div className="rounded-lg border border-neutral-200 bg-white p-4">
                 <dt className="text-xs uppercase tracking-wide text-neutral-500">Estado</dt>
@@ -314,6 +496,8 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
               </div>
             </dl>
           </article>
+
+          {productId ? <ProductQuestions productId={productId} /> : null}
         </>
       )}
     </section>

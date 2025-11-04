@@ -2,13 +2,21 @@ import type { ProductImageRead, ProductRead } from '@/types/product';
 import { renderWithProviders } from '@/test-utils/renderWithProviders';
 
 jest.mock('@/store/api/productApi', () => ({
-  useGetProductQuery: jest.fn(),
+  useGetProductBySlugQuery: jest.fn(),
+  useGetProductQuestionsQuery: jest.fn(),
+  usePostProductQuestionMutation: jest.fn(),
 }));
 
-import { useGetProductQuery } from '@/store/api/productApi';
+import {
+  useGetProductBySlugQuery,
+  useGetProductQuestionsQuery,
+  usePostProductQuestionMutation,
+} from '@/store/api/productApi';
 import ProductDetailClient from '../ProductDetailClient';
 
-const mockedUseGetProductQuery = useGetProductQuery as jest.Mock;
+const mockedUseGetProductQuery = useGetProductBySlugQuery as jest.Mock;
+const mockedUseGetProductQuestionsQuery = useGetProductQuestionsQuery as jest.Mock;
+const mockedUsePostProductQuestionMutation = usePostProductQuestionMutation as jest.Mock;
 
 const baseProduct: ProductRead = {
   id: 'prod-1',
@@ -35,11 +43,30 @@ const createImage = (id: string, overrides: Partial<ProductImageRead> = {}): Pro
 });
 
 describe('ProductDetailClient snapshots', () => {
-  afterEach(() => {
-    mockedUseGetProductQuery.mockReset();
+  beforeEach(() => {
+    mockedUseGetProductQuestionsQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    mockedUsePostProductQuestionMutation.mockReturnValue([
+      jest.fn(),
+      {
+        isLoading: false,
+      },
+    ]);
   });
 
-  it('renders loading state snapshot', () => {
+  afterEach(() => {
+    mockedUseGetProductQuery.mockReset();
+    mockedUseGetProductQuestionsQuery.mockReset();
+    mockedUsePostProductQuestionMutation.mockReset();
+  });
+
+  it('renders loading state with skeleton feedback', () => {
     mockedUseGetProductQuery.mockReturnValue({
       data: null,
       isLoading: true,
@@ -49,8 +76,11 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { asFragment } = renderWithProviders(<ProductDetailClient slug="my-product" />);
-    expect(asFragment()).toMatchSnapshot();
+    const { getByTestId, getByText } = renderWithProviders(
+      <ProductDetailClient slug="my-product" />,
+    );
+    expect(getByTestId('product-gallery-skeleton')).toBeInTheDocument();
+    expect(getByText(/Cargando producto/i)).toBeInTheDocument();
   });
 
   it('renders error state with retry button', () => {
@@ -63,11 +93,9 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { asFragment, getByRole } = renderWithProviders(
-      <ProductDetailClient slug="my-product" />,
-    );
+    const { getByRole, getByText } = renderWithProviders(<ProductDetailClient slug="my-product" />);
     expect(getByRole('button', { name: /Reintentar/i })).toBeInTheDocument();
-    expect(asFragment()).toMatchSnapshot();
+    expect(getByText(/No pudimos cargar el producto/i)).toBeInTheDocument();
   });
 
   it('shows anomaly warning when multiple primary images', () => {
@@ -86,10 +114,7 @@ describe('ProductDetailClient snapshots', () => {
       refetch: jest.fn(),
     });
 
-    const { getByText, asFragment } = renderWithProviders(
-      <ProductDetailClient slug="my-product" />,
-    );
+    const { getByText } = renderWithProviders(<ProductDetailClient slug="my-product" />);
     expect(getByText(/Se recibieron varias imagenes principales/i)).toBeInTheDocument();
-    expect(asFragment()).toMatchSnapshot();
   });
 });

@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ReduxProvider from '@/store/providers/ReduxProvider';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import NotificationStreamManager from '@/notifications/NotificationStreamManager';
 
 export const metadata: Metadata = {
@@ -16,9 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh antialiased bg-white text-neutral-900">
         <ReduxProvider>
           <NotificationStreamManager />
-          <Header />
-          <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-          <Footer />
+          {children}
         </ReduxProvider>
       </body>
     </html>

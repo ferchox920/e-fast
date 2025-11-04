@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { clearUser, setUser } from '@/store/slices/userSlice';
+import { useAppSelector, useAppDispatch, useLogoutHandler } from '@/store/hooks';
+import { setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
 import NavBar from './NavBar';
 import type { NavBarCategoryGroup } from './NavBar';
@@ -39,8 +39,10 @@ export default function Header() {
     if (fetchedUser) dispatch(setUser(fetchedUser));
   }, [token, user, isFetchingMe, triggerFetchMe, fetchedUser, dispatch]);
 
+  const logout = useLogoutHandler();
+
   const handleLogout = () => {
-    dispatch(clearUser());
+    void logout();
   };
 
   return (

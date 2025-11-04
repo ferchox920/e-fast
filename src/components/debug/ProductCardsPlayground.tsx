@@ -5,8 +5,7 @@ import ProductCardGrid from '@/components/product/ProductCardGrid';
 import ProductDescriptionCard from '@/components/product/ProductDescriptionCard';
 import type { ProductCardProps } from '@/components/product/ProductCard';
 import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
-import { productApi, useListProductsQuery } from '@/store/api/productApi';
-import { useListBrandsQuery, useListCategoriesQuery } from '@/store/api/catalogApi';
+import { productApi, useGetProductsQuery } from '@/store/api/productApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { clearAll as clearAllWishes, selectWishIds, toggleWish } from '@/store/slices/wishesSlice';
 import { mapProductsToCards } from '@/components/product/utils/mapProductToCard';
@@ -22,23 +21,11 @@ export default function ProductCardsPlayground() {
   const [alternateTheme, setAlternateTheme] = useState(false);
   const [showHighlights, setShowHighlights] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
-  const prefetchProduct = productApi.usePrefetch('getProduct');
+  const prefetchProduct = productApi.usePrefetch('getProductBySlug');
   const dispatch = useAppDispatch();
   const wishIds = useAppSelector(selectWishIds);
 
-  const {
-    data: categoriesData,
-    isLoading: categoriesLoading,
-    isError: categoriesError,
-  } = useListCategoriesQuery();
-
-  const {
-    data: brandsData,
-    isLoading: brandsLoading,
-    isError: brandsError,
-  } = useListBrandsQuery({ page_size: 100 });
-
-  const { data, isLoading, isFetching, error, refetch } = useListProductsQuery({
+  const { data, isLoading, isFetching, error, refetch } = useGetProductsQuery({
     limit: PRODUCTS_PER_PAGE,
     offset: (page - 1) * PRODUCTS_PER_PAGE,
     search: search || undefined,
@@ -46,30 +33,6 @@ export default function ProductCardsPlayground() {
     brand: selectedBrand || undefined,
   });
 
-  const categoryOptions = useMemo(() => {
-    if (!categoriesData?.length) return [];
-    return categoriesData
-      .filter((category) => category.active)
-      .map((category) => ({
-        value: String(category.id),
-        label: category.name,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [categoriesData]);
-
-  const brandOptions = useMemo(() => {
-    if (!brandsData?.items?.length) return [];
-    return brandsData.items
-      .filter((brand) => brand.active)
-      .map((brand) => ({
-        value: String(brand.id),
-        label: brand.name,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [brandsData]);
-
-  const categoryErrorMessage = categoriesError ? 'No pudimos cargar las categorias.' : null;
-  const brandErrorMessage = brandsError ? 'No pudimos cargar las marcas.' : null;
   const showEmptyState = !isLoading && !isFetching && !error && (data?.items?.length ?? 0) === 0;
 
   const handleResetFilters = () => {
@@ -97,10 +60,13 @@ export default function ProductCardsPlayground() {
 
   const products: ProductCardProps[] = useMemo(() => {
     if (!data?.items) return [];
-    return mapProductsToCards(data.items).map((card) => ({
-      ...card,
-      isFavorite: wishIds.includes(card.id),
-    }));
+    return mapProductsToCards(data.items).map((card) => {
+      const cardId = String(card.product.id);
+      return {
+        ...card,
+        isFavorite: wishIds.includes(cardId),
+      };
+    });
   }, [data?.items, wishIds]);
 
   useEffect(() => {
@@ -109,16 +75,18 @@ export default function ProductCardsPlayground() {
       return;
     }
     setSelectedProductId((prev) => {
-      if (prev && products.some((product) => product.id === prev)) {
+      if (prev && products.some((product) => String(product.product.id) === prev)) {
         return prev;
       }
-      return products[0]?.id ?? null;
+      return products[0] ? String(products[0].product.id) : null;
     });
   }, [products]);
 
   const selectedProduct = useMemo(() => {
     if (!products.length) return null;
-    return products.find((product) => product.id === selectedProductId) ?? products[0];
+    return (
+      products.find((product) => String(product.product.id) === selectedProductId) ?? products[0]
+    );
   }, [products, selectedProductId]);
 
   useEffect(() => {
@@ -131,11 +99,13 @@ export default function ProductCardsPlayground() {
     dispatch(toggleWish(id));
   };
 
+  const selectedSlug = selectedProduct?.product.slug ?? null;
+
   useEffect(() => {
-    if (selectedProduct?.slug) {
-      prefetchProduct(selectedProduct.slug, { force: false });
+    if (selectedSlug) {
+      prefetchProduct(selectedSlug, { force: false });
     }
-  }, [prefetchProduct, selectedProduct?.slug]);
+  }, [prefetchProduct, selectedSlug]);
 
   return (
     <section className="flex flex-col gap-6">
@@ -166,12 +136,6 @@ export default function ProductCardsPlayground() {
           setSelectedBrand(value);
           setPage(1);
         }}
-        categoryOptions={categoryOptions}
-        brandOptions={brandOptions}
-        categoryLoading={categoriesLoading}
-        brandLoading={brandsLoading}
-        categoryError={categoryErrorMessage}
-        brandError={brandErrorMessage}
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -217,7 +181,7 @@ export default function ProductCardsPlayground() {
                     key={`skeleton-${index}`}
                     className="animate-pulse rounded-2xl border border-neutral-200 bg-neutral-100 p-4"
                   >
-                    <div className="mb-4 aspect-[4/3] rounded-xl bg-neutral-200" />
+                    <div className="mb-4 aspect-4/3 rounded-xl bg-neutral-200" />
                     <div className="mb-2 h-4 rounded bg-neutral-200" />
                     <div className="mb-2 h-4 w-2/3 rounded bg-neutral-200" />
                     <div className="h-4 w-1/3 rounded bg-neutral-200" />
@@ -233,14 +197,21 @@ export default function ProductCardsPlayground() {
                     <button
                       type="button"
                       onMouseEnter={() => {
-                        if (product.slug) prefetchProduct(product.slug, { force: false });
+                        if (product.product.slug) {
+                          prefetchProduct(product.product.slug, { force: false });
+                        }
                       }}
                       onFocus={() => {
-                        if (product.slug) prefetchProduct(product.slug, { force: false });
+                        if (product.product.slug) {
+                          prefetchProduct(product.product.slug, { force: false });
+                        }
                       }}
                       onClick={() => {
-                        setSelectedProductId(product.id);
-                        if (product.slug) prefetchProduct(product.slug, { force: false });
+                        const productId = String(product.product.id);
+                        setSelectedProductId(productId);
+                        if (product.product.slug) {
+                          prefetchProduct(product.product.slug, { force: false });
+                        }
                       }}
                       className="mt-2 inline-flex items-center justify-center rounded-full border border-neutral-200 px-3 py-1 text-xs text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900"
                     >
@@ -283,10 +254,13 @@ export default function ProductCardsPlayground() {
             <section className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-neutral-900">Descripcion destacada</h2>
-                <span className="text-xs text-neutral-500">Mostrando: {selectedProduct.title}</span>
+                <span className="text-xs text-neutral-500">
+                  Mostrando: {selectedProduct.product.title}
+                </span>
               </div>
               <ProductDescriptionCard
                 {...selectedProduct}
+                description={selectedProduct.product.description ?? null}
                 onToggleFavorite={toggleFavorite}
                 highlights={
                   showHighlights

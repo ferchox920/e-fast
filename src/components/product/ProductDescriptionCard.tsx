@@ -8,6 +8,7 @@ export interface ProductDescriptionCardProps extends ProductCardProps {
   stockMessage?: string | null;
   shippingEstimate?: string | null;
   actionSlot?: ReactNode;
+  description?: string | null;
 }
 
 export default function ProductDescriptionCard({
@@ -15,11 +16,15 @@ export default function ProductDescriptionCard({
   stockMessage,
   shippingEstimate,
   actionSlot,
+  description,
   ...cardProps
 }: ProductDescriptionCardProps) {
+  const { product, ...restCardProps } = cardProps;
+  const productWithDescription = description !== undefined ? { ...product, description } : product;
+
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <ProductCard {...cardProps} />
+      <ProductCard {...restCardProps} product={productWithDescription} />
 
       {(highlights?.length ?? 0) > 0 && (
         <section className="rounded-2xl border border-neutral-100 bg-neutral-50 p-4 text-sm text-neutral-600">

@@ -133,7 +133,7 @@ export function AdminProductImagesPanel({
   const updateCaches = (nextImages: ProductImageRead[]) => {
     if (slug) {
       dispatch(
-        productApi.util.updateQueryData('getProduct', slug, (draft) => {
+        productApi.util.updateQueryData('getProductBySlug', slug, (draft) => {
           draft.images = nextImages;
           const primary = nextImages.find((image) => image.is_primary) ?? null;
           draft.primary_image = primary ?? null;

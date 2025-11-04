@@ -130,7 +130,7 @@ describe('AdminProductImagesPanel', () => {
     const store = storeRender.store;
 
     store.dispatch(
-      productApi.util.upsertQueryData('getProduct', 'prod-1', {
+      productApi.util.upsertQueryData('getProductBySlug', 'prod-1', {
         ...updatedProduct,
         images: initialImages,
       }),

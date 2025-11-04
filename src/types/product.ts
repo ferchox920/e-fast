@@ -1,7 +1,9 @@
 // src/types/product.ts
 import type { CurrencyCode, ISODateTime, UUID, Url } from './common';
-import type { BrandRead, CategoryRead } from './catalog';
-export type { CategoryRead, BrandRead } from './catalog';
+import type { PaginatedResponse, Brand, Category } from './catalog';
+import type { SortOrder } from './api';
+
+export type { Category as CategoryRead, Brand as BrandRead, PaginatedResponse } from './catalog';
 
 export interface ProductImageCreate {
   url: Url;
@@ -10,9 +12,15 @@ export interface ProductImageCreate {
   sort_order?: number;
 }
 
-export interface ProductImageRead extends ProductImageCreate {
+export type ProductImageUpdate = Partial<ProductImageCreate>;
+
+export interface ProductImage {
   id: UUID | string;
   product_id: UUID | string;
+  url: Url;
+  alt_text?: string | null;
+  is_primary: boolean;
+  sort_order: number;
   created_at?: ISODateTime | null;
   updated_at?: ISODateTime | null;
 }
@@ -38,24 +46,13 @@ export interface ProductVariantCreate extends ProductVariantBase {
   primary_supplier_id?: UUID | string | null;
 }
 
-export interface ProductVariantUpdate {
-  size_label?: string | null;
-  color_name?: string | null;
-  color_hex?: string | null;
-  stock_on_hand?: number | null;
-  stock_reserved?: number | null;
-  price_override?: number | null;
-  barcode?: string | null;
-  active?: boolean | null;
-  allow_backorder?: boolean | null;
-  allow_preorder?: boolean | null;
-  release_at?: ISODateTime | null;
+export interface ProductVariantUpdate extends Partial<ProductVariantBase> {
   reorder_point?: number | null;
   reorder_qty?: number | null;
   primary_supplier_id?: UUID | string | null;
 }
 
-export interface ProductVariantRead extends ProductVariantBase {
+export interface ProductVariant extends ProductVariantBase {
   id: UUID | string;
   product_id: UUID | string;
   reorder_point: number;
@@ -67,7 +64,7 @@ export interface ProductVariantRead extends ProductVariantBase {
 
 export interface ProductBase {
   title: string;
-  slug?: string | null;
+  slug: string;
   description?: string | null;
   material?: string | null;
   care?: string | null;
@@ -79,42 +76,101 @@ export interface ProductBase {
   category_id?: UUID | string | null;
   brand_id?: UUID | string | null;
   active?: boolean;
+  tags?: string[] | null;
 }
 
-export interface ProductCreate extends ProductBase {
+export interface ProductCreate extends Partial<Omit<ProductBase, 'title' | 'price' | 'currency'>> {
+  title: string;
+  price: number;
+  currency: CurrencyCode | string;
   variants?: ProductVariantCreate[];
   images?: ProductImageCreate[];
 }
 
-export type ProductUpdate = Partial<ProductBase>;
-
-export interface ProductRead extends ProductBase {
-  id: UUID | string;
-  category_id?: UUID | string | null;
-  brand_id?: UUID | string | null;
-  created_at?: ISODateTime | null;
-  updated_at?: ISODateTime | null;
-  category?: CategoryRead | null;
-  brand?: BrandRead | null;
-  variants: ProductVariantRead[];
-  images: ProductImageRead[];
-  primary_image?: ProductImageRead | null;
+export interface ProductUpdate extends Partial<Omit<ProductCreate, 'variants' | 'images'>> {
+  variants?: ProductVariantCreate[];
+  images?: ProductImageCreate[];
 }
 
-export interface PaginatedProducts {
-  items: ProductRead[];
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
+export interface Product {
+  id: UUID | string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  material?: string | null;
+  care?: string | null;
+  gender?: string | null;
+  season?: string | null;
+  fit?: string | null;
+  price: number;
+  currency: CurrencyCode | string;
+  category_id?: UUID | string | null;
+  brand_id?: UUID | string | null;
+  active: boolean;
+  tags?: string[] | null;
+  created_at?: ISODateTime | null;
+  updated_at?: ISODateTime | null;
+  category?: Category | null;
+  brand?: Brand | null;
+  variants: ProductVariant[];
+  images: ProductImage[];
+  primary_image?: ProductImage | null;
+  questions?: ProductQuestion[] | null;
+}
+
+export type ProductRead = Product;
+export type ProductVariantRead = ProductVariant;
+export type ProductImageRead = ProductImage;
+
+export type PaginatedProducts = PaginatedResponse<Product>;
+
+export interface ProductQuestionUser {
+  id: UUID | string;
+  full_name?: string | null;
+}
+
+export interface ProductQuestionAnswer {
+  id: UUID | string;
+  body: string;
+  created_at?: ISODateTime | null;
+  updated_at?: ISODateTime | null;
+  author?: ProductQuestionUser | null;
+}
+
+export interface ProductQuestion {
+  id: UUID | string;
+  product_id: UUID | string;
+  body: string;
+  author?: ProductQuestionUser | null;
+  created_at?: ISODateTime | null;
+  updated_at?: ISODateTime | null;
+  answer?: ProductQuestionAnswer | null;
+}
+
+export interface ProductQuestionCreate {
+  body: string;
+  anonymous?: boolean;
 }
 
 export interface ProductListParams {
   search?: string;
   category?: string;
   brand?: string;
+  category_id?: string;
+  brand_id?: string;
+  stock_status?: 'low' | 'out' | 'in' | string;
   min_price?: number;
   max_price?: number;
+  sort_by?: string;
+  sort_order?: SortOrder;
+  page?: number;
+  page_size?: number;
+  /**
+   * @deprecated Usa page/page_size cuando el backend proporcione paginacion basada en pagina.
+   */
   limit?: number;
+  /**
+   * @deprecated Usa page/page_size cuando el backend proporcione paginacion basada en pagina.
+   */
   offset?: number;
 }

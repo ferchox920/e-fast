@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import AdminProductImagesPanel from '@/components/product/AdminProductImagesPanel';
 import {
-  useLazyListProductsQuery,
-  useLazyGetProductQuery,
+  useLazyGetProductsQuery,
+  useLazyGetProductBySlugQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useCreateVariantMutation,
@@ -54,12 +54,12 @@ export default function ProductPlayground() {
   const [listResult, setListResult] = useState<PaginatedProducts | null>(null);
   const [hasListed, setHasListed] = useState(false);
 
-  const [triggerListProducts, listProductsState] = useLazyListProductsQuery();
+  const [triggerListProducts, listProductsState] = useLazyGetProductsQuery();
 
   // Get product by slug state
   const [slug, setSlug] = useState('');
   const [productDetail, setProductDetail] = useState<ProductRead | null>(null);
-  const [triggerGetProduct, getProductState] = useLazyGetProductQuery();
+  const [triggerGetProduct, getProductState] = useLazyGetProductBySlugQuery();
 
   // Create product state
   const [createTitle, setCreateTitle] = useState('');

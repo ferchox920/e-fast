@@ -5,6 +5,7 @@ import type { TokenPair, TokenRefresh } from '@/types/user';
 type LoginBody = { email: string; password: string };
 type RefreshBody = { refresh_token: string };
 type VerifyEmailBody = { email: string };
+type LogoutBody = { refresh_token?: string | null };
 
 export const authApi = baseApi.injectEndpoints({
   // <- Clave para evitar el error de “override already-existing endpointName ...”
@@ -41,7 +42,20 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    logout: build.mutation<void, LogoutBody | void>({
+      query: (body) => ({
+        url: '/auth/logout',
+        method: 'POST',
+        body: body ?? {},
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRefreshMutation, useRequestVerifyEmailMutation } = authApi;
+export const {
+  useLoginMutation,
+  useRefreshMutation,
+  useRequestVerifyEmailMutation,
+  useLogoutMutation,
+} = authApi;

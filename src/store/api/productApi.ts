@@ -1,15 +1,18 @@
+'use client';
 // src/store/api/productApi.ts
 import { baseApi } from './baseApi';
 import type {
-  PaginatedProducts,
+  PaginatedResponse,
+  Product,
   ProductCreate,
+  ProductImage,
   ProductImageCreate,
-  ProductImageRead,
   ProductListParams,
-  ProductRead,
+  ProductQuestion,
+  ProductQuestionCreate,
   ProductUpdate,
+  ProductVariant,
   ProductVariantCreate,
-  ProductVariantRead,
   ProductVariantUpdate,
 } from '@/types/product';
 
@@ -43,6 +46,14 @@ type SetPrimaryImageArgs = {
   imageId: string;
 };
 
+type ProductQuestionVariables = {
+  productId: string;
+};
+
+type CreateProductQuestionArgs = ProductQuestionVariables & {
+  body: ProductQuestionCreate;
+};
+
 const sanitizeParams = (params: ProductListParams | undefined) => {
   if (!params) return undefined;
   return Object.fromEntries(
@@ -54,7 +65,7 @@ const sanitizeParams = (params: ProductListParams | undefined) => {
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    listProducts: build.query<PaginatedProducts, ProductListParams | undefined>({
+    getProducts: build.query<PaginatedResponse<Product>, ProductListParams | undefined>({
       query: (params) => ({
         url: '/products',
         params: sanitizeParams(params),
@@ -62,20 +73,23 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.items.map(({ id, slug }) => ({ type: 'Product' as const, id: id ?? slug })),
+              ...result.items.map(({ id, slug }) => ({
+                type: 'Product' as const,
+                id: id ?? slug,
+              })),
               { type: 'ProductList' as const, id: 'LIST' },
             ]
           : [{ type: 'ProductList' as const, id: 'LIST' }],
     }),
 
-    getProduct: build.query<ProductRead, string>({
+    getProductBySlug: build.query<Product, string>({
       query: (slug) => ({
         url: `/products/${slug}`,
       }),
       providesTags: (result, error, slug) => [{ type: 'Product' as const, id: result?.id ?? slug }],
     }),
 
-    createProduct: build.mutation<ProductRead, ProductCreate>({
+    createProduct: build.mutation<Product, ProductCreate>({
       query: (body) => ({
         url: '/products',
         method: 'POST',
@@ -84,7 +98,7 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'ProductList', id: 'LIST' }],
     }),
 
-    updateProduct: build.mutation<ProductRead, UpdateProductArgs>({
+    updateProduct: build.mutation<Product, UpdateProductArgs>({
       query: ({ productId, body }) => ({
         url: `/products/${productId}`,
         method: 'PUT',
@@ -96,7 +110,7 @@ export const productApi = baseApi.injectEndpoints({
       ],
     }),
 
-    createVariant: build.mutation<ProductVariantRead, CreateVariantArgs>({
+    createVariant: build.mutation<ProductVariant, CreateVariantArgs>({
       query: ({ productId, body }) => ({
         url: `/products/${productId}/variants`,
         method: 'POST',
@@ -108,7 +122,7 @@ export const productApi = baseApi.injectEndpoints({
       ],
     }),
 
-    updateVariant: build.mutation<ProductVariantRead, UpdateVariantArgs>({
+    updateVariant: build.mutation<ProductVariant, UpdateVariantArgs>({
       query: ({ variantId, body }) => ({
         url: `/products/variants/${variantId}`,
         method: 'PUT',
@@ -134,7 +148,7 @@ export const productApi = baseApi.injectEndpoints({
       },
     }),
 
-    addImage: build.mutation<ProductImageRead, AddImageArgs>({
+    addImage: build.mutation<ProductImage, AddImageArgs>({
       query: ({ productId, body }) => ({
         url: `/products/${productId}/images`,
         method: 'POST',
@@ -147,7 +161,7 @@ export const productApi = baseApi.injectEndpoints({
       ],
     }),
 
-    setPrimaryImage: build.mutation<ProductRead, SetPrimaryImageArgs>({
+    setPrimaryImage: build.mutation<Product, SetPrimaryImageArgs>({
       query: ({ productId, imageId }) => ({
         url: `/products/${productId}/images/${imageId}/primary`,
         method: 'POST',
@@ -157,19 +171,49 @@ export const productApi = baseApi.injectEndpoints({
         { type: 'ProductList', id: 'LIST' },
       ],
     }),
+
+    getProductQuestions: build.query<ProductQuestion[], ProductQuestionVariables>({
+      query: ({ productId }) => ({
+        url: `/products/${productId}/questions`,
+      }),
+      providesTags: (result, error, { productId }) => [
+        { type: 'Product', id: productId },
+        { type: 'ProductQuestion', id: productId },
+      ],
+    }),
+
+    postProductQuestion: build.mutation<ProductQuestion, CreateProductQuestionArgs>({
+      query: ({ productId, body }) => ({
+        url: `/products/${productId}/questions`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (result, error, { productId }) => [
+        { type: 'ProductQuestion', id: productId },
+        { type: 'Product', id: productId },
+      ],
+    }),
   }),
 });
 
-export const {
-  useListProductsQuery,
-  useLazyListProductsQuery,
-  useGetProductQuery,
-  useLazyGetProductQuery,
-  useCreateProductMutation,
-  useUpdateProductMutation,
-  useCreateVariantMutation,
-  useUpdateVariantMutation,
-  useDeleteVariantMutation,
-  useAddImageMutation,
-  useSetPrimaryImageMutation,
-} = productApi;
+export const useGetProductsQuery = productApi.endpoints.getProducts.useQuery;
+export const useLazyGetProductsQuery = productApi.endpoints.getProducts.useLazyQuery;
+export const useGetProductBySlugQuery = productApi.endpoints.getProductBySlug.useQuery;
+export const useLazyGetProductBySlugQuery = productApi.endpoints.getProductBySlug.useLazyQuery;
+export const useCreateProductMutation = productApi.endpoints.createProduct.useMutation;
+export const useUpdateProductMutation = productApi.endpoints.updateProduct.useMutation;
+export const useCreateVariantMutation = productApi.endpoints.createVariant.useMutation;
+export const useUpdateVariantMutation = productApi.endpoints.updateVariant.useMutation;
+export const useDeleteVariantMutation = productApi.endpoints.deleteVariant.useMutation;
+export const useAddImageMutation = productApi.endpoints.addImage.useMutation;
+export const useSetPrimaryImageMutation = productApi.endpoints.setPrimaryImage.useMutation;
+export const useGetProductQuestionsQuery = productApi.endpoints.getProductQuestions.useQuery;
+export const useLazyGetProductQuestionsQuery =
+  productApi.endpoints.getProductQuestions.useLazyQuery;
+export const usePostProductQuestionMutation = productApi.endpoints.postProductQuestion.useMutation;
+
+// Backwards-compatible aliases for existing consumers still using legacy hooks.
+export const useListProductsQuery = useGetProductsQuery;
+export const useLazyListProductsQuery = useLazyGetProductsQuery;
+export const useGetProductQuery = useGetProductBySlugQuery;
+export const useLazyGetProductQuery = useLazyGetProductBySlugQuery;

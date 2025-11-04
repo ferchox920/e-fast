@@ -7,17 +7,12 @@ import Link from 'next/link';
 
 import { useAddCartItemMutation, useCreateOrGetCartMutation } from '@/store/api/cartApi';
 import { productApi } from '@/store/api/productApi';
-import type { CurrencyCode, UUID, Url } from '@/types/common';
+import type { CurrencyCode, UUID } from '@/types/common';
+import type { Product } from '@/types/product';
 
 export interface ProductCardProps {
-  id: UUID | string;
-  title: string;
-  slug: string;
-  price: number;
-  currency?: CurrencyCode | null;
-  description?: string | null;
+  product: Product;
   badges?: string[];
-  imageUrl?: Url | null;
   rating?: number | null;
   reviewCount?: number | null;
   isFavorite?: boolean;
@@ -55,14 +50,8 @@ const getErrorMessage = (err: unknown, fallback: string) => {
 };
 
 export default function ProductCard({
-  id,
-  title,
-  slug,
-  price,
-  currency,
-  description,
+  product,
   badges = [],
-  imageUrl,
   rating,
   reviewCount,
   isFavorite = false,
@@ -73,16 +62,26 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const ensuredCartRef = useRef(false);
-  const prefetchProduct = productApi.usePrefetch('getProduct');
+  const prefetchProduct = productApi.usePrefetch('getProductBySlug');
 
   const [createOrGetCart, { isLoading: ensuringCart }] = useCreateOrGetCartMutation();
   const [addCartItem, { isLoading: addingCartItem }] = useAddCartItemMutation();
 
+  const productId = String(product.id);
+  const slug = product.slug ?? productId;
+  const title = product.title ?? slug;
+  const description = product.description ?? '';
+  const currency = (product.currency ?? 'EUR') as CurrencyCode | null;
+  const primaryImageUrl = product.primary_image?.url ?? product.images?.[0]?.url ?? FALLBACK_IMAGE;
+  const primaryAltText = product.primary_image?.alt_text ?? title;
+  const resolvedVariantId =
+    defaultVariantId ?? (product.variants?.[0]?.id ? String(product.variants[0].id) : null);
+
   const isProcessing = ensuringCart || addingCartItem;
-  const addDisabled = isProcessing || !defaultVariantId;
+  const addDisabled = isProcessing || !resolvedVariantId;
 
   const handleAddToCart = async () => {
-    if (!defaultVariantId) {
+    if (!resolvedVariantId) {
       setFeedback({ type: 'error', message: 'Selecciona una variante disponible.' });
       return;
     }
@@ -91,13 +90,13 @@ export default function ProductCard({
       setFeedback(null);
 
       if (!ensuredCartRef.current) {
-        const payload = currency ? { currency } : undefined;
+        const payload = product.currency ? { currency: product.currency } : undefined;
         await createOrGetCart(payload).unwrap();
         ensuredCartRef.current = true;
       }
 
       await addCartItem({
-        variantId: String(defaultVariantId),
+        variantId: String(resolvedVariantId),
         quantity: defaultQuantity,
       }).unwrap();
       setFeedback({ type: 'success', message: 'Producto agregado al carrito.' });
@@ -113,13 +112,13 @@ export default function ProductCard({
     <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:shadow-md">
       <Link
         href={`/products/${slug}`}
-        className="group relative block aspect-[4/3]"
+        className="group relative block aspect-4/3"
         onMouseEnter={() => prefetchProduct(slug, { force: false })}
         onFocus={() => prefetchProduct(slug, { force: false })}
       >
         <Image
-          src={imageUrl ?? FALLBACK_IMAGE}
-          alt={title}
+          src={primaryImageUrl}
+          alt={primaryAltText}
           fill
           sizes="(min-width:1024px) 320px, (min-width:640px) 50vw, 100vw"
           className="object-cover transition duration-300 group-hover:scale-105"
@@ -143,7 +142,7 @@ export default function ProductCard({
           type="button"
           onClick={(event) => {
             event.preventDefault();
-            onToggleFavorite?.(id);
+            onToggleFavorite?.(productId);
           }}
           aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-neutral-500 transition hover:bg-white hover:text-red-500"
@@ -161,7 +160,7 @@ export default function ProductCard({
             {title}
           </Link>
           <div className="text-lg font-semibold text-indigo-600">
-            {formatCurrency(price, currency)}
+            {formatCurrency(product.price, currency)}
           </div>
           {rating !== undefined && rating !== null && (
             <p className="flex items-center gap-1 text-xs text-amber-500">
@@ -174,7 +173,9 @@ export default function ProductCard({
           )}
         </header>
 
-        {description && <p className="line-clamp-3 text-sm text-neutral-500">{description}</p>}
+        {description ? (
+          <p className="line-clamp-3 text-sm text-neutral-500">{description}</p>
+        ) : null}
 
         <div className="mt-auto flex flex-col gap-2 text-sm">
           <div className="flex items-center justify-between gap-2">

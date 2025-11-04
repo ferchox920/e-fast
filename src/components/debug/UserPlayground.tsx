@@ -7,12 +7,11 @@ import {
   useRequestVerifyEmailMutation,
 } from '@/store/api/authApi';
 import { useRegisterMutation, useLazyMeQuery, useUpdateMeMutation } from '@/store/api/usersApi';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector, useLogoutHandler } from '@/store/hooks';
 import {
   setSession,
   updateAccessToken,
   setUser,
-  clearUser,
   createEmptySession,
 } from '@/store/slices/userSlice';
 
@@ -66,6 +65,7 @@ const profileFieldDefinitions: ReadonlyArray<ProfileFieldDefinition> = [
 
 export default function UserPlayground() {
   const dispatch = useAppDispatch();
+  const logout = useLogoutHandler();
   const userState = useAppSelector((s) => s.user);
   const user = userState?.current ?? null;
   const session = userState?.session ?? createEmptySession();
@@ -198,7 +198,7 @@ export default function UserPlayground() {
     }
   };
 
-  const doLogout = () => dispatch(clearUser());
+  const doLogout = () => void logout();
 
   return (
     <section className="space-y-6 border rounded-xl p-4">

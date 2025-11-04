@@ -1,3 +1,4 @@
+'use client';
 // src/store/api/baseApi.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
@@ -7,7 +8,7 @@ import type { TokenRefresh } from '@/types/user';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl:
-    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://127.0.0.1:8000/api/v1',
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://localhost:8000/api/v1',
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const session = state.user?.session;
@@ -109,11 +110,15 @@ export const baseApi = createApi({
     'ProductList',
     'ProductVariant',
     'ProductImage',
+    'ProductQuestion',
     'Notification',
     'NotificationList',
     'Cart',
     'CatalogBrand',
     'CatalogCategory',
+    'AdminAnalytics',
+    'AdminOrder',
+    'AdminQuestion',
   ],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),

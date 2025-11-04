@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 import LoginLayout from './LoginLayout';
@@ -37,6 +37,7 @@ function extractErrorMessage(error: unknown): string {
 export default function LoginPageClient() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,7 +70,23 @@ export default function LoginPageClient() {
       );
       dispatch(setUser(result.user));
 
-      router.push('/');
+      const isAdminUser =
+        result.user?.is_superuser === true ||
+        ((result.user as { role?: string | null })?.role ?? null) === 'admin';
+
+      const requestedRedirect = searchParams?.get('redirect') ?? null;
+      const normalizedRedirect =
+        requestedRedirect && requestedRedirect.startsWith('/') ? requestedRedirect : null;
+
+      const safeRedirect =
+        normalizedRedirect && !isAdminUser && normalizedRedirect.startsWith('/admin')
+          ? null
+          : normalizedRedirect;
+
+      const fallbackRoute = isAdminUser ? '/admin/dashboard' : '/';
+      const targetRoute = safeRedirect ?? fallbackRoute;
+
+      router.replace(targetRoute);
     } catch (error) {
       setErrorMessage(extractErrorMessage(error));
     }

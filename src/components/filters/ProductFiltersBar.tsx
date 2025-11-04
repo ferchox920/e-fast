@@ -1,11 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-
-interface FilterOption {
-  label: string;
-  value: string;
-}
+import { useGetBrandsQuery, useGetCategoriesQuery } from '@/store/api/catalogApi';
 
 interface ProductFiltersBarProps {
   searchValue: string;
@@ -17,12 +14,6 @@ interface ProductFiltersBarProps {
   selectedCategory: string;
   onBrandChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-  brandOptions: FilterOption[];
-  categoryOptions: FilterOption[];
-  brandLoading?: boolean;
-  categoryLoading?: boolean;
-  brandError?: string | null;
-  categoryError?: string | null;
 }
 
 const controlClass =
@@ -38,13 +29,43 @@ export default function ProductFiltersBar({
   selectedCategory,
   onBrandChange,
   onCategoryChange,
-  brandOptions,
-  categoryOptions,
-  brandLoading,
-  categoryLoading,
-  brandError,
-  categoryError,
 }: ProductFiltersBarProps) {
+  const {
+    data: categories,
+    isLoading: categoryLoading,
+    isError: categoryIsError,
+  } = useGetCategoriesQuery();
+  const { data: brands, isLoading: brandLoading, isError: brandIsError } = useGetBrandsQuery();
+
+  const categoryOptions = useMemo(() => {
+    const source = Array.isArray(categories)
+      ? categories
+      : ((categories as { items?: typeof categories } | undefined)?.items ?? []);
+    return source
+      .filter((category) => category.active)
+      .map((category) => ({
+        value: String(category.id),
+        label: category.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [categories]);
+
+  const brandOptions = useMemo(() => {
+    const source = Array.isArray(brands)
+      ? brands
+      : ((brands as { items?: typeof brands } | undefined)?.items ?? []);
+    return source
+      .filter((brand) => brand.active)
+      .map((brand) => ({
+        value: String(brand.id),
+        label: brand.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [brands]);
+
+  const brandError = brandIsError ? 'No pudimos cargar las marcas.' : null;
+  const categoryError = categoryIsError ? 'No pudimos cargar las categorias.' : null;
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit();

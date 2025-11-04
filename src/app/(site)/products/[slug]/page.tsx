@@ -7,5 +7,6 @@ interface ProductPageProps {
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
-  return <ProductDetailClient slug={params.slug} />;
+  const slug = decodeURIComponent(params.slug);
+  return <ProductDetailClient slug={slug} />;
 }
