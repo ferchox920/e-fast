@@ -20,6 +20,8 @@ export interface ProductCardProps {
   footerSlot?: ReactNode;
   defaultVariantId?: UUID | string | null;
   defaultQuantity?: number;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
 }
 
 const FALLBACK_IMAGE =
@@ -59,6 +61,8 @@ export default function ProductCard({
   footerSlot,
   defaultVariantId,
   defaultQuantity = 1,
+  imageUrl,
+  imageAlt,
 }: ProductCardProps) {
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const ensuredCartRef = useRef(false);
@@ -72,8 +76,9 @@ export default function ProductCard({
   const title = product.title ?? slug;
   const description = product.description ?? '';
   const currency = (product.currency ?? 'EUR') as CurrencyCode | null;
-  const primaryImageUrl = product.primary_image?.url ?? product.images?.[0]?.url ?? FALLBACK_IMAGE;
-  const primaryAltText = product.primary_image?.alt_text ?? title;
+  const primaryImageUrl =
+    imageUrl ?? product.primary_image?.url ?? product.images?.[0]?.url ?? FALLBACK_IMAGE;
+  const primaryAltText = imageAlt ?? product.primary_image?.alt_text ?? title;
   const resolvedVariantId =
     defaultVariantId ?? (product.variants?.[0]?.id ? String(product.variants[0].id) : null);
 

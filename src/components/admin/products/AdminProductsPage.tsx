@@ -11,10 +11,16 @@ import {
 } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+  type ReadonlyURLSearchParams,
+} from 'next/navigation';
 import { useGetProductsQuery } from '@/store/api/productApi';
 import { useGetCategoriesQuery, useGetBrandsQuery } from '@/store/api/catalogApi';
 import type { ProductVariant } from '@/types/product';
+import type { Brand, Category } from '@/types/catalog';
 
 const PAGE_SIZE = 20;
 
@@ -50,16 +56,6 @@ const getPrimaryVariant = (variants: ProductVariant[]): ProductVariant | null =>
 
 const computeStock = (variants: ProductVariant[]): number =>
   variants.reduce((total, variant) => total + (variant.stock_on_hand ?? 0), 0);
-
-const asArray = <T,>(value: unknown): T[] => {
-  if (Array.isArray(value)) {
-    return value as T[];
-  }
-  if (value && typeof value === 'object' && Array.isArray((value as { items?: unknown }).items)) {
-    return ((value as { items?: unknown }).items ?? []) as T[];
-  }
-  return [];
-};
 
 const buildQueryParams = (params: ReadonlyURLSearchParams | null) => {
   const search = params?.get('q') ?? '';
@@ -132,8 +128,8 @@ export default function AdminProductsPage() {
   const { data: categoriesData } = useGetCategoriesQuery();
   const { data: brandsData } = useGetBrandsQuery();
 
-  const categoryOptions = useMemo(() => asArray(categoriesData), [categoriesData]);
-  const brandOptions = useMemo(() => asArray(brandsData), [brandsData]);
+  const categoryOptions = useMemo<Category[]>(() => categoriesData ?? [], [categoriesData]);
+  const brandOptions = useMemo<Brand[]>(() => brandsData ?? [], [brandsData]);
 
   const products = useMemo(() => data?.items ?? [], [data?.items]);
   const totalPages = data?.pages ?? 1;
