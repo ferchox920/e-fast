@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminProductImagesPanel from '@/components/product/AdminProductImagesPanel';
-import { useCreateProductMutation } from '@/store/api/adminApi';
-import { useGetCategoriesQuery, useGetBrandsQuery } from '@/store/api/catalogApi';
+import { useCreateAdminProductMutation } from '@/store/api/adminApi';
+import { useGetCategoriesQuery, useListAllBrandsAdminQuery } from '@/store/api/catalogApi';
 import type { ProductCreate, ProductVariantCreate } from '@/types/product';
 
 type VariantDraft = {
@@ -91,8 +91,8 @@ export default function AdminProductNewPage() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data: categoriesData, isLoading: categoriesLoading } = useGetCategoriesQuery();
-  const { data: brandsData, isLoading: brandsLoading } = useGetBrandsQuery();
-  const [createProduct, createState] = useCreateProductMutation();
+  const { data: brandsData, isLoading: brandsLoading } = useListAllBrandsAdminQuery();
+  const [createProduct, createState] = useCreateAdminProductMutation();
 
   const categoryOptions = useMemo(
     () => asArray<{ id: string; name: string }>(categoriesData),
@@ -164,13 +164,13 @@ export default function AdminProductNewPage() {
 
     const normalizedSlug = slug.trim() ? slugify(slug) : slugify(title);
     if (!normalizedSlug) {
-      setFormError('No se pudo generar un slug válido. Verifica el nombre del producto.');
+      setFormError('No se pudo generar un slug vÃ¡lido. Verifica el nombre del producto.');
       return;
     }
 
     const basePrice = parseNumber(price, NaN);
     if (!Number.isFinite(basePrice) || basePrice <= 0) {
-      setFormError('Ingresa un precio base válido mayor a cero.');
+      setFormError('Ingresa un precio base vÃ¡lido mayor a cero.');
       return;
     }
 
@@ -184,8 +184,8 @@ export default function AdminProductNewPage() {
               return {
                 sku: variant.sku.trim(),
                 barcode: variant.barcode.trim() || undefined,
-                size_label: variant.size_label.trim() || 'Talla única',
-                color_name: variant.color_name.trim() || 'Único',
+                size_label: variant.size_label.trim() || 'Talla Ãºnica',
+                color_name: variant.color_name.trim() || 'Ãšnico',
                 color_hex: variant.color_hex.trim() || undefined,
                 stock_on_hand: parseNumber(variant.stock_on_hand, 0),
                 stock_reserved: parseNumber(variant.stock_reserved, 0),
@@ -213,7 +213,7 @@ export default function AdminProductNewPage() {
 
     try {
       const created = await createProduct(payload).unwrap();
-      setStatus({ type: 'success', message: 'Producto creado correctamente. Redirigiendo…' });
+      setStatus({ type: 'success', message: 'Producto creado correctamente. Redirigiendoâ€¦' });
       setTimeout(() => {
         router.push(`/admin/products/${created.slug ?? created.id}/edit`);
       }, 600);
@@ -232,7 +232,7 @@ export default function AdminProductNewPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold text-neutral-900">Nuevo producto</h1>
         <p className="text-sm text-neutral-600">
-          Completa la información necesaria para publicar un nuevo producto en el catálogo.
+          Completa la informaciÃ³n necesaria para publicar un nuevo producto en el catÃ¡logo.
         </p>
       </header>
 
@@ -257,9 +257,9 @@ export default function AdminProductNewPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Información básica</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">InformaciÃ³n bÃ¡sica</h2>
             <p className="text-sm text-neutral-500">
-              Estos datos se mostrarán en la ficha del producto y en las listas del catálogo.
+              Estos datos se mostrarÃ¡n en la ficha del producto y en las listas del catÃ¡logo.
             </p>
           </header>
 
@@ -311,36 +311,36 @@ export default function AdminProductNewPage() {
           </div>
 
           <label className="mt-4 flex flex-col gap-1 text-sm">
-            <span className="text-neutral-600">Descripción</span>
+            <span className="text-neutral-600">DescripciÃ³n</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               className="min-h-[140px] rounded-lg border border-neutral-200 px-3 py-2 text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              placeholder="Describe el producto, sus características y beneficios..."
+              placeholder="Describe el producto, sus caracterÃ­sticas y beneficios..."
             />
           </label>
         </section>
 
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Organización</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">OrganizaciÃ³n</h2>
             <p className="text-sm text-neutral-500">
-              Define a qué categoría y marca pertenece el producto para facilitar su búsqueda.
+              Define a quÃ© categorÃ­a y marca pertenece el producto para facilitar su bÃºsqueda.
             </p>
           </header>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="text-neutral-600">Categoría</span>
+              <span className="text-neutral-600">CategorÃ­a</span>
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
                 className="h-10 rounded-lg border border-neutral-200 bg-white px-3 text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
                 disabled={categoriesLoading}
               >
-                <option value="">Selecciona una categoría</option>
+                <option value="">Selecciona una categorÃ­a</option>
                 {categoriesLoading ? (
-                  <option disabled>Cargando categorías...</option>
+                  <option disabled>Cargando categorÃ­as...</option>
                 ) : (
                   categoryOptions.map((category) => (
                     <option key={category.id} value={String(category.id)}>
@@ -376,14 +376,14 @@ export default function AdminProductNewPage() {
 
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Imágenes</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">ImÃ¡genes</h2>
             <p className="text-sm text-neutral-500">
-              Guarda el producto primero para habilitar la gestión de la galería de imágenes.
+              Guarda el producto primero para habilitar la gestiÃ³n de la galerÃ­a de imÃ¡genes.
             </p>
           </header>
 
           <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-4 text-sm text-neutral-500">
-            <p>Una vez creado el producto podrás subir imágenes desde la pantalla de edición.</p>
+            <p>Una vez creado el producto podrÃ¡s subir imÃ¡genes desde la pantalla de ediciÃ³n.</p>
           </div>
 
           <div className="pointer-events-none mt-4 opacity-60">
@@ -391,7 +391,7 @@ export default function AdminProductNewPage() {
               productId="new-product"
               images={[]}
               canEdit={false}
-              disabledMessage="Guarda el producto para habilitar la subida de imágenes."
+              disabledMessage="Guarda el producto para habilitar la subida de imÃ¡genes."
             />
           </div>
         </section>
@@ -401,7 +401,7 @@ export default function AdminProductNewPage() {
             <div>
               <h2 className="text-lg font-semibold text-neutral-900">Variantes e inventario</h2>
               <p className="text-sm text-neutral-500">
-                Agrega variantes para gestionar stock específico por talla, color u otras
+                Agrega variantes para gestionar stock especÃ­fico por talla, color u otras
                 combinaciones.
               </p>
             </div>
@@ -410,7 +410,7 @@ export default function AdminProductNewPage() {
               onClick={handleAddVariant}
               className="inline-flex h-9 items-center rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition hover:border-neutral-300 hover:text-neutral-900"
             >
-              Añadir variante
+              AÃ±adir variante
             </button>
           </header>
 
@@ -425,7 +425,7 @@ export default function AdminProductNewPage() {
                     Variante #{index + 1}
                   </h3>
                   <p className="text-xs text-neutral-500">
-                    Define el SKU y los datos de stock para esta combinación.
+                    Define el SKU y los datos de stock para esta combinaciÃ³n.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -510,7 +510,7 @@ export default function AdminProductNewPage() {
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-medium text-neutral-500">
-                  Precio específico
+                  Precio especÃ­fico
                   <input
                     type="number"
                     min="0"
@@ -520,7 +520,7 @@ export default function AdminProductNewPage() {
                       updateVariantField(variant.id, 'price_override', event.target.value)
                     }
                     className="h-9 rounded-lg border border-neutral-200 px-3 text-sm text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                    placeholder="Dejar vacío para usar precio base"
+                    placeholder="Dejar vacÃ­o para usar precio base"
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-medium text-neutral-500">
