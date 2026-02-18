@@ -108,20 +108,19 @@ export const ordersApi = baseApi.injectEndpoints({
         { type: 'AdminOrder', id: 'LIST' },
       ],
     }),
-    fulfillOrder: build.mutation<
-      OrderRead,
-      { orderId: string; body?: ShipmentCreateInput | null }
-    >({
-      query: ({ orderId, body }) => ({
-        url: `/orders/${orderId}/fulfill`,
-        method: 'POST',
-        body: body ?? undefined,
-      }),
-      invalidatesTags: (result, _error, { orderId }) => [
-        { type: 'AdminOrder', id: result?.id ?? orderId },
-        { type: 'AdminOrder', id: 'LIST' },
-      ],
-    }),
+    fulfillOrder: build.mutation<OrderRead, { orderId: string; body?: ShipmentCreateInput | null }>(
+      {
+        query: ({ orderId, body }) => ({
+          url: `/orders/${orderId}/fulfill`,
+          method: 'POST',
+          body: body ?? undefined,
+        }),
+        invalidatesTags: (result, _error, { orderId }) => [
+          { type: 'AdminOrder', id: result?.id ?? orderId },
+          { type: 'AdminOrder', id: 'LIST' },
+        ],
+      },
+    ),
   }),
 });
 

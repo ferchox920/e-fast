@@ -31,15 +31,10 @@ export const wishesApi = baseApi.injectEndpoints({
       invalidatesTags: (result) => [
         { type: 'Wish', id: 'LIST' },
         { type: 'Wish', id: result?.id ?? 'NEW' },
-        ...(result
-          ? [{ type: 'Wish' as const, id: `PRODUCT:${String(result.product_id)}` }]
-          : []),
+        ...(result ? [{ type: 'Wish' as const, id: `PRODUCT:${String(result.product_id)}` }] : []),
       ],
     }),
-    deleteWish: build.mutation<
-      DeleteWishResponse,
-      { wishId: string; productId?: string | null }
-    >({
+    deleteWish: build.mutation<DeleteWishResponse, { wishId: string; productId?: string | null }>({
       query: ({ wishId }) => ({
         url: `/wishes/${wishId}`,
         method: 'DELETE',

@@ -168,7 +168,8 @@ const purchasesSlice = createSlice({
         purchasesApi.endpoints.createPurchaseOrderFromSuggestions.matchRejected,
         (state, action) => {
           state.mutationStatus = 'failed';
-          state.error = action.error?.message ?? 'Could not create purchase order from suggestions.';
+          state.error =
+            action.error?.message ?? 'Could not create purchase order from suggestions.';
         },
       )
       .addMatcher(purchasesApi.endpoints.getReplenishmentAlerts.matchPending, (state) => {

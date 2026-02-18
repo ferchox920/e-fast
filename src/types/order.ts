@@ -16,12 +16,7 @@ export type PaymentStatus =
   | 'cancelled'
   | 'refunded';
 
-export type ShippingStatus =
-  | 'pending'
-  | 'preparing'
-  | 'shipped'
-  | 'delivered'
-  | 'returned';
+export type ShippingStatus = 'pending' | 'preparing' | 'shipped' | 'delivered' | 'returned';
 
 export interface OrderLineCreateInput {
   variant_id: UUID | string;

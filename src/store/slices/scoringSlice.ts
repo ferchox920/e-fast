@@ -74,10 +74,7 @@ export default scoringSlice.reducer;
 
 const selectScoringState = (state: RootState) => state.scoring;
 
-export const selectScoringRankings = createSelector(
-  selectScoringState,
-  (state) => state.rankings,
-);
+export const selectScoringRankings = createSelector(selectScoringState, (state) => state.rankings);
 export const selectLatestScoringRun = createSelector(
   selectScoringState,
   (state) => state.latestRun,

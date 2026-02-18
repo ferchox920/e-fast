@@ -50,7 +50,10 @@ export const purchasesApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result && result.length > 0
           ? [
-              ...result.map((supplier) => ({ type: 'Purchase' as const, id: `SUPPLIER:${supplier.id}` })),
+              ...result.map((supplier) => ({
+                type: 'Purchase' as const,
+                id: `SUPPLIER:${supplier.id}`,
+              })),
               { type: 'Purchase', id: 'SUPPLIERS' },
             ]
           : [{ type: 'Purchase', id: 'SUPPLIERS' }],
@@ -131,7 +134,10 @@ export const purchasesApi = baseApi.injectEndpoints({
       providesTags: (result, _error, args) => [
         { type: 'Purchase', id: 'REPLENISHMENT_ALERTS' },
         { type: 'Purchase', id: `REPLENISHMENT_ALERTS:${args?.supplier_id ?? 'ALL'}` },
-        ...(result ?? []).map((item) => ({ type: 'Purchase' as const, id: `ALERT_VARIANT:${item.variant_id}` })),
+        ...(result ?? []).map((item) => ({
+          type: 'Purchase' as const,
+          id: `ALERT_VARIANT:${item.variant_id}`,
+        })),
       ],
     }),
     getReplenishmentSuggestions: build.query<ReplenishmentSuggestion, SupplierFilterParams | void>({

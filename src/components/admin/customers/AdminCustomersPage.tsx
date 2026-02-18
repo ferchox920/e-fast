@@ -11,12 +11,10 @@ import type { UserRead } from '@/types/user';
 
 const PAGE_SIZE = 20;
 
-type StatusMessage =
-  | {
-      type: 'success' | 'error';
-      message: string;
-    }
-  | null;
+type StatusMessage = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
 
 interface NewCustomerForm {
   fullName: string;
@@ -87,14 +85,10 @@ export default function AdminCustomersPage() {
   const [pendingRoleId, setPendingRoleId] = useState<string | null>(null);
   const [pendingActiveId, setPendingActiveId] = useState<string | null>(null);
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useListUsersQuery({ page, page_size: PAGE_SIZE });
+  const { data, isLoading, isFetching, isError, error, refetch } = useListUsersQuery({
+    page,
+    page_size: PAGE_SIZE,
+  });
 
   const [createUser, createState] = useCreateUserAdminMutation();
   const [setUserRole, setRoleState] = useSetUserRoleMutation();
@@ -186,8 +180,12 @@ export default function AdminCustomersPage() {
       <section className="grid gap-4 sm:grid-cols-3">
         <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-neutral-500">Clientes cargados</p>
-          <p className="mt-2 text-3xl font-semibold text-neutral-900">{total.toLocaleString('es-ES')}</p>
-          <p className="text-xs text-neutral-500">Página {page} de {totalPages}</p>
+          <p className="mt-2 text-3xl font-semibold text-neutral-900">
+            {total.toLocaleString('es-ES')}
+          </p>
+          <p className="text-xs text-neutral-500">
+            Página {page} de {totalPages}
+          </p>
         </article>
         <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
           <p className="text-xs uppercase tracking-wide text-neutral-500">Activos</p>
@@ -244,12 +242,24 @@ export default function AdminCustomersPage() {
             <table className="min-w-full divide-y divide-neutral-100 text-sm">
               <thead className="bg-neutral-50 text-xs font-semibold uppercase text-neutral-500">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left">Nombre</th>
-                  <th scope="col" className="px-6 py-3 text-left">Contacto</th>
-                  <th scope="col" className="px-6 py-3 text-left">Rol</th>
-                  <th scope="col" className="px-6 py-3 text-left">Estado</th>
-                  <th scope="col" className="px-6 py-3 text-left">Creado</th>
-                  <th scope="col" className="px-6 py-3 text-right">Acciones</th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Nombre
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Contacto
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Rol
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Estado
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left">
+                    Creado
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-right">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
@@ -311,7 +321,9 @@ export default function AdminCustomersPage() {
                             type="button"
                             onClick={() => handleToggleAdmin(customer)}
                             disabled={
-                              isSubmitting || pendingRoleId === String(customer.id) || pendingActiveId !== null
+                              isSubmitting ||
+                              pendingRoleId === String(customer.id) ||
+                              pendingActiveId !== null
                             }
                             className="rounded-md border border-neutral-300 px-3 py-1 text-xs font-semibold text-neutral-600 transition hover:border-neutral-400 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
                           >
@@ -325,7 +337,9 @@ export default function AdminCustomersPage() {
                             type="button"
                             onClick={() => handleToggleActive(customer)}
                             disabled={
-                              isSubmitting || pendingActiveId === String(customer.id) || pendingRoleId !== null
+                              isSubmitting ||
+                              pendingActiveId === String(customer.id) ||
+                              pendingRoleId !== null
                             }
                             className="rounded-md border border-neutral-300 px-3 py-1 text-xs font-semibold text-neutral-600 transition hover:border-neutral-400 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-60"
                           >
@@ -375,7 +389,9 @@ export default function AdminCustomersPage() {
       <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <header className="mb-4">
           <p className="text-sm font-semibold text-neutral-900">Crear nuevo cliente</p>
-          <p className="text-xs text-neutral-500">Registra manualmente cuentas para tu equipo o clientes.</p>
+          <p className="text-xs text-neutral-500">
+            Registra manualmente cuentas para tu equipo o clientes.
+          </p>
         </header>
         <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
           <label className="text-xs font-medium text-neutral-500">
@@ -383,7 +399,9 @@ export default function AdminCustomersPage() {
             <input
               type="text"
               value={formState.fullName}
-              onChange={(event) => setFormState((prev) => ({ ...prev, fullName: event.target.value }))}
+              onChange={(event) =>
+                setFormState((prev) => ({ ...prev, fullName: event.target.value }))
+              }
               placeholder="Ej. Ana Pérez"
               className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               disabled={createState.isLoading}
@@ -410,7 +428,9 @@ export default function AdminCustomersPage() {
               required
               minLength={8}
               value={formState.password}
-              onChange={(event) => setFormState((prev) => ({ ...prev, password: event.target.value }))}
+              onChange={(event) =>
+                setFormState((prev) => ({ ...prev, password: event.target.value }))
+              }
               placeholder="Min. 8 caracteres"
               className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
               disabled={createState.isLoading}

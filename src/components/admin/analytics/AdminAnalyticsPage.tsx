@@ -245,7 +245,9 @@ export default function AdminAnalyticsPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                 Salud del inventario
               </p>
-              <p className="text-sm text-neutral-600">Valor total estimado y variantes destacadas.</p>
+              <p className="text-sm text-neutral-600">
+                Valor total estimado y variantes destacadas.
+              </p>
             </div>
             <span className="text-xs font-semibold text-indigo-600">
               {formatNumber(inventory.total_units)} uds.
@@ -489,7 +491,9 @@ export default function AdminAnalyticsPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                 Alertas de stock
               </p>
-              <p className="text-sm text-neutral-600">Variantes por debajo del punto de reposición.</p>
+              <p className="text-sm text-neutral-600">
+                Variantes por debajo del punto de reposición.
+              </p>
             </div>
           </header>
           {operations.stock_alerts.length ? (

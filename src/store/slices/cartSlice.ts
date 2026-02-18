@@ -97,18 +97,9 @@ const selectCartState = (state: RootState) => state.cart;
 export const selectCart = createSelector(selectCartState, (state) => state.current);
 export const selectCartStatus = createSelector(selectCartState, (state) => state.status);
 export const selectCartError = createSelector(selectCartState, (state) => state.error);
-export const selectCartItems = createSelector(
-  selectCart,
-  (cart) => cart?.items ?? [],
-);
+export const selectCartItems = createSelector(selectCart, (cart) => cart?.items ?? []);
 export const selectCartItemsCount = createSelector(selectCartItems, (items) =>
   items.reduce((acc, item) => acc + (item.quantity ?? 0), 0),
 );
-export const selectCartSubtotal = createSelector(
-  selectCart,
-  (cart) => cart?.subtotal_amount ?? 0,
-);
-export const selectCartTotal = createSelector(
-  selectCart,
-  (cart) => cart?.total_amount ?? 0,
-);
+export const selectCartSubtotal = createSelector(selectCart, (cart) => cart?.subtotal_amount ?? 0);
+export const selectCartTotal = createSelector(selectCart, (cart) => cart?.total_amount ?? 0);

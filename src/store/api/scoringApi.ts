@@ -1,9 +1,5 @@
 import { baseApi } from './baseApi';
-import type {
-  ScoringRankingItem,
-  ScoringRankingsParams,
-  ScoringRunResult,
-} from '@/types/scoring';
+import type { ScoringRankingItem, ScoringRankingsParams, ScoringRunResult } from '@/types/scoring';
 
 export const scoringApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -30,8 +26,5 @@ export const scoringApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useRunScoringMutation,
-  useGetScoringRankingsQuery,
-  useLazyGetScoringRankingsQuery,
-} = scoringApi;
+export const { useRunScoringMutation, useGetScoringRankingsQuery, useLazyGetScoringRankingsQuery } =
+  scoringApi;

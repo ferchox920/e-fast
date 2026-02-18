@@ -15,27 +15,25 @@ export const engagementApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, _error, body) => [
         { type: 'Engagement', id: result?.product_id ?? body.product_id },
-        ...(body.user_id ? [{ type: 'Engagement' as const, id: `CUSTOMER:${String(body.user_id)}` }] : []),
+        ...(body.user_id
+          ? [{ type: 'Engagement' as const, id: `CUSTOMER:${String(body.user_id)}` }]
+          : []),
       ],
     }),
-    getProductEngagement: build.query<
-      ProductEngagementRead[],
-      { productId: string; day?: string }
-    >({
-      query: ({ productId, day }) => ({
-        url: `/events/products/${productId}`,
-        params: day ? { day } : undefined,
-      }),
-      providesTags: (result, _error, { productId }) => [
-        { type: 'Engagement', id: productId },
-        { type: 'Engagement', id: 'PRODUCT_SERIES' },
-        ...(result?.map((item) => ({ type: 'Engagement' as const, id: item.product_id })) ?? []),
-      ],
-    }),
-    getCustomerEngagement: build.query<
-      CustomerEngagementRead[],
-      { userId: string; day?: string }
-    >({
+    getProductEngagement: build.query<ProductEngagementRead[], { productId: string; day?: string }>(
+      {
+        query: ({ productId, day }) => ({
+          url: `/events/products/${productId}`,
+          params: day ? { day } : undefined,
+        }),
+        providesTags: (result, _error, { productId }) => [
+          { type: 'Engagement', id: productId },
+          { type: 'Engagement', id: 'PRODUCT_SERIES' },
+          ...(result?.map((item) => ({ type: 'Engagement' as const, id: item.product_id })) ?? []),
+        ],
+      },
+    ),
+    getCustomerEngagement: build.query<CustomerEngagementRead[], { userId: string; day?: string }>({
       query: ({ userId, day }) => ({
         url: `/events/customers/${userId}`,
         params: day ? { day } : undefined,

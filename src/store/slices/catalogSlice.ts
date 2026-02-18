@@ -82,13 +82,10 @@ const catalogSlice = createSlice({
         state.adminCategoriesStatus = 'loading';
         state.error = null;
       })
-      .addMatcher(
-        catalogApi.endpoints.listAllCategoriesAdmin.matchFulfilled,
-        (state, action) => {
-          state.adminCategories = [...action.payload].sort(byName);
-          state.adminCategoriesStatus = 'succeeded';
-        },
-      )
+      .addMatcher(catalogApi.endpoints.listAllCategoriesAdmin.matchFulfilled, (state, action) => {
+        state.adminCategories = [...action.payload].sort(byName);
+        state.adminCategoriesStatus = 'succeeded';
+      })
       .addMatcher(catalogApi.endpoints.listAllCategoriesAdmin.matchRejected, (state, action) => {
         state.adminCategoriesStatus = 'failed';
         setError(state, action);
@@ -118,7 +115,9 @@ const catalogSlice = createSlice({
         setError(state, action);
       })
       .addMatcher(catalogApi.endpoints.createCategoryAdmin.matchFulfilled, (state, action) => {
-        state.adminCategories = ensureUniqueById([...state.adminCategories, action.payload]).sort(byName);
+        state.adminCategories = ensureUniqueById([...state.adminCategories, action.payload]).sort(
+          byName,
+        );
       })
       .addMatcher(catalogApi.endpoints.updateCategoryAdmin.matchFulfilled, (state, action) => {
         state.adminCategories = ensureUniqueById(
@@ -129,7 +128,9 @@ const catalogSlice = createSlice({
       })
       .addMatcher(catalogApi.endpoints.deleteCategoryAdmin.matchFulfilled, (state, action) => {
         const deletedId = action.meta.arg.originalArgs.categoryId;
-        state.adminCategories = state.adminCategories.filter((item) => String(item.id) !== String(deletedId));
+        state.adminCategories = state.adminCategories.filter(
+          (item) => String(item.id) !== String(deletedId),
+        );
       })
       .addMatcher(catalogApi.endpoints.createBrandAdmin.matchFulfilled, (state, action) => {
         state.adminBrands = ensureUniqueById([...state.adminBrands, action.payload]).sort(byName);
@@ -150,13 +151,19 @@ export default catalogSlice.reducer;
 
 const selectCatalogState = (state: RootState) => state.catalog;
 
-export const selectCatalogCategories = createSelector(selectCatalogState, (state) => state.categories);
+export const selectCatalogCategories = createSelector(
+  selectCatalogState,
+  (state) => state.categories,
+);
 export const selectCatalogAdminCategories = createSelector(
   selectCatalogState,
   (state) => state.adminCategories,
 );
 export const selectCatalogBrands = createSelector(selectCatalogState, (state) => state.brands);
-export const selectCatalogAdminBrands = createSelector(selectCatalogState, (state) => state.adminBrands);
+export const selectCatalogAdminBrands = createSelector(
+  selectCatalogState,
+  (state) => state.adminBrands,
+);
 export const selectCatalogFilters = createSelector(selectCatalogState, (state) => ({
   categoryId: state.selectedCategoryId,
   brandId: state.selectedBrandId,

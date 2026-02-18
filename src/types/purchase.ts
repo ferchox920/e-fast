@@ -1,11 +1,6 @@
 import type { ISODateTime, UUID } from './common';
 
-export type POStatus =
-  | 'draft'
-  | 'placed'
-  | 'partially_received'
-  | 'received'
-  | 'cancelled';
+export type POStatus = 'draft' | 'placed' | 'partially_received' | 'received' | 'cancelled';
 
 export interface SupplierCreateInput {
   name: string;

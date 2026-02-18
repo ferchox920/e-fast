@@ -62,14 +62,11 @@ const reportsSlice = createSlice({
         state.inventoryValueStatus = 'loading';
         state.error = null;
       })
-      .addMatcher(
-        reportsApi.endpoints.getInventoryValueReport.matchFulfilled,
-        (state, action) => {
-          state.inventoryValue = action.payload;
-          state.inventoryValueStatus = 'succeeded';
-          state.error = null;
-        },
-      )
+      .addMatcher(reportsApi.endpoints.getInventoryValueReport.matchFulfilled, (state, action) => {
+        state.inventoryValue = action.payload;
+        state.inventoryValueStatus = 'succeeded';
+        state.error = null;
+      })
       .addMatcher(reportsApi.endpoints.getInventoryValueReport.matchRejected, (state, action) => {
         state.inventoryValueStatus = 'failed';
         state.error = action.error?.message ?? 'Could not load inventory value report.';

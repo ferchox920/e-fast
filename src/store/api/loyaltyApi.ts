@@ -13,9 +13,7 @@ export const loyaltyApi = baseApi.injectEndpoints({
         url: '/loyalty/profile',
         params: params ?? undefined,
       }),
-      providesTags: (result) => [
-        { type: 'Loyalty', id: result?.user_id ?? 'PROFILE' },
-      ],
+      providesTags: (result) => [{ type: 'Loyalty', id: result?.user_id ?? 'PROFILE' }],
     }),
     adjustLoyaltyProfile: build.mutation<LoyaltyProfileRead, LoyaltyAdjustPayload>({
       query: (body) => ({

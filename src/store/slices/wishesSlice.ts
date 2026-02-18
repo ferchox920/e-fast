@@ -77,8 +77,9 @@ const wishesSlice = createSlice({
           return;
         }
         const targetProductId =
-          Object.entries(state.wishIdByProductId).find(([, storedWishId]) => storedWishId === wishId)?.[0] ??
-          null;
+          Object.entries(state.wishIdByProductId).find(
+            ([, storedWishId]) => storedWishId === wishId,
+          )?.[0] ?? null;
         if (targetProductId) {
           removeProductWish(state, targetProductId);
         }

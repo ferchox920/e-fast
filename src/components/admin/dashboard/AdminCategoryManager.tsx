@@ -17,12 +17,10 @@ interface FormState {
   active: boolean;
 }
 
-type StatusMessage =
-  | {
-      type: 'success' | 'error';
-      message: string;
-    }
-  | null;
+type StatusMessage = {
+  type: 'success' | 'error';
+  message: string;
+} | null;
 
 const DEFAULT_FORM_STATE: FormState = {
   name: '',
@@ -73,10 +71,7 @@ const toErrorMessage = (error: unknown): string => {
 };
 
 export default function AdminCategoryManager() {
-  const {
-    isFetching: isFetchingCategories,
-    refetch,
-  } = useListAllCategoriesAdminQuery();
+  const { isFetching: isFetchingCategories, refetch } = useListAllCategoriesAdminQuery();
   const [createCategory, createState] = useCreateCategoryAdminMutation();
   const [updateCategory, updateState] = useUpdateCategoryAdminMutation();
 
@@ -229,16 +224,17 @@ export default function AdminCategoryManager() {
           ) : (
             <ul className="divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200">
               {categories.map((category) => (
-                <li key={category.id} className="flex items-start justify-between gap-3 bg-white px-4 py-3">
+                <li
+                  key={category.id}
+                  className="flex items-start justify-between gap-3 bg-white px-4 py-3"
+                >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-neutral-900">
                       {category.name}
                     </p>
                     <p className="text-xs text-neutral-500">/{category.slug}</p>
                     {category.description ? (
-                      <p className="mt-1 text-xs text-neutral-600">
-                        {category.description}
-                      </p>
+                      <p className="mt-1 text-xs text-neutral-600">{category.description}</p>
                     ) : null}
                   </div>
                   <div className="flex flex-col items-end gap-2">
@@ -268,7 +264,10 @@ export default function AdminCategoryManager() {
           ) : null}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-neutral-100 p-4 shadow-inner">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 rounded-2xl border border-neutral-100 p-4 shadow-inner"
+        >
           {status ? (
             <div
               className={`rounded-lg px-3 py-2 text-xs font-medium ${

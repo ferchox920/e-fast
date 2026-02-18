@@ -74,15 +74,12 @@ const engagementSlice = createSlice({
         state.productStatus = 'loading';
         state.error = null;
       })
-      .addMatcher(
-        engagementApi.endpoints.getProductEngagement.matchFulfilled,
-        (state, action) => {
-          const productId = action.meta.arg.originalArgs.productId;
-          state.productSeriesById[productId] = sortByDateAsc(action.payload);
-          state.productStatus = 'succeeded';
-          state.error = null;
-        },
-      )
+      .addMatcher(engagementApi.endpoints.getProductEngagement.matchFulfilled, (state, action) => {
+        const productId = action.meta.arg.originalArgs.productId;
+        state.productSeriesById[productId] = sortByDateAsc(action.payload);
+        state.productStatus = 'succeeded';
+        state.error = null;
+      })
       .addMatcher(engagementApi.endpoints.getProductEngagement.matchRejected, (state, action) => {
         state.productStatus = 'failed';
         state.error = action.error?.message ?? 'Could not load product engagement.';
@@ -91,22 +88,16 @@ const engagementSlice = createSlice({
         state.customerStatus = 'loading';
         state.error = null;
       })
-      .addMatcher(
-        engagementApi.endpoints.getCustomerEngagement.matchFulfilled,
-        (state, action) => {
-          const userId = action.meta.arg.originalArgs.userId;
-          state.customerSeriesById[userId] = sortByDateAsc(action.payload);
-          state.customerStatus = 'succeeded';
-          state.error = null;
-        },
-      )
-      .addMatcher(
-        engagementApi.endpoints.getCustomerEngagement.matchRejected,
-        (state, action) => {
-          state.customerStatus = 'failed';
-          state.error = action.error?.message ?? 'Could not load customer engagement.';
-        },
-      );
+      .addMatcher(engagementApi.endpoints.getCustomerEngagement.matchFulfilled, (state, action) => {
+        const userId = action.meta.arg.originalArgs.userId;
+        state.customerSeriesById[userId] = sortByDateAsc(action.payload);
+        state.customerStatus = 'succeeded';
+        state.error = null;
+      })
+      .addMatcher(engagementApi.endpoints.getCustomerEngagement.matchRejected, (state, action) => {
+        state.customerStatus = 'failed';
+        state.error = action.error?.message ?? 'Could not load customer engagement.';
+      });
   },
 });
 
@@ -129,7 +120,4 @@ export const selectEngagementStatuses = createSelector(selectEngagementState, (s
   product: state.productStatus,
   customer: state.customerStatus,
 }));
-export const selectEngagementError = createSelector(
-  selectEngagementState,
-  (state) => state.error,
-);
+export const selectEngagementError = createSelector(selectEngagementState, (state) => state.error);

@@ -118,9 +118,12 @@ const productQuestionsSlice = createSlice({
           setMutationSuccess(state, action.payload);
         },
       )
-      .addMatcher(productApi.endpoints.setProductQuestionVisibility.matchRejected, (state, action) => {
-        setMutationError(state, action, 'Could not update product question visibility.');
-      })
+      .addMatcher(
+        productApi.endpoints.setProductQuestionVisibility.matchRejected,
+        (state, action) => {
+          setMutationError(state, action, 'Could not update product question visibility.');
+        },
+      )
       .addMatcher(productApi.endpoints.setProductQuestionBlock.matchPending, (state) => {
         state.mutationStatus = 'loading';
         state.error = null;

@@ -106,16 +106,11 @@ export const selectCurrentPromotion = createSelector(
   selectPromotionsState,
   (state) => state.current,
 );
-export const selectPromotionEligibilityById = (
-  state: RootState,
-  promotionId: string,
-) => state.promotions.eligibilityByPromotionId[promotionId] ?? null;
+export const selectPromotionEligibilityById = (state: RootState, promotionId: string) =>
+  state.promotions.eligibilityByPromotionId[promotionId] ?? null;
 export const selectPromotionsStatuses = createSelector(selectPromotionsState, (state) => ({
   list: state.listStatus,
   current: state.currentStatus,
   eligibility: state.eligibilityStatus,
 }));
-export const selectPromotionsError = createSelector(
-  selectPromotionsState,
-  (state) => state.error,
-);
+export const selectPromotionsError = createSelector(selectPromotionsState, (state) => state.error);
