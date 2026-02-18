@@ -16,7 +16,7 @@ export interface Category {
 export interface Brand {
   id: UUID | string;
   name: string;
-  slug: string;
+  slug: string | null;
   description?: string | null;
   active: boolean;
   website_url?: Url | null;
@@ -38,3 +38,21 @@ export interface PaginatedResponse<T> {
 export type CategoryRead = Category;
 export type BrandRead = Brand;
 export type BrandListResponse = PaginatedResponse<Brand>;
+
+export interface CategoryCreateInput {
+  name: string;
+  slug?: string | null;
+  description?: string | null;
+  active?: boolean;
+}
+
+export type CategoryUpdateInput = Partial<CategoryCreateInput>;
+
+export interface BrandCreateInput {
+  name: string;
+  slug?: string | null;
+  description?: string | null;
+  active?: boolean;
+}
+
+export type BrandUpdateInput = Partial<BrandCreateInput>;
