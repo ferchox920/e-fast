@@ -4,16 +4,103 @@ import { showErrorToast, showInfoToast } from '@/lib/toast';
 
 type NotificationCallback = (payload: NotificationWsPayload) => void;
 type StatusCallback = (status: ConnectionStatus) => void;
+export type TokenProvider = () => Promise<string | null>;
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';
 
-const DEFAULT_HTTP_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://127.0.0.1:8000/api/v1';
+const decodeJwtPayload = (segment: string) => {
+  const normalized = segment.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
 
-const DEFAULT_WS_BASE = (
-  process.env.NEXT_PUBLIC_API_WS_BASE_URL ??
-  DEFAULT_HTTP_BASE.replace(/^http/i, (match) => (match.toLowerCase() === 'https' ? 'wss' : 'ws'))
-).replace(/\/$/, '');
+  if (typeof atob === 'function') {
+    return atob(padded);
+  }
+
+  const bufferCtor = (globalThis as { Buffer?: typeof Buffer }).Buffer;
+  if (bufferCtor) {
+    return bufferCtor.from(padded, 'base64').toString('utf-8');
+  }
+
+  throw new Error('No base64 decoder available');
+};
+
+const isExpired = (jwt: string) => {
+  try {
+    const [, payload] = jwt.split('.');
+    if (!payload) return false;
+    const parsed = JSON.parse(decodeJwtPayload(payload));
+    const exp = typeof parsed === 'object' && parsed ? parsed.exp : null;
+    if (typeof exp !== 'number') return false;
+    return Math.floor(Date.now() / 1000) >= exp;
+  } catch {
+    return false;
+  }
+};
+
+const normalizeWsBase = (value?: string | null) => {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    let protocol = url.protocol;
+
+    if (protocol === 'http:') protocol = 'ws:';
+    if (protocol === 'https:') protocol = 'wss:';
+    if (protocol !== 'ws:' && protocol !== 'wss:') return null;
+
+    const path = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
+    return `${protocol}//${url.host}${path}`;
+  } catch {
+    return null;
+  }
+};
+
+const buildWsBaseCandidates = () => {
+  const seen = new Set<string>();
+  const add = (candidate?: string | null) => {
+    if (!candidate || seen.has(candidate)) return;
+    seen.add(candidate);
+    candidates.push(candidate);
+  };
+
+  const candidates: string[] = [];
+
+  const appendLocalVariants = (url: URL) => {
+    const path = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
+    const portSegment = url.port ? `:${url.port}` : '';
+    add(normalizeWsBase(`ws://localhost${portSegment}${path}`));
+    add(normalizeWsBase(`ws://127.0.0.1${portSegment}${path}`));
+  };
+
+  add(normalizeWsBase(process.env.NEXT_PUBLIC_API_WS_BASE_URL));
+
+  const httpBases = [
+    process.env.NEXT_PUBLIC_API_BASE_URL,
+    process.env.NEXT_PUBLIC_API_URL,
+    'http://localhost:8000/api/v1',
+    'http://127.0.0.1:8000/api/v1',
+  ];
+
+  httpBases.forEach((raw) => {
+    if (!raw) return;
+    try {
+      const url = new URL(raw);
+      const pathCandidate = normalizeWsBase(`${url.protocol}//${url.host}${url.pathname}`);
+      add(pathCandidate);
+      const originCandidate = normalizeWsBase(`${url.protocol}//${url.host}`);
+      add(originCandidate);
+      appendLocalVariants(url);
+    } catch {
+      // ignore invalid URLs
+    }
+  });
+
+  add('ws://localhost:8000/api/v1');
+  add('ws://127.0.0.1:8000/api/v1');
+
+  return candidates.length ? candidates : ['ws://127.0.0.1:8000/api/v1'];
+};
+
+const WS_BASE_CANDIDATES = buildWsBaseCandidates();
 
 const RECONNECT_BASE_DELAY_MS = 1000;
 const RECONNECT_MAX_DELAY_MS = 30_000;
@@ -37,9 +124,23 @@ export class NotificationWSClient {
   private status: ConnectionStatus = 'disconnected';
   private shouldAttemptReconnect = true;
   private lastToastAt = 0;
+  private wsBaseIndex = 0;
+  private preferredWsBaseIndex = 0;
+  private hasConnectedInCurrentSession = false;
+  private refreshedAfterUnauthorized = false;
+  private readonly getFreshToken?: TokenProvider;
+
+  constructor(getFreshToken?: TokenProvider) {
+    this.getFreshToken = getFreshToken;
+  }
 
   connect(jwt: string) {
     if (!jwt) throw new Error('JWT token is required to connect to notifications websocket');
+    if (isExpired(jwt)) {
+      this.emitToast('error', 'Tu sesion de notificaciones expiro. Vuelve a iniciar sesion.');
+      this.setStatus('disconnected');
+      return;
+    }
     if (typeof window === 'undefined' || typeof window.WebSocket === 'undefined') {
       throw new Error('WebSocket is not available in this environment');
     }
@@ -57,6 +158,9 @@ export class NotificationWSClient {
     this.closeIntent = CloseIntent.Unknown;
     this.shouldAttemptReconnect = true;
     this.reconnectAttempts = 0;
+    this.wsBaseIndex = this.preferredWsBaseIndex;
+    this.hasConnectedInCurrentSession = false;
+    this.refreshedAfterUnauthorized = false;
     this.clearReconnectTimer();
     this.createSocket(jwt);
   }
@@ -67,6 +171,9 @@ export class NotificationWSClient {
     this.clearReconnectTimer();
     this.reconnectAttempts = 0;
     this.token = null;
+    this.wsBaseIndex = this.preferredWsBaseIndex;
+    this.hasConnectedInCurrentSession = false;
+    this.refreshedAfterUnauthorized = false;
     this.setStatus('disconnected');
 
     if (this.socket) {
@@ -99,8 +206,10 @@ export class NotificationWSClient {
 
     this.clearReconnectTimer();
     this.closeIntent = CloseIntent.Unknown;
-    const url = this.buildUrl(jwt);
+    const base = WS_BASE_CANDIDATES[this.wsBaseIndex] ?? WS_BASE_CANDIDATES[0];
+    const url = this.buildUrl(base, jwt);
     const sanitizedUrl = `${url.origin}${url.pathname}`;
+    console.info('NotificationWS connecting to', sanitizedUrl);
 
     try {
       this.socket = new WebSocket(url.toString());
@@ -108,6 +217,7 @@ export class NotificationWSClient {
     } catch (error) {
       console.error('NotificationWS connection error', error);
       this.setStatus('disconnected');
+      this.advanceWsBaseCandidate();
       this.scheduleReconnect();
       return;
     }
@@ -115,6 +225,9 @@ export class NotificationWSClient {
     this.socket.onopen = () => {
       this.reconnectAttempts = 0;
       this.shouldAttemptReconnect = true;
+      this.hasConnectedInCurrentSession = true;
+      this.preferredWsBaseIndex = this.wsBaseIndex;
+      this.refreshedAfterUnauthorized = false;
       this.setStatus('connected');
       console.info('NotificationWS connected', sanitizedUrl);
     };
@@ -163,21 +276,35 @@ export class NotificationWSClient {
 
       if (unauthorized) {
         console.warn('NotificationWS stopped due to unauthorized response', event.code);
+        this.hasConnectedInCurrentSession = false;
+        this.clearReconnectTimer();
+
+        if (this.getFreshToken && !this.refreshedAfterUnauthorized) {
+          this.refreshedAfterUnauthorized = true;
+          this.emitToast('info', 'Renovando tu sesion de notificaciones...');
+          this.scheduleReconnect({ attemptTokenRefresh: true });
+          return;
+        }
+
         this.shouldAttemptReconnect = false;
         this.token = null;
-        this.clearReconnectTimer();
         this.emitToast('error', 'Tu sesion expiro para notificaciones. Inicia sesion nuevamente.');
         return;
       }
 
       console.warn(`NotificationWS connection closed (${event.code}) - scheduling retry`);
       this.emitToast('info', 'Reconectando notificaciones...');
+      if (!this.hasConnectedInCurrentSession) {
+        this.advanceWsBaseCandidate();
+      }
+      this.hasConnectedInCurrentSession = false;
       this.scheduleReconnect();
     };
   }
 
-  private buildUrl(jwt: string) {
-    const url = new URL(`${DEFAULT_WS_BASE}/notifications/ws`);
+  private buildUrl(base: string, jwt: string) {
+    const normalizedBase = base.replace(/\/$/, '');
+    const url = new URL(`${normalizedBase}/notifications/ws`);
     url.searchParams.set('token', jwt);
 
     if (!url.protocol.startsWith('ws')) {
@@ -201,8 +328,8 @@ export class NotificationWSClient {
     });
   }
 
-  private scheduleReconnect() {
-    if (!this.token || !this.shouldAttemptReconnect) return;
+  private scheduleReconnect(options: { attemptTokenRefresh?: boolean } = {}) {
+    if (!this.shouldAttemptReconnect) return;
     this.clearReconnectTimer();
 
     const baseDelay = Math.min(
@@ -214,8 +341,36 @@ export class NotificationWSClient {
 
     this.reconnectAttempts += 1;
 
-    this.reconnectTimer = setTimeout(() => {
-      if (!this.token || !this.shouldAttemptReconnect) return;
+    this.reconnectTimer = setTimeout(async () => {
+      if (!this.shouldAttemptReconnect) return;
+
+      const requiresRefresh =
+        options.attemptTokenRefresh || (this.token ? isExpired(this.token) : true);
+
+      if (this.getFreshToken && requiresRefresh) {
+        try {
+          const freshToken = await this.getFreshToken();
+          if (freshToken) {
+            this.token = freshToken;
+          } else if (!this.token) {
+            this.shouldAttemptReconnect = false;
+            this.emitToast('error', 'Tu sesion de notificaciones expiro. Vuelve a iniciar sesion.');
+            return;
+          }
+        } catch (error) {
+          console.error('NotificationWS token refresh failed', error);
+          this.shouldAttemptReconnect = false;
+          this.emitToast('error', 'No pudimos renovar tu sesion de notificaciones.');
+          return;
+        }
+      }
+
+      if (!this.token || isExpired(this.token)) {
+        this.shouldAttemptReconnect = false;
+        this.emitToast('error', 'Tu sesion de notificaciones expiro. Vuelve a iniciar sesion.');
+        return;
+      }
+
       console.info('NotificationWS attempting reconnect');
       this.closeIntent = CloseIntent.Unknown;
       this.createSocket(this.token);
@@ -238,6 +393,17 @@ export class NotificationWSClient {
     this.socket = null;
   }
 
+  private advanceWsBaseCandidate() {
+    if (this.wsBaseIndex < WS_BASE_CANDIDATES.length - 1) {
+      this.wsBaseIndex += 1;
+      const fallbackBase = WS_BASE_CANDIDATES[this.wsBaseIndex];
+      if (!this.hasConnectedInCurrentSession) {
+        this.preferredWsBaseIndex = this.wsBaseIndex;
+      }
+      console.info('NotificationWS switching to fallback WebSocket base', fallbackBase);
+    }
+  }
+
   private setStatus(status: ConnectionStatus) {
     if (this.status === status) return;
     this.status = status;
@@ -252,6 +418,7 @@ export class NotificationWSClient {
 
   private isUnauthorizedClose(event: CloseEvent) {
     if (UNAUTHORIZED_CLOSE_CODES.has(event.code)) return true;
+    if (event.code === 1006 && this.token && isExpired(this.token)) return true;
     const reason = event.reason?.toLowerCase() ?? '';
     return reason.includes('unauthorized') || reason.includes('401');
   }
