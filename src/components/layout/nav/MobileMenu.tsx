@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import type { NavBarCategoryGroup } from '../NavBar';
 import type { UserRead } from '@/types/user';
 
@@ -7,7 +7,8 @@ interface MobileMenuProps {
   categoryGroups: NavBarCategoryGroup[];
   user: UserRead | null;
   onCloseMenu: () => void;
-  onLogout?: () => void;
+  onLogout?: () => Promise<void> | void;
+  isLogoutPending?: boolean;
 }
 
 export default function MobileMenu({
@@ -16,6 +17,7 @@ export default function MobileMenu({
   user,
   onCloseMenu,
   onLogout,
+  isLogoutPending = false,
 }: MobileMenuProps) {
   if (!isOpen) return null;
 
@@ -56,10 +58,19 @@ export default function MobileMenu({
         {user ? (
           <button
             type="button"
-            onClick={onLogout}
-            className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-red-600 hover:bg-gray-50"
+            onClick={() => {
+              if (isLogoutPending) return;
+              if (onLogout) {
+                void onLogout();
+              }
+            }}
+            className={`block w-full rounded-md px-3 py-2 text-left text-base font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              isLogoutPending ? 'cursor-progress text-red-400' : 'text-red-600 hover:bg-gray-50'
+            }`}
+            disabled={isLogoutPending}
+            aria-live="polite"
           >
-            Cerrar Sesion
+            {isLogoutPending ? 'Cerrando sesion...' : 'Cerrar sesion'}
           </button>
         ) : (
           <Link
