@@ -3,6 +3,15 @@
 import { useMemo } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useGetBrandsQuery, useGetCategoriesQuery } from '@/store/api/catalogApi';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  clearCatalogFilters,
+  selectCatalogBrands,
+  selectCatalogCategories,
+  selectCatalogStatus,
+  setSelectedBrand,
+  setSelectedCategory,
+} from '@/store/slices/catalogSlice';
 
 interface ProductFiltersBarProps {
   searchValue: string;
@@ -30,12 +39,17 @@ export default function ProductFiltersBar({
   onBrandChange,
   onCategoryChange,
 }: ProductFiltersBarProps) {
-  const {
-    data: categories,
-    isLoading: categoryLoading,
-    isError: categoryIsError,
-  } = useGetCategoriesQuery();
-  const { data: brands, isLoading: brandLoading, isError: brandIsError } = useGetBrandsQuery();
+  const dispatch = useAppDispatch();
+  useGetCategoriesQuery();
+  useGetBrandsQuery();
+  const categories = useAppSelector(selectCatalogCategories);
+  const brands = useAppSelector(selectCatalogBrands);
+  const catalogStatus = useAppSelector(selectCatalogStatus);
+
+  const categoryLoading = catalogStatus.categories === 'loading';
+  const categoryIsError = catalogStatus.categories === 'failed';
+  const brandLoading = catalogStatus.brands === 'loading';
+  const brandIsError = catalogStatus.brands === 'failed';
 
   const categoryOptions = useMemo(() => {
     const source = Array.isArray(categories)
@@ -76,11 +90,20 @@ export default function ProductFiltersBar({
   };
 
   const handleBrandChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    onBrandChange(event.target.value);
+    const value = event.target.value;
+    dispatch(setSelectedBrand(value || null));
+    onBrandChange(value);
   };
 
   const handleCategoryChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    onCategoryChange(event.target.value);
+    const value = event.target.value;
+    dispatch(setSelectedCategory(value || null));
+    onCategoryChange(value);
+  };
+
+  const handleReset = () => {
+    dispatch(clearCatalogFilters());
+    onReset();
   };
 
   return (
@@ -149,7 +172,7 @@ export default function ProductFiltersBar({
         </button>
         <button
           type="button"
-          onClick={onReset}
+          onClick={handleReset}
           className="rounded-full border border-neutral-200 px-4 py-2 text-sm text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900"
         >
           Limpiar
