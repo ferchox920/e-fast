@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { UserRead } from '@/types/user';
 import DesktopCategories from './nav/DesktopCategories';
 import MobileMenu from './nav/MobileMenu';
@@ -27,7 +27,8 @@ export interface NavBarProps {
   categoryGroups?: NavBarCategoryGroup[];
   popularSearches?: string[];
   user: UserRead | null;
-  onLogout?: () => void;
+  onLogout?: () => Promise<void> | void;
+  isLogoutPending?: boolean;
 }
 
 const DEFAULT_POPULAR_SEARCHES = [
@@ -45,6 +46,7 @@ export default function NavBar({
   popularSearches = DEFAULT_POPULAR_SEARCHES,
   user,
   onLogout,
+  isLogoutPending = false,
 }: NavBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -59,13 +61,20 @@ export default function NavBar({
 
   const closeSearch = () => setIsSearchOpen(false);
 
-  const handleLogout = () => {
-    onLogout?.();
-    closeMenu();
-  };
+  const handleLogout = useCallback(async () => {
+    setIsMenuOpen(false);
+    if (onLogout) {
+      await onLogout();
+    }
+  }, [onLogout]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm relative">
+      {isLogoutPending ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-gradient-to-r from-indigo-400 via-indigo-500 to-purple-500" />
+        </div>
+      ) : null}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center">
           <div className="flex flex-1 items-center gap-2">
@@ -95,6 +104,7 @@ export default function NavBar({
             user={user}
             onSearchClick={openSearch}
             onLogout={handleLogout}
+            isLogoutPending={isLogoutPending}
             onCloseMenu={closeMenu}
           />
         </div>
@@ -106,6 +116,7 @@ export default function NavBar({
         user={user}
         onCloseMenu={closeMenu}
         onLogout={handleLogout}
+        isLogoutPending={isLogoutPending}
       />
 
       <SearchOverlay
