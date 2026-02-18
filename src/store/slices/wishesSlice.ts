@@ -65,7 +65,9 @@ const wishesSlice = createSlice({
       .addMatcher(wishesApi.endpoints.listWishes.matchFulfilled, (state, action) => {
         state.items = [];
         state.wishIdByProductId = {};
-        action.payload.forEach((wish) => syncWishRecord(state, wish));
+        action.payload.forEach((wish) => {
+          syncWishRecord(state, wish);
+        });
       })
       .addMatcher(wishesApi.endpoints.createWish.matchFulfilled, (state, action) => {
         syncWishRecord(state, action.payload);

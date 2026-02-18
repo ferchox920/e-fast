@@ -38,7 +38,9 @@ const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(
 
 const ensureUniqueById = <T extends { id: string | number }>(items: T[]): T[] => {
   const map = new Map<string, T>();
-  items.forEach((item) => map.set(String(item.id), item));
+  items.forEach((item) => {
+    map.set(String(item.id), item);
+  });
   return Array.from(map.values());
 };
 
