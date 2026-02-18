@@ -8,7 +8,9 @@ import type { TokenRefresh } from '@/types/user';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl:
-    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? 'http://localhost:8000/api/v1',
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ??
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
+    'http://localhost:8000/api/v1',
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const session = state.user?.session;
@@ -31,6 +33,28 @@ const isTokenRefresh = (data: unknown): data is TokenRefresh => {
   return (
     'access_token' in data && typeof (data as { access_token: unknown }).access_token === 'string'
   );
+};
+
+const decodeBase64Url = (value: string): string => {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padLength = (4 - (normalized.length % 4)) % 4;
+  const padded = normalized + '='.repeat(padLength);
+  if (typeof atob !== 'function') {
+    throw new Error('atob is not available in this environment');
+  }
+  return atob(padded);
+};
+
+const getScopesFromAccessToken = (accessToken: string): string[] => {
+  const parts = accessToken.split('.');
+  if (parts.length < 2) return [];
+  try {
+    const payload = JSON.parse(decodeBase64Url(parts[1])) as { scopes?: unknown };
+    if (!Array.isArray(payload.scopes)) return [];
+    return payload.scopes.map((item) => String(item)).filter((item) => item.length > 0);
+  } catch {
+    return [];
+  }
 };
 
 let refreshPromise: Promise<boolean> | null = null;
@@ -56,12 +80,16 @@ const performRefresh = (
       );
 
       if (refreshResult.data && isTokenRefresh(refreshResult.data)) {
+        const scopes =
+          Array.isArray(refreshResult.data.scopes) && refreshResult.data.scopes.length > 0
+            ? refreshResult.data.scopes
+            : getScopesFromAccessToken(refreshResult.data.access_token);
         api.dispatch(
           updateAccessToken({
             accessToken: refreshResult.data.access_token,
             tokenType: refreshResult.data.token_type,
             expiresIn: refreshResult.data.expires_in,
-            scopes: refreshResult.data.scopes ?? null,
+            scopes,
             issuedAt: Date.now(),
           }),
         );
@@ -71,6 +99,8 @@ const performRefresh = (
 
       refreshPromise = null;
       api.dispatch(clearUser());
+      api.dispatch({ type: 'notifications/reset' });
+      api.dispatch({ type: 'wishes/clearAll' });
       return false;
     })();
   }
@@ -95,6 +125,10 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     const refreshed = await performRefresh(api, extraOptions);
     if (refreshed) {
       result = await rawBaseQuery(args, api, extraOptions);
+    } else if (!state.user?.session?.refreshToken) {
+      api.dispatch(clearUser());
+      api.dispatch({ type: 'notifications/reset' });
+      api.dispatch({ type: 'wishes/clearAll' });
     }
   }
 
@@ -119,6 +153,15 @@ export const baseApi = createApi({
     'AdminAnalytics',
     'AdminOrder',
     'AdminQuestion',
+    'Payment',
+    'Wish',
+    'Promotion',
+    'Loyalty',
+    'Report',
+    'Engagement',
+    'Exposure',
+    'Scoring',
+    'Purchase',
   ],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),
