@@ -7,6 +7,8 @@ import Link from 'next/link';
 
 import { useAddCartItemMutation, useCreateOrGetCartMutation } from '@/store/api/cartApi';
 import { productApi } from '@/store/api/productApi';
+import { useAppSelector } from '@/store/hooks';
+import { selectCartError, selectCartStatus } from '@/store/slices/cartSlice';
 import type { CurrencyCode, UUID } from '@/types/common';
 import type { Product } from '@/types/product';
 
@@ -65,6 +67,8 @@ export default function ProductCard({
   imageAlt,
 }: ProductCardProps) {
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const cartStatus = useAppSelector(selectCartStatus);
+  const cartError = useAppSelector(selectCartError);
   const ensuredCartRef = useRef(false);
   const prefetchProduct = productApi.usePrefetch('getProductBySlug');
 
@@ -108,7 +112,7 @@ export default function ProductCard({
     } catch (err) {
       setFeedback({
         type: 'error',
-        message: getErrorMessage(err, 'No pudimos agregar el producto al carrito.'),
+        message: cartError ?? getErrorMessage(err, 'No pudimos agregar el producto al carrito.'),
       });
     }
   };
@@ -208,6 +212,9 @@ export default function ProductCard({
               {feedback.message}
             </p>
           )}
+          {!feedback && cartStatus === 'failed' && cartError ? (
+            <p className="text-xs text-red-600">{cartError}</p>
+          ) : null}
         </div>
 
         {footerSlot}
