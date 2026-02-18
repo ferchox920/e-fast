@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   useCallback,
@@ -19,7 +19,8 @@ import { ICON_BUTTON_CLASS } from './constants';
 interface NavActionsProps {
   user: UserRead | null;
   onSearchClick: () => void;
-  onLogout?: () => void;
+  onLogout?: () => Promise<void> | void;
+  isLogoutPending?: boolean;
   onCloseMenu: () => void;
 }
 
@@ -27,10 +28,12 @@ export default function NavActions({
   user,
   onSearchClick,
   onLogout,
+  isLogoutPending = false,
   onCloseMenu,
 }: NavActionsProps) {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const logoutPending = Boolean(isLogoutPending);
 
   const cancelScheduledClose = useCallback(() => {
     if (closeTimeoutRef.current) {
@@ -58,14 +61,15 @@ export default function NavActions({
   }, [cancelScheduledClose]);
 
   const toggleAccountMenu = useCallback(() => {
+    if (logoutPending) return;
     cancelScheduledClose();
     setIsAccountMenuOpen((prev) => !prev);
-  }, [cancelScheduledClose]);
+  }, [cancelScheduledClose, logoutPending]);
 
   const handlePointerLeaveAccount = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
-      const nextTarget = event.relatedTarget as Node | null;
-      if (nextTarget && event.currentTarget.contains(nextTarget)) {
+      const nextTarget = event.relatedTarget as EventTarget | null;
+      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
         return;
       }
       scheduleClose();
@@ -75,7 +79,8 @@ export default function NavActions({
 
   const handleAccountBlur = useCallback(
     (event: ReactFocusEvent<HTMLDivElement>) => {
-      if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      const nextTarget = event.relatedTarget as EventTarget | null;
+      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
         return;
       }
       scheduleClose();
@@ -89,9 +94,11 @@ export default function NavActions({
   }, [closeAccountMenu, onCloseMenu]);
 
   const handleLogoutWithClose = useCallback(() => {
-    closeAccountMenu();
-    onLogout?.();
-  }, [closeAccountMenu, onLogout]);
+    if (logoutPending) return;
+    if (onLogout) {
+      void onLogout();
+    }
+  }, [logoutPending, onLogout]);
 
   const handleAccountKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -109,6 +116,19 @@ export default function NavActions({
     },
     [cancelScheduledClose],
   );
+
+  useEffect(() => {
+    if (logoutPending) {
+      cancelScheduledClose();
+      setIsAccountMenuOpen(true);
+    }
+  }, [logoutPending, cancelScheduledClose]);
+
+  useEffect(() => {
+    if (!logoutPending && !user) {
+      setIsAccountMenuOpen(false);
+    }
+  }, [logoutPending, user]);
 
   return (
     <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
@@ -140,6 +160,7 @@ export default function NavActions({
               aria-haspopup="menu"
               aria-expanded={isAccountMenuOpen}
               aria-label="Abrir menu de mi cuenta"
+              aria-busy={logoutPending}
               onClick={toggleAccountMenu}
             >
               <UserIcon />
@@ -176,10 +197,15 @@ export default function NavActions({
                 <button
                   type="button"
                   onClick={handleLogoutWithClose}
-                  className="block w-full px-4 py-2 text-left text-sm text-red-600 transition hover:bg-gray-100"
+                  className={`block w-full px-4 py-2 text-left text-sm transition ${
+                    logoutPending
+                      ? 'cursor-progress text-red-400'
+                      : 'text-red-600 hover:bg-gray-100'
+                  }`}
                   role="menuitem"
+                  aria-live="polite"
                 >
-                  Cerrar sesion
+                  {logoutPending ? 'Cerrando sesion...' : 'Cerrar sesion'}
                 </button>
               </div>
             </div>
