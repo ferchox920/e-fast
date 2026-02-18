@@ -177,8 +177,7 @@ const normalizeTopSellers = (input: unknown): AdminTopSeller[] => {
     .map((raw) => {
       if (!raw || typeof raw !== 'object') return null;
       const data = raw as Partial<AdminTopSeller>;
-      const product_id =
-        data.product_id ?? (data as { productId?: string }).productId ?? null ?? null;
+      const product_id = data.product_id ?? (data as { productId?: string }).productId ?? null;
       if (!product_id) return null;
       return {
         product_id,
@@ -196,8 +195,7 @@ const normalizeInventoryItems = (input: unknown): AdminInventoryItemSummary[] =>
   return input.reduce<AdminInventoryItemSummary[]>((acc, raw) => {
     if (!raw || typeof raw !== 'object') return acc;
     const data = raw as Partial<AdminInventoryItemSummary>;
-    const variant_id =
-      data.variant_id ?? (data as { variantId?: string }).variantId ?? null ?? null;
+    const variant_id = data.variant_id ?? (data as { variantId?: string }).variantId ?? null;
     if (!variant_id) return acc;
 
     acc.push({
@@ -250,8 +248,7 @@ const normalizeStockAlerts = (input: unknown): AdminStockAlertSummary[] => {
   return input.reduce<AdminStockAlertSummary[]>((acc, raw) => {
     if (!raw || typeof raw !== 'object') return acc;
     const data = raw as Partial<AdminStockAlertSummary>;
-    const variant_id =
-      data.variant_id ?? (data as { variantId?: string }).variantId ?? null ?? null;
+    const variant_id = data.variant_id ?? (data as { variantId?: string }).variantId ?? null;
     if (!variant_id) return acc;
 
     acc.push({
