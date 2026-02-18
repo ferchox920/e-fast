@@ -7,6 +7,8 @@ import {
   useGetPendingProductQuestionsQuery,
 } from '@/store/api/adminApi';
 import type { AdminLoyaltyDistributionEntry, AdminExposureMixEntry } from '@/types/admin';
+import AdminCategoryManager from './AdminCategoryManager';
+import AdminBrandManager from './AdminBrandManager';
 
 const DONUT_COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f97316', '#ec4899', '#8b5cf6'];
 const BAR_COLORS = ['bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'];
@@ -416,6 +418,11 @@ export default function AdminDashboard() {
             </ul>
           )}
         </article>
+      </section>
+
+      <section className="mt-6 grid gap-6 xl:grid-cols-2">
+        <AdminCategoryManager />
+        <AdminBrandManager />
       </section>
     </div>
   );
