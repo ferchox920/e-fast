@@ -18,7 +18,7 @@ import {
   type ReadonlyURLSearchParams,
 } from 'next/navigation';
 import { useGetProductsQuery } from '@/store/api/productApi';
-import { useGetCategoriesQuery, useGetBrandsQuery } from '@/store/api/catalogApi';
+import { useGetCategoriesQuery, useListAllBrandsAdminQuery } from '@/store/api/catalogApi';
 import type { ProductVariant } from '@/types/product';
 import type { Brand, Category } from '@/types/catalog';
 
@@ -126,7 +126,7 @@ export default function AdminProductsPage() {
   });
 
   const { data: categoriesData } = useGetCategoriesQuery();
-  const { data: brandsData } = useGetBrandsQuery();
+  const { data: brandsData } = useListAllBrandsAdminQuery();
 
   const categoryOptions = useMemo<Category[]>(() => categoriesData ?? [], [categoriesData]);
   const brandOptions = useMemo<Brand[]>(() => brandsData ?? [], [brandsData]);
