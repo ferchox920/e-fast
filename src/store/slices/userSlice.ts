@@ -171,9 +171,12 @@ const userSlice = createSlice({
       ensureSession(state);
       if (!action.payload) {
         state.session = createEmptySession();
+        state.current = null;
+        state.status = 'anonymous';
         return;
       }
       state.session = buildSession(action.payload);
+      state.status = state.session.accessToken ? 'authenticated' : 'anonymous';
     },
     updateAccessToken(state, action: PayloadAction<AccessTokenPayload>) {
       const session = ensureSession(state);
@@ -191,6 +194,7 @@ const userSlice = createSlice({
       if (Array.isArray(scopes)) {
         session.scopes = [...scopes];
       }
+      state.status = accessToken ? 'authenticated' : 'anonymous';
     },
     setStatus(state, action: PayloadAction<AuthStatus>) {
       state.status = action.payload;
@@ -205,8 +209,6 @@ const userSlice = createSlice({
       }
 
       state.current = (inbound.current as UserRead | null) ?? null;
-      state.status =
-        (inbound.status as AuthStatus | undefined) ?? (state.current ? 'authenticated' : 'idle');
 
       const normalizedSession = normalizeSession(
         inbound.session ?? {
@@ -217,6 +219,10 @@ const userSlice = createSlice({
       );
 
       state.session = normalizedSession;
+      if (!normalizedSession.accessToken) {
+        state.current = null;
+      }
+      state.status = normalizedSession.accessToken ? 'authenticated' : 'anonymous';
     });
   },
 });
