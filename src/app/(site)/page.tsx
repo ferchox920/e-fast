@@ -5,14 +5,16 @@ import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
 import HomeHero from '@/components/home/HomeHero';
 import ProductCardGrid from '@/components/product/ProductCardGrid';
 import { useGetProductsQuery } from '@/store/api/productApi';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { clearCatalogFilters, selectCatalogFilters } from '@/store/slices/catalogSlice';
 import { mapProductsToCards } from '@/components/product/utils/mapProductToCard';
 
 const PRODUCTS_PER_PAGE = 12;
 
 export default function HomePage() {
+  const dispatch = useAppDispatch();
+  const catalogFilters = useAppSelector(selectCatalogFilters);
   const [searchInput, setSearchInput] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
     category: '',
@@ -34,15 +36,14 @@ export default function HomePage() {
   const handleSubmit = () => {
     setAppliedFilters({
       search: searchInput.trim(),
-      category: selectedCategory,
-      brand: selectedBrand,
+      category: catalogFilters.categoryId ?? '',
+      brand: catalogFilters.brandId ?? '',
     });
   };
 
   const handleReset = () => {
     setSearchInput('');
-    setSelectedCategory('');
-    setSelectedBrand('');
+    dispatch(clearCatalogFilters());
     setAppliedFilters({
       search: '',
       category: '',
@@ -51,12 +52,10 @@ export default function HomePage() {
   };
 
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
     setAppliedFilters((prev) => ({ ...prev, category: value }));
   };
 
   const handleBrandChange = (value: string) => {
-    setSelectedBrand(value);
     setAppliedFilters((prev) => ({ ...prev, brand: value }));
   };
 
@@ -77,8 +76,8 @@ export default function HomePage() {
         onSubmit={handleSubmit}
         onReset={handleReset}
         isSubmitting={isFetching}
-        selectedCategory={selectedCategory}
-        selectedBrand={selectedBrand}
+        selectedCategory={catalogFilters.categoryId ?? ''}
+        selectedBrand={catalogFilters.brandId ?? ''}
         onCategoryChange={handleCategoryChange}
         onBrandChange={handleBrandChange}
       />
