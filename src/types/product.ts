@@ -131,7 +131,11 @@ export interface ProductQuestionUser {
 
 export interface ProductQuestionAnswer {
   id: UUID | string;
+  content: string;
   body: string;
+  question_id?: UUID | string;
+  admin_id?: UUID | string | null;
+  is_visible?: boolean;
   created_at?: ISODateTime | null;
   updated_at?: ISODateTime | null;
   author?: ProductQuestionUser | null;
@@ -140,16 +144,37 @@ export interface ProductQuestionAnswer {
 export interface ProductQuestion {
   id: UUID | string;
   product_id: UUID | string;
+  user_id?: UUID | string | null;
+  content: string;
   body: string;
+  status?: string;
+  is_visible?: boolean;
+  is_blocked?: boolean;
   author?: ProductQuestionUser | null;
   created_at?: ISODateTime | null;
   updated_at?: ISODateTime | null;
+  answers?: ProductQuestionAnswer[];
   answer?: ProductQuestionAnswer | null;
 }
 
 export interface ProductQuestionCreate {
-  body: string;
+  content?: string;
+  body?: string;
   anonymous?: boolean;
+}
+
+export interface ProductQuestionAnswerCreate {
+  content?: string;
+  body?: string;
+}
+
+export interface ProductQuestionVisibilityUpdate {
+  is_visible: boolean;
+}
+
+export interface ProductQuestionBlockUpdate {
+  is_blocked: boolean;
+  reason?: string | null;
 }
 
 export interface ProductListParams {
