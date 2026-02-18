@@ -1,6 +1,7 @@
 import { createSlice, createSelector, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { RootState } from '@/store';
+import { notificationsApi } from '@/store/api/notificationsApi';
 import type { NotificationRead } from '@/types/notifications';
 import { normalizeNotification, type NotificationEntity } from '@/notifications/normalize';
 
@@ -110,6 +111,21 @@ const notificationsSlice = createSlice({
     reset(state) {
       Object.assign(state, initialState);
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addMatcher(notificationsApi.endpoints.listNotifications.matchFulfilled, (state, action) => {
+        const items = action.payload?.items ?? [];
+        if (items.length) {
+          const normalized = collectNormalized(items);
+          upsertManyReducer(state, normalized);
+        }
+      })
+      .addMatcher(notificationsApi.endpoints.updateNotification.matchFulfilled, (state, action) => {
+        const normalized = normalizeNotification(action.payload);
+        if (!normalized) return;
+        upsertManyReducer(state, [normalized]);
+      });
   },
 });
 
