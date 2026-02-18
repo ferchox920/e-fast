@@ -81,7 +81,8 @@ export function ProductGallery({ images }: ProductGalleryProps) {
             fill
             sizes="(min-width:1024px) 640px, (min-width:640px) 560px, 100vw"
             className="object-cover"
-            loading="lazy"
+            loading={activeImage.id === primaryCandidate?.id ? 'eager' : 'lazy'}
+            priority={activeImage.id === primaryCandidate?.id}
             data-testid="product-gallery-main-image"
           />
         ) : (
