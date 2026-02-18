@@ -1,8 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useCreateOrGetCartMutation, useGetCartQuery } from '@/store/api/cartApi';
+import { useAppSelector } from '@/store/hooks';
+import {
+  selectCart,
+  selectCartItems,
+  selectCartItemsCount,
+  selectCartSubtotal,
+} from '@/store/slices/cartSlice';
 import { CartIcon } from '@/components/layout/nav/icons';
 import { ICON_BUTTON_CLASS } from '@/components/layout/nav/constants';
 
@@ -19,11 +26,18 @@ const formatCurrency = (value: number, currency = 'EUR') =>
 
 export default function MiniCart({ onCloseMenu }: MiniCartProps) {
   const [ensureCart] = useCreateOrGetCartMutation();
-  const { data, error, isLoading, isFetching, refetch } = useGetCartQuery();
+  const { error, isLoading, isFetching, refetch } = useGetCartQuery();
+  const cart = useAppSelector(selectCart);
+  const items = useAppSelector(selectCartItems);
+  const totalItems = useAppSelector(selectCartItemsCount);
+  const subtotal = useAppSelector(selectCartSubtotal);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const hasEnsuredCart = useRef(false);
 
   useEffect(() => {
+    if (hasEnsuredCart.current) return;
+    hasEnsuredCart.current = true;
     ensureCart(undefined).catch(() => undefined);
   }, [ensureCart]);
 
@@ -44,13 +58,9 @@ export default function MiniCart({ onCloseMenu }: MiniCartProps) {
     };
   }, [isOpen]);
 
-  const items = useMemo(() => data?.items ?? [], [data?.items]);
-  const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
-  const subtotal = data?.subtotal_amount ?? 0;
-
   const isNotFound =
-    !data && error && typeof error === 'object' && 'status' in error && error.status === 404;
-  const isDataEmpty = Boolean(data) && items.length === 0;
+    !cart && error && typeof error === 'object' && 'status' in error && error.status === 404;
+  const isDataEmpty = Boolean(cart) && items.length === 0;
   const isEmpty = isNotFound || isDataEmpty;
 
   const toggleOpen = () => {
@@ -138,7 +148,7 @@ export default function MiniCart({ onCloseMenu }: MiniCartProps) {
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium text-neutral-900">x{item.quantity}</span>
                       <span className="text-neutral-500">
-                        {formatCurrency(item.line_total, data?.currency)}
+                        {formatCurrency(item.line_total, cart?.currency)}
                       </span>
                     </div>
                   </li>
@@ -153,7 +163,7 @@ export default function MiniCart({ onCloseMenu }: MiniCartProps) {
 
               <div className="mt-3 flex items-center justify-between text-sm font-semibold text-neutral-900">
                 <span>Subtotal</span>
-                <span>{formatCurrency(subtotal, data?.currency)}</span>
+                <span>{formatCurrency(subtotal, cart?.currency)}</span>
               </div>
 
               <Link
