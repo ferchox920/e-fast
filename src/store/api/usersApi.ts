@@ -1,5 +1,6 @@
 import { baseApi } from './baseApi';
 import type { UserCreate, UserRead, UserUpdate } from '@/types/user';
+import { setUser } from '@/store/slices/userSlice';
 
 export type RegisterBody = Pick<UserCreate, 'email' | 'password' | 'full_name'> &
   Partial<UserCreate>;
@@ -24,6 +25,14 @@ export const usersApi = baseApi.injectEndpoints({
     me: build.query<UserRead, void>({
       query: () => ({ url: '/users/me' }),
       providesTags: ['User'],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch {
+          // No-op: errores se manejan en capa de consumo.
+        }
+      },
     }),
 
     /**
@@ -36,6 +45,14 @@ export const usersApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: ['User'],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch {
+          // No-op.
+        }
+      },
     }),
   }),
 });
