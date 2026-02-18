@@ -1,5 +1,11 @@
 import { baseApi } from './baseApi';
-import type { CartRead } from '@/types/cart';
+import type {
+  CartCreatePayload,
+  CartItemCreatePayload,
+  CartItemRemovePayload,
+  CartItemUpdatePayload,
+  CartRead,
+} from '@/types/cart';
 import { getOrCreateGuestToken } from '@/lib/guestToken';
 
 const resolveGuestToken = (explicit?: string | null) => {
@@ -10,10 +16,7 @@ const resolveGuestToken = (explicit?: string | null) => {
 
 export const cartApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    createOrGetCart: build.mutation<
-      CartRead,
-      { guestToken?: string | null; currency?: string } | void
-    >({
+    createOrGetCart: build.mutation<CartRead, CartCreatePayload | void>({
       query: (args) => {
         const guestToken = resolveGuestToken(args?.guestToken ?? null);
         return {
@@ -28,7 +31,7 @@ export const cartApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Cart', id: 'CURRENT' }],
     }),
 
-    getCart: build.query<CartRead, { guestToken?: string | null } | void>({
+    getCart: build.query<CartRead, Pick<CartCreatePayload, 'guestToken'> | void>({
       query: (args) => {
         const guestToken = resolveGuestToken(args?.guestToken ?? null);
         return {
@@ -40,10 +43,7 @@ export const cartApi = baseApi.injectEndpoints({
         result ? [{ type: 'Cart', id: 'CURRENT' }] : [{ type: 'Cart', id: 'MISSING' }],
     }),
 
-    addCartItem: build.mutation<
-      CartRead,
-      { variantId: string; quantity: number; guestToken?: string | null }
-    >({
+    addCartItem: build.mutation<CartRead, CartItemCreatePayload>({
       query: ({ variantId, quantity, guestToken }) => {
         const token = resolveGuestToken(guestToken ?? null);
         return {
@@ -59,10 +59,7 @@ export const cartApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Cart', id: 'CURRENT' }],
     }),
 
-    updateCartItem: build.mutation<
-      CartRead,
-      { itemId: string; quantity: number; guestToken?: string | null }
-    >({
+    updateCartItem: build.mutation<CartRead, CartItemUpdatePayload>({
       query: ({ itemId, quantity, guestToken }) => {
         const token = resolveGuestToken(guestToken ?? null);
         return {
@@ -77,7 +74,7 @@ export const cartApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Cart', id: 'CURRENT' }],
     }),
 
-    removeCartItem: build.mutation<CartRead, { itemId: string; guestToken?: string | null }>({
+    removeCartItem: build.mutation<CartRead, CartItemRemovePayload>({
       query: ({ itemId, guestToken }) => {
         const token = resolveGuestToken(guestToken ?? null);
         return {
@@ -94,6 +91,7 @@ export const cartApi = baseApi.injectEndpoints({
 export const {
   useCreateOrGetCartMutation,
   useGetCartQuery,
+  useLazyGetCartQuery,
   useAddCartItemMutation,
   useUpdateCartItemMutation,
   useRemoveCartItemMutation,
