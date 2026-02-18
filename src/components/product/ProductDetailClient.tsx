@@ -9,6 +9,7 @@ import ProductQuestions from './ProductQuestions';
 import type { ProductRead } from '@/types/product';
 import { useCreateOrGetCartMutation, useAddCartItemMutation } from '@/store/api/cartApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { selectCartError, selectCartStatus } from '@/store/slices/cartSlice';
 import { selectWishIds, toggleWish } from '@/store/slices/wishesSlice';
 
 interface ProductDetailClientProps {
@@ -34,6 +35,8 @@ const getErrorMessage = (err: unknown, fallback: string) => {
 export function ProductDetailClient({ slug, initialProduct }: ProductDetailClientProps) {
   const dispatch = useAppDispatch();
   const wishIds = useAppSelector(selectWishIds);
+  const cartStatus = useAppSelector(selectCartStatus);
+  const cartError = useAppSelector(selectCartError);
   const { data, currentData, isLoading, isFetching, isError, error, refetch } =
     useGetProductBySlugQuery(slug, {
       skip: !slug,
@@ -217,7 +220,7 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
     } catch (err) {
       setFeedback({
         type: 'error',
-        message: getErrorMessage(err, 'No pudimos agregar el producto al carrito.'),
+        message: cartError ?? getErrorMessage(err, 'No pudimos agregar el producto al carrito.'),
       });
     }
   };
@@ -466,6 +469,9 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
                     {feedback.message}
                   </p>
                 )}
+                {!feedback && cartStatus === 'failed' && cartError ? (
+                  <p className="text-xs text-red-600">{cartError}</p>
+                ) : null}
               </>
             ) : (
               <p className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-600">
