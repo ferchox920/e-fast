@@ -7,7 +7,10 @@ import { rootReducer, type RootReducerState } from '@/store/rootReducer';
 import { setSession, setUser } from '@/store/slices/userSlice';
 import type { UserRead } from '@/types/user';
 
-const TEST_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+const TEST_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ??
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
+  'http://localhost:8000/api/v1';
 
 const testApi = baseApi.injectEndpoints({
   overrideExisting: true,
