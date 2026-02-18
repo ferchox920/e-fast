@@ -7,13 +7,8 @@ import {
   useRequestVerifyEmailMutation,
 } from '@/store/api/authApi';
 import { useRegisterMutation, useLazyMeQuery, useUpdateMeMutation } from '@/store/api/usersApi';
-import { useAppDispatch, useAppSelector, useLogoutHandler } from '@/store/hooks';
-import {
-  setSession,
-  updateAccessToken,
-  setUser,
-  createEmptySession,
-} from '@/store/slices/userSlice';
+import { useAppSelector, useLogoutHandler } from '@/store/hooks';
+import { createEmptySession } from '@/store/slices/userSlice';
 
 // ⛔️ Quitar este import roto:
 // import { isFetchBaseQueryError } from '@reduxjs/toolkit/query';
@@ -64,7 +59,6 @@ const profileFieldDefinitions: ReadonlyArray<ProfileFieldDefinition> = [
 ];
 
 export default function UserPlayground() {
-  const dispatch = useAppDispatch();
   const logout = useLogoutHandler();
   const userState = useAppSelector((s) => s.user);
   const user = userState?.current ?? null;
@@ -110,21 +104,8 @@ export default function UserPlayground() {
         full_name: regName || null,
       }).unwrap();
 
-      const res = await login({ email: regEmail, password: regPassword }).unwrap();
-      dispatch(
-        setSession({
-          accessToken: res.access_token,
-          refreshToken: res.refresh_token,
-          tokenType: res.token_type,
-          expiresIn: res.expires_in,
-          scopes: res.scopes ?? null,
-          issuedAt: Date.now(),
-        }),
-      );
-      dispatch(setUser(res.user));
-
-      const me = await fetchMe().unwrap();
-      dispatch(setUser(me));
+      await login({ email: regEmail, password: regPassword }).unwrap();
+      await fetchMe().unwrap();
 
       alert('Usuario creado y logueado ✅');
     } catch (e) {
@@ -134,21 +115,8 @@ export default function UserPlayground() {
 
   const doLogin = async () => {
     try {
-      const res = await login({ email, password }).unwrap();
-      dispatch(
-        setSession({
-          accessToken: res.access_token,
-          refreshToken: res.refresh_token,
-          tokenType: res.token_type,
-          expiresIn: res.expires_in,
-          scopes: res.scopes ?? null,
-          issuedAt: Date.now(),
-        }),
-      );
-      dispatch(setUser(res.user));
-
-      const me = await fetchMe().unwrap();
-      dispatch(setUser(me));
+      await login({ email, password }).unwrap();
+      await fetchMe().unwrap();
     } catch (e) {
       handleRtkError(e, 'login/fetchMe');
     }
@@ -157,19 +125,8 @@ export default function UserPlayground() {
   const doRefresh = async () => {
     if (!refreshTok) return;
     try {
-      const res = await refresh({ refresh_token: refreshTok }).unwrap();
-      dispatch(
-        updateAccessToken({
-          accessToken: res.access_token,
-          tokenType: res.token_type,
-          expiresIn: res.expires_in,
-          scopes: res.scopes ?? null,
-          issuedAt: Date.now(),
-        }),
-      );
-
-      const me = await fetchMe().unwrap();
-      dispatch(setUser(me));
+      await refresh({ refresh_token: refreshTok }).unwrap();
+      await fetchMe().unwrap();
     } catch (e) {
       handleRtkError(e, 'refresh/fetchMe');
     }
@@ -190,7 +147,6 @@ export default function UserPlayground() {
     try {
       const payload = prepareUpdatePayload(profileForm);
       const updated = await updateProfile(payload).unwrap();
-      dispatch(setUser(updated));
       setProfileForm(toProfileFormValues(updated));
       alert('Perfil actualizado ✅');
     } catch (e) {
