@@ -6,7 +6,10 @@ import notificationsReducer from '@/store/slices/notificationsSlice';
 import userReducer, { type UserState } from '@/store/slices/userSlice';
 import { server } from '@/test-utils/msw/server';
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1';
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ??
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
+  'http://localhost:8000/api/v1';
 
 const preloadedUserState: UserState = {
   current: null,
