@@ -8,8 +8,6 @@ import LoginLayout from './LoginLayout';
 import LoginHero from './LoginHero';
 import LoginForm from './LoginForm';
 import { useLoginMutation } from '@/store/api/authApi';
-import { useAppDispatch } from '@/store/hooks';
-import { setSession, setUser } from '@/store/slices/userSlice';
 
 function extractErrorMessage(error: unknown): string {
   if (!error || typeof error !== 'object') {
@@ -35,7 +33,6 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export default function LoginPageClient() {
-  const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -56,19 +53,7 @@ export default function LoginPageClient() {
   const handleSubmit = async () => {
     try {
       setErrorMessage(null);
-      const result = await login({ email: email.trim(), password }).unwrap();
-
-      dispatch(
-        setSession({
-          accessToken: result.access_token,
-          refreshToken: rememberMe ? result.refresh_token : null,
-          tokenType: result.token_type,
-          expiresIn: result.expires_in,
-          scopes: result.scopes ?? null,
-          issuedAt: Date.now(),
-        }),
-      );
-      dispatch(setUser(result.user));
+      const result = await login({ email: email.trim(), password, rememberMe }).unwrap();
 
       const isAdminUser =
         result.user?.is_superuser === true ||
