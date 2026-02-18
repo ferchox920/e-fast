@@ -53,6 +53,7 @@ export default function NavBarPlayground() {
   const [showCategories, setShowCategories] = useState(true);
   const [userPreset, setUserPreset] = useState<UserPreset>('anonymous');
   const [lastAction, setLastAction] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const popularSearches = useMemo(
     () => ['Sneakers blancas', 'Blazer oversize', 'Joggers', 'Sombreros bucket', 'Perfume floral'],
     [],
@@ -80,9 +81,16 @@ export default function NavBarPlayground() {
     });
   }, [userPreset]);
 
-  const handleLogout = () => {
-    setUserPreset('anonymous');
-    setLastAction('Se ejecuto onLogout desde el NavBar');
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setUserPreset('anonymous');
+      setLastAction('Se ejecutó onLogout desde el NavBar');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -111,6 +119,7 @@ export default function NavBarPlayground() {
                 popularSearches={popularSearches}
                 user={user}
                 onLogout={handleLogout}
+                isLogoutPending={isLoggingOut}
               />
             </div>
           </article>
@@ -128,6 +137,7 @@ export default function NavBarPlayground() {
                   popularSearches={popularSearches}
                   user={user}
                   onLogout={handleLogout}
+                  isLogoutPending={isLoggingOut}
                 />
               </div>
             </div>
