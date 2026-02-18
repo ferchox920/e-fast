@@ -1,6 +1,7 @@
-'use client';
+﻿'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch, useLogoutHandler } from '@/store/hooks';
 import { setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
@@ -9,10 +10,12 @@ import type { NavBarCategoryGroup } from './NavBar';
 
 export default function Header() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const user = useAppSelector((state) => state.user?.current ?? null);
   const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
 
   const [triggerFetchMe, { data: fetchedUser, isFetching: isFetchingMe }] = useLazyMeQuery();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const categoryGroups: NavBarCategoryGroup[] = [
     {
@@ -41,9 +44,17 @@ export default function Header() {
 
   const logout = useLogoutHandler();
 
-  const handleLogout = () => {
-    void logout();
-  };
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      router.replace('/');
+      router.refresh();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, logout, router]);
 
   return (
     <NavBar
@@ -52,6 +63,7 @@ export default function Header() {
       categoryGroups={categoryGroups}
       user={user}
       onLogout={handleLogout}
+      isLogoutPending={isLoggingOut}
     />
   );
 }
