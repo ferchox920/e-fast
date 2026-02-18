@@ -16,7 +16,7 @@ import {
   useUpdateProductMutation,
   useUpdateVariantMutation,
 } from '@/store/api/productApi';
-import { useGetCategoriesQuery, useGetBrandsQuery } from '@/store/api/catalogApi';
+import { useGetCategoriesQuery, useListAllBrandsAdminQuery } from '@/store/api/catalogApi';
 import type {
   Product,
   ProductImageRead,
@@ -149,7 +149,7 @@ export default function AdminProductEditPage({ slug }: AdminProductEditPageProps
   const [updateVariant] = useUpdateVariantMutation();
 
   const { data: categories } = useGetCategoriesQuery();
-  const { data: brands } = useGetBrandsQuery();
+  const { data: brands } = useListAllBrandsAdminQuery();
 
   useEffect(() => {
     if (!data) return;
