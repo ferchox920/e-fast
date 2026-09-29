@@ -13,6 +13,7 @@ import {
 } from '@/notifications/hooks';
 import type { NotificationEntity } from '@/notifications/normalize';
 import { formatRelativeTime } from '@/notifications/utils';
+import { apiErrorMessage } from '@/lib/apiError';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -162,21 +163,7 @@ export default function NotificationDropdown({
     }
 
     if (isError) {
-      let errorDetails: string | null = null;
-      if (error && typeof error === 'object') {
-        if ('status' in error) {
-          const statusPart = typeof error.status === 'number' ? `(${error.status}) ` : '';
-          const dataPart =
-            'data' in error && error.data != null
-              ? typeof error.data === 'string'
-                ? error.data
-                : JSON.stringify(error.data)
-              : 'Error desconocido';
-          errorDetails = `${statusPart}${dataPart}`;
-        } else if ('message' in error && error.message) {
-          errorDetails = error.message;
-        }
-      }
+      const errorDetails = apiErrorMessage(error);
 
       return (
         <div className="space-y-2 py-6 text-center text-sm text-red-600" role="alert">

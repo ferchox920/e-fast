@@ -2,35 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { apiErrorMessage } from '@/lib/apiError';
 
 import LoginLayout from './LoginLayout';
 import LoginHero from './LoginHero';
 import LoginForm from './LoginForm';
 import { useLoginMutation } from '@/store/api/authApi';
-
-function extractErrorMessage(error: unknown): string {
-  if (!error || typeof error !== 'object') {
-    return 'Ha ocurrido un error inesperado. Intenta nuevamente.';
-  }
-
-  if ('status' in error) {
-    const fetchError = error as FetchBaseQueryError & { data?: unknown };
-    const data = fetchError.data;
-
-    if (data && typeof data === 'object' && 'detail' in data && typeof data.detail === 'string') {
-      return data.detail;
-    }
-
-    if (typeof fetchError.status === 'number' && fetchError.status >= 500) {
-      return 'Servicio temporalmente no disponible. Intenta más tarde.';
-    }
-
-    return 'Revisa tus credenciales e intenta nuevamente.';
-  }
-
-  return 'No pudimos procesar tu solicitud. Intenta de nuevo.';
-}
 
 export default function LoginPageClient() {
   const router = useRouter();
@@ -38,7 +15,6 @@ export default function LoginPageClient() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -53,7 +29,7 @@ export default function LoginPageClient() {
   const handleSubmit = async () => {
     try {
       setErrorMessage(null);
-      const result = await login({ email: email.trim(), password, rememberMe }).unwrap();
+      const result = await login({ email: email.trim(), password }).unwrap();
 
       const isAdminUser =
         result.user?.is_superuser === true ||
@@ -61,7 +37,9 @@ export default function LoginPageClient() {
 
       const requestedRedirect = searchParams?.get('redirect') ?? null;
       const normalizedRedirect =
-        requestedRedirect && requestedRedirect.startsWith('/') ? requestedRedirect : null;
+        requestedRedirect?.startsWith('/') && !requestedRedirect.startsWith('//')
+          ? requestedRedirect
+          : null;
 
       const safeRedirect =
         normalizedRedirect && !isAdminUser && normalizedRedirect.startsWith('/admin')
@@ -73,7 +51,7 @@ export default function LoginPageClient() {
 
       router.replace(targetRoute);
     } catch (error) {
-      setErrorMessage(extractErrorMessage(error));
+      setErrorMessage(apiErrorMessage(error));
     }
   };
 
@@ -94,14 +72,12 @@ export default function LoginPageClient() {
           <LoginForm
             email={email}
             password={password}
-            rememberMe={rememberMe}
             isLoading={isLoading}
             showPassword={showPassword}
             errorMessage={errorMessage}
             isSubmitDisabled={isSubmitDisabled}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
-            onRememberMeChange={setRememberMe}
             onTogglePassword={() => setShowPassword((prev) => !prev)}
             onSubmit={handleSubmit}
           />

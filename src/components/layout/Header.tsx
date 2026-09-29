@@ -7,6 +7,7 @@ import { setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
 import NavBar from './NavBar';
 import type { NavBarCategoryGroup } from './NavBar';
+import { useGetCategoriesQuery } from '@/store/api/catalogApi';
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -16,27 +17,21 @@ export default function Header() {
 
   const [triggerFetchMe, { data: fetchedUser, isFetching: isFetchingMe }] = useLazyMeQuery();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { data: categories = [] } = useGetCategoriesQuery();
 
-  const categoryGroups: NavBarCategoryGroup[] = [
-    {
-      id: 'men',
-      name: '\u2642 Hombres',
-      items: [
-        { id: 'men-ropa', name: 'Ropa', slug: 'hombres/ropa' },
-        { id: 'men-zapatos', name: 'Zapatos', slug: 'hombres/zapatos' },
-        { id: 'men-accesorios', name: 'Accesorios', slug: 'hombres/accesorios' },
-      ],
-    },
-    {
-      id: 'women',
-      name: '\u2640 Mujeres',
-      items: [
-        { id: 'women-ropa', name: 'Ropa', slug: 'mujeres/ropa' },
-        { id: 'women-zapatos', name: 'Zapatos', slug: 'mujeres/zapatos' },
-        { id: 'women-accesorios', name: 'Accesorios', slug: 'mujeres/accesorios' },
-      ],
-    },
-  ];
+  const categoryGroups: NavBarCategoryGroup[] = categories.length
+    ? [
+        {
+          id: 'catalog',
+          name: 'Categorías',
+          items: categories.map((category) => ({
+            id: String(category.id),
+            name: category.name,
+            slug: String(category.id),
+          })),
+        },
+      ]
+    : [];
   useEffect(() => {
     if (token && !user && !isFetchingMe) triggerFetchMe();
     if (fetchedUser) dispatch(setUser(fetchedUser));

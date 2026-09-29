@@ -6,7 +6,7 @@ import { reset as resetNotifications } from '@/store/slices/notificationsSlice';
 import { clearAll as clearAllWishes } from '@/store/slices/wishesSlice';
 import type { OAuthProvider } from '@/types/user';
 
-type LoginBody = { email: string; password: string; rememberMe?: boolean };
+type LoginBody = { email: string; password: string };
 type RefreshBody = { refresh_token: string };
 type VerifyEmailBody = { email: string };
 type VerifyConfirmParams = { token: string };
@@ -58,10 +58,9 @@ export const authApi = baseApi.injectEndpoints({
         },
       }),
       invalidatesTags: ['User'],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const rememberMe = arg.rememberMe ?? true;
           const scopes =
             Array.isArray(data.scopes) && data.scopes.length > 0
               ? data.scopes
@@ -72,7 +71,7 @@ export const authApi = baseApi.injectEndpoints({
           dispatch(
             setSession({
               accessToken: data.access_token,
-              refreshToken: rememberMe ? data.refresh_token : null,
+              refreshToken: data.refresh_token,
               tokenType: data.token_type,
               expiresIn: data.expires_in,
               scopes,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
 import ProductCardGrid from '@/components/product/ProductCardGrid';
 import { useGetProductsQuery } from '@/store/api/productApi';
@@ -19,6 +19,11 @@ export default function ProductsPage() {
     category: '',
     brand: '',
   });
+
+  useEffect(() => {
+    const category = new URLSearchParams(window.location.search).get('category');
+    if (category) setAppliedFilters((current) => ({ ...current, category }));
+  }, []);
 
   const { data, isLoading, isFetching, isError, error, refetch } = useGetProductsQuery({
     search: appliedFilters.search || undefined,

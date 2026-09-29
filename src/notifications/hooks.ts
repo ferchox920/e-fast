@@ -97,19 +97,27 @@ export const useNotificationStream = () => {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
   const status = useAppSelector((state) => state.user?.status ?? 'idle');
+  const userId = useAppSelector((state) => state.user?.current?.id ?? null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    if (!NOTIFICATIONS_WS_ENABLED || !token || status !== 'authenticated') {
+    if (!NOTIFICATIONS_WS_ENABLED || !token || !userId || status !== 'authenticated') {
       notificationWSClient.disconnect();
       return;
     }
 
     const unsubscribe = notificationWSClient.onNotification((payload) => {
-      dispatch(upsertOne(payload as NotificationRead));
+      dispatch(
+        upsertOne({
+          ...payload,
+          user_id: userId,
+          is_read: false,
+          read_at: null,
+        } as NotificationRead),
+      );
     });
 
     try {
@@ -124,7 +132,7 @@ export const useNotificationStream = () => {
       unsubscribe();
       notificationWSClient.disconnect();
     };
-  }, [dispatch, status, token]);
+  }, [dispatch, status, token, userId]);
 };
 
 export const useNotificationConnectionStatus = () => {

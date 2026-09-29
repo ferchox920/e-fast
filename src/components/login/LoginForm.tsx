@@ -11,7 +11,6 @@ export interface LoginFormSocialButton {
 export interface LoginFormProps {
   email: string;
   password: string;
-  rememberMe: boolean;
   isLoading?: boolean;
   showPassword?: boolean;
   errorMessage?: string | null;
@@ -21,7 +20,6 @@ export interface LoginFormProps {
   socialButtons?: LoginFormSocialButton[];
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
-  onRememberMeChange: (value: boolean) => void;
   onTogglePassword: () => void;
   onSubmit: () => void;
 }
@@ -29,7 +27,6 @@ export interface LoginFormProps {
 export default function LoginForm({
   email,
   password,
-  rememberMe,
   isLoading = false,
   showPassword = false,
   errorMessage = null,
@@ -39,7 +36,6 @@ export default function LoginForm({
   socialButtons,
   onEmailChange,
   onPasswordChange,
-  onRememberMeChange,
   onTogglePassword,
   onSubmit,
 }: LoginFormProps) {
@@ -106,16 +102,7 @@ export default function LoginForm({
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <label className="inline-flex items-center gap-2 text-neutral-600">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(event) => onRememberMeChange(event.target.checked)}
-              className="rounded border-neutral-300 text-indigo-500 focus:ring-indigo-400"
-              disabled={isLoading}
-            />
-            Recordarme
-          </label>
+          <span className="text-neutral-500">La sesión termina al recargar la página.</span>
           <Link
             href={forgotPasswordHref}
             className="font-medium text-indigo-500 hover:text-indigo-600"

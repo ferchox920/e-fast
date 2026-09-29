@@ -5,12 +5,10 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import type { RootState } from '@/store';
 import { clearUser, updateAccessToken } from '@/store/slices/userSlice';
 import type { TokenRefresh } from '@/types/user';
+import { getApiBaseUrl } from '@/lib/apiConfig';
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl:
-    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ??
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
-    'http://localhost:8000/api/v1',
+  baseUrl: getApiBaseUrl(),
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const session = state.user?.session;
@@ -113,17 +111,26 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   api,
   extraOptions,
 ) => {
+  const request = typeof args === 'string' ? { url: args, method: 'GET' } : args;
+  const isAuthRequest =
+    request.url.startsWith('/auth/login') ||
+    request.url.startsWith('/auth/refresh') ||
+    request.url.startsWith('/auth/oauth/');
+  const isSafeRead =
+    !request.method ||
+    request.method.toUpperCase() === 'GET' ||
+    request.method.toUpperCase() === 'HEAD';
   const state = api.getState() as RootState;
   const expiresAt = state.user?.session?.expiresAt;
-  if (expiresAt && expiresAt - Date.now() <= 30_000) {
+  if (!isAuthRequest && expiresAt && expiresAt - Date.now() <= 30_000) {
     await performRefresh(api, extraOptions);
   }
 
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  if (!isAuthRequest && result.error && result.error.status === 401) {
     const refreshed = await performRefresh(api, extraOptions);
-    if (refreshed) {
+    if (refreshed && isSafeRead) {
       result = await rawBaseQuery(args, api, extraOptions);
     } else if (!state.user?.session?.refreshToken) {
       api.dispatch(clearUser());

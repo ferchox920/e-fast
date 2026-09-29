@@ -21,7 +21,7 @@ describe('CartSummaryCard', () => {
     expect(screen.getByText('Subtotal')).toBeInTheDocument();
     const formatter = new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
+      currency: 'ARS',
       minimumFractionDigits: 2,
     });
     const formattedTotal = formatter.format(100).replace(/\s/g, '');

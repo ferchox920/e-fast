@@ -1,15 +1,13 @@
 'use client';
 
 import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistor } from '@/store';
+import { useEffect } from 'react';
+import { store } from '@/store';
 
 export default function ReduxProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        {children}
-      </PersistGate>
-    </Provider>
-  );
+  useEffect(() => {
+    // Remove tokens left by versions that persisted the whole Redux tree.
+    window.localStorage.removeItem('persist:root');
+  }, []);
+  return <Provider store={store}>{children}</Provider>;
 }

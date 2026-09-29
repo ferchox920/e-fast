@@ -6,7 +6,6 @@ import LoginForm, { type LoginFormProps } from '../LoginForm';
 const baseProps: LoginFormProps = {
   email: 'demo@myapp.test',
   password: '12345678',
-  rememberMe: true,
   isLoading: false,
   showPassword: false,
   errorMessage: null,
@@ -14,7 +13,6 @@ const baseProps: LoginFormProps = {
   socialButtons: [{ label: 'Google', onClick: jest.fn() }],
   onEmailChange: jest.fn(),
   onPasswordChange: jest.fn(),
-  onRememberMeChange: jest.fn(),
   onTogglePassword: jest.fn(),
   onSubmit: jest.fn(),
 };
@@ -35,15 +33,14 @@ describe('LoginForm', () => {
     expect(baseProps.onSubmit).toHaveBeenCalled();
   });
 
-  it('toggles password visibility and remember me', async () => {
+  it('toggles password visibility and explains session lifetime', async () => {
     const user = userEvent.setup();
     render(<LoginForm {...baseProps} />);
 
     await user.click(screen.getByRole('button', { name: /Mostrar/ }));
     expect(baseProps.onTogglePassword).toHaveBeenCalled();
 
-    await user.click(screen.getByLabelText(/Recordarme/i));
-    expect(baseProps.onRememberMeChange).toHaveBeenCalledWith(false);
+    expect(screen.getByText(/sesión termina al recargar/i)).toBeInTheDocument();
   });
 
   it('renders error message and social buttons', () => {

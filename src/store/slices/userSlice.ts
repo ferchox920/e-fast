@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { REHYDRATE } from 'redux-persist';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { TokenType, UserRead } from '@/types/user';
 
@@ -64,77 +63,6 @@ const buildSession = (payload: SetSessionPayload): AuthSessionState => {
   };
 };
 
-const normalizeSession = (payload?: unknown): AuthSessionState => {
-  const base = createEmptySession();
-  if (!payload || typeof payload !== 'object') {
-    return base;
-  }
-
-  const session = payload as Partial<AuthSessionState> & {
-    token?: string | null;
-    access_token?: string | null;
-    refresh_token?: string | null;
-    token_type?: string | null;
-    expires_in?: number | null;
-    expires_at?: number | null;
-  };
-
-  const legacy = payload as {
-    token?: string | null;
-    refresh_token?: string | null;
-    scopes?: unknown;
-  };
-
-  const coerceString = (value: unknown): string | null =>
-    typeof value === 'string' && value.length > 0 ? value : null;
-
-  const accessToken =
-    coerceString(session.accessToken) ??
-    coerceString(session.access_token) ??
-    coerceString(legacy.token);
-
-  const refreshToken =
-    coerceString(session.refreshToken) ??
-    coerceString(session.refresh_token) ??
-    coerceString(legacy.refresh_token);
-
-  const rawTokenType = coerceString(session.tokenType) ?? coerceString(session.token_type);
-
-  const tokenType = rawTokenType ?? (accessToken ? 'bearer' : null);
-
-  const expiresIn =
-    typeof session.expiresIn === 'number'
-      ? session.expiresIn
-      : typeof session.expires_in === 'number'
-        ? session.expires_in
-        : null;
-
-  const expiresAt =
-    typeof session.expiresAt === 'number' && Number.isFinite(session.expiresAt)
-      ? session.expiresAt
-      : typeof session.expires_at === 'number' && Number.isFinite(session.expires_at)
-        ? session.expires_at
-        : null;
-
-  const coerceScopes = (value: unknown): string[] => {
-    if (!Array.isArray(value)) return [];
-    return value.map((item) => String(item)).filter((item) => item.length > 0);
-  };
-
-  const sessionScopes = coerceScopes((session as { scopes?: unknown }).scopes);
-  const legacyScopes = coerceScopes(legacy.scopes);
-  const scopes = sessionScopes.length ? sessionScopes : legacyScopes;
-
-  return {
-    accessToken: accessToken ?? null,
-    refreshToken: refreshToken ?? null,
-    tokenType: tokenType ?? (accessToken ? 'bearer' : null),
-    expiresIn,
-    expiresAt,
-    scopes,
-  };
-};
-
 const ensureSession = (state: { session?: AuthSessionState | null }): AuthSessionState => {
   if (!state.session) {
     state.session = createEmptySession();
@@ -142,16 +70,10 @@ const ensureSession = (state: { session?: AuthSessionState | null }): AuthSessio
   return state.session;
 };
 
-type PersistedUserState = Partial<UserState> & {
-  token?: string | null;
-  refresh_token?: string | null;
-  session?: unknown;
-};
-
 const initialState: UserState = {
   current: null,
   session: createEmptySession(),
-  status: 'idle',
+  status: 'anonymous',
 };
 
 const userSlice = createSlice({
@@ -199,31 +121,6 @@ const userSlice = createSlice({
     setStatus(state, action: PayloadAction<AuthStatus>) {
       state.status = action.payload;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(REHYDRATE, (state, action) => {
-      const payload = (action as PayloadAction<{ user?: PersistedUserState } | undefined>).payload;
-      const inbound = payload?.user;
-      if (!inbound) {
-        return;
-      }
-
-      state.current = (inbound.current as UserRead | null) ?? null;
-
-      const normalizedSession = normalizeSession(
-        inbound.session ?? {
-          token: inbound.token ?? null,
-          refresh_token: inbound.refresh_token ?? null,
-          scopes: (inbound as Record<string, unknown>)?.scopes,
-        },
-      );
-
-      state.session = normalizedSession;
-      if (!normalizedSession.accessToken) {
-        state.current = null;
-      }
-      state.status = normalizedSession.accessToken ? 'authenticated' : 'anonymous';
-    });
   },
 });
 

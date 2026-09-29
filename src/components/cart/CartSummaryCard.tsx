@@ -14,12 +14,13 @@ export interface CartSummaryCardProps {
   lines: CartSummaryLine[];
   footer?: ReactNode;
   cta?: ReactNode;
+  currency?: string;
 }
 
-const formatCurrency = (value: number) =>
+const formatCurrency = (value: number, currency: string) =>
   new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'EUR',
+    currency,
     minimumFractionDigits: 2,
   }).format(value);
 
@@ -34,6 +35,7 @@ export default function CartSummaryCard({
   lines,
   cta,
   footer,
+  currency = 'ARS',
 }: CartSummaryCardProps) {
   return (
     <aside className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
@@ -49,7 +51,9 @@ export default function CartSummaryCard({
         {lines.map((line) => (
           <div key={line.id} className="flex items-center justify-between">
             <dt className={lineClassNames[line.type ?? 'default']}>{line.label}</dt>
-            <dd className={lineClassNames[line.type ?? 'default']}>{formatCurrency(line.value)}</dd>
+            <dd className={lineClassNames[line.type ?? 'default']}>
+              {formatCurrency(line.value, currency)}
+            </dd>
           </div>
         ))}
       </dl>

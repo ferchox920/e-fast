@@ -48,14 +48,11 @@ export const ZNotificationUpdate = z.object({
 
 export const ZWsPayload = ZNotificationRead.pick({
   id: true,
-  user_id: true,
   type: true,
   title: true,
   message: true,
   payload: true,
-  is_read: true,
   created_at: true,
-  read_at: true,
 });
 
 export type NotificationWsPayload = z.infer<typeof ZWsPayload>;

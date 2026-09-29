@@ -17,7 +17,7 @@ interface MiniCartProps {
   onCloseMenu: () => void;
 }
 
-const formatCurrency = (value: number, currency = 'EUR') =>
+const formatCurrency = (value: number, currency = 'ARS') =>
   new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency,

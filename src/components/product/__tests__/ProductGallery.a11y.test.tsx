@@ -37,7 +37,9 @@ describe('ProductGallery accessibility', () => {
       expect(srOnlyLabel).toBeInTheDocument();
     });
 
-    const thumbImages = screen.getAllByRole('img');
+    const thumbImages = within(screen.getByTestId('product-gallery-thumbnails')).getAllByRole(
+      'img',
+    );
     thumbImages.forEach((img) => {
       expect(img).toHaveAttribute('alt');
       expect(img).toHaveAttribute('loading', 'lazy');

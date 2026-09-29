@@ -49,6 +49,8 @@ export interface OrderLineRead {
   quantity: number;
   unit_price: number;
   line_total: number;
+  sku_snapshot: string | null;
+  product_title_snapshot: string | null;
 }
 
 export interface PaymentRead {
@@ -58,9 +60,12 @@ export interface PaymentRead {
   status: PaymentStatus;
   status_detail?: string | null;
   amount: number;
+  refunded_amount: number;
   currency: string;
   init_point?: string | null;
   sandbox_init_point?: string | null;
+  refunded_at: ISODateTime | null;
+  refund_reason: string | null;
   created_at: ISODateTime;
   updated_at?: ISODateTime | null;
 }
@@ -81,6 +86,7 @@ export interface ShipmentRead {
 export interface OrderRead {
   id: UUID | string;
   user_id?: string | null;
+  applied_promotion_id: string | null;
   status: OrderStatus;
   payment_status: PaymentStatus;
   shipping_status: ShippingStatus;
@@ -95,6 +101,7 @@ export interface OrderRead {
   paid_at?: ISODateTime | null;
   fulfilled_at?: ISODateTime | null;
   cancelled_at?: ISODateTime | null;
+  refunded_at: ISODateTime | null;
   created_at: ISODateTime;
   updated_at?: ISODateTime | null;
   lines: OrderLineRead[];
@@ -104,6 +111,7 @@ export interface OrderRead {
 
 export interface OrderFromCartPayload {
   guest_token?: string | null;
+  promotion_id?: string | null;
 }
 
 export interface ListOrdersParams {

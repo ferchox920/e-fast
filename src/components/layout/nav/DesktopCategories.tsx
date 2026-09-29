@@ -112,7 +112,7 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
                 {group.items.map((item) => (
                   <Link
                     key={item.id}
-                    href={`/categorias/${item.slug}`}
+                    href={`/products?category=${encodeURIComponent(item.slug)}`}
                     className="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
                     role="menuitem"
                     onClick={() => openGroup(null)}

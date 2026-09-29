@@ -82,6 +82,60 @@ afterEach(() => {
 });
 
 describe('NotificationWSClient', () => {
+  it('requiere token y evita conexiones duplicadas mientras conecta', () => {
+    expect(() => notificationWSClient.connect('')).toThrow(/JWT token/);
+    notificationWSClient.connect('jwt-token');
+    notificationWSClient.connect('jwt-token');
+    expect(MockWebSocket.instances).toHaveLength(1);
+    expect(new URL(MockWebSocket.instances[0].url).searchParams.get('token')).toBe('jwt-token');
+  });
+
+  it('limpia listeners y socket al desconectar', async () => {
+    const listener = jest.fn();
+    const unsubscribe = notificationWSClient.onNotification(listener);
+    notificationWSClient.connect('jwt-token');
+    jest.runOnlyPendingTimers();
+    const socket = MockWebSocket.instances[0];
+    unsubscribe();
+    notificationWSClient.disconnect();
+    expect(socket.onmessage).toBeNull();
+    expect(notificationWSClient.getStatus()).toBe('disconnected');
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('no duplica un listener registrado dos veces', () => {
+    const listener = jest.fn();
+    const unsubscribeOne = notificationWSClient.onNotification(listener);
+    const unsubscribeTwo = notificationWSClient.onNotification(listener);
+    notificationWSClient.connect('jwt-token');
+    jest.runOnlyPendingTimers();
+    MockWebSocket.instances[0].triggerMessage(
+      JSON.stringify({
+        id: 'notice',
+        type: 'generic',
+        title: 'Aviso',
+        message: 'Texto',
+        payload: null,
+        created_at: '2026-09-29T00:00:00Z',
+      }),
+    );
+    expect(listener).toHaveBeenCalledTimes(1);
+    unsubscribeOne();
+    unsubscribeTwo();
+  });
+
+  it('acota los intentos de reconexión', async () => {
+    notificationWSClient.connect('jwt-token');
+    jest.runOnlyPendingTimers();
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      const socket = MockWebSocket.instances.at(-1);
+      socket?.close(1006, 'network');
+      jest.runOnlyPendingTimers();
+      await flushMicrotasks();
+    }
+    expect(MockWebSocket.instances.length).toBeLessThanOrEqual(6);
+    expect(notificationWSClient.getStatus()).toBe('disconnected');
+  });
   it('emits status changes on successful connection', async () => {
     const statuses: ConnectionStatus[] = [];
     const unsubscribe = notificationWSClient.onStatusChange((status) => {
@@ -111,14 +165,11 @@ describe('NotificationWSClient', () => {
 
     const payload = {
       id: 'notif-1',
-      user_id: 'user-1',
       type: 'generic',
       title: 'Test',
       message: 'Mensaje',
       payload: null,
-      is_read: false,
       created_at: '2025-01-01T10:00:00Z',
-      read_at: null,
     };
 
     socket?.triggerMessage(JSON.stringify(payload));
