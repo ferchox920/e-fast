@@ -1,6 +1,6 @@
 # Verificación de integración
 
-Los apartados de etapas anteriores conservan evidencia histórica. El estado vigente de la preparación visual previa a fusión está al final.
+Los apartados siguientes conservan evidencia histórica de cada etapa, incluida la condición visual previa que el autor retiró. El cierre autorizado y la evidencia posterior a las fusiones se registran al final; la revisión visual humana sigue pendiente.
 
 ## Referencias fijadas
 
@@ -225,3 +225,19 @@ Verificación local final: lint/formato/tipos verdes; arnés 6 aprobadas; matriz
 **Aprobación visual y funcional del autor pendiente. Ambos PR permanecen abiertos.** La autorización de fusión está condicionada a esa comprobación concreta; no se solicitará una revisión de GitHub inventada ni se omitirán protecciones. Después se fusionará backend, se verificará su main, se conservará el SHA exacto accesible y se fusionará frontend; luego se verificará su main. CV y puntos de entrevista finales se entregarán tras ambos main verdes. No hay despliegue, release, cobro real ni borrado de ramas.
 
 Antes de la entrega se detectó que la captura de login de escritorio repetía el retorno por tomarse durante la transición. Se espera ahora el Email visible antes de capturar. Una vuelta adicional limpia aprobó 22 casos (88.994s, 0 fallidas/omitidas/flaky) y el contrato real; las capturas desktop/móvil de login se reemplazaron e inspeccionaron y muestran el formulario. Es una corrección de evidencia, sin cambios de producto. El entorno temporal del autor corresponde a esta última vuelta.
+
+## Cierre autorizado del 30 de septiembre de 2026
+
+El autor retiró expresamente la confirmación visual humana previa y autorizó fusionar basándose en la revisión técnica y las pruebas automatizadas. La revisión visual humana sigue pendiente y no bloquea este cierre. Las condiciones de apartados anteriores son históricas; no acreditan una revisión humana realizada.
+
+Se comprobaron SHA, bases, conflictos y checks en GitHub, sin omitir protecciones. [Backend PR #1](https://github.com/ferchox920/ecommerce_fast_api/pull/1) se fusionó primero mediante merge commit `04992ab6e5a8be7d6199d701e921f62f08223ada`; su CI y CodeQL pasaron antes de fusionar [frontend PR #1](https://github.com/ferchox920/e-fast/pull/1), merge commit `e1250cb4be7d61d311c3fdd7c1cd63eacdb47754`. Las ramas originales se conservan. El pin exacto `807ab0140a155320bca2419949c80b046db9eece` sigue accesible y es ancestro del main del backend.
+
+Los ajustes posteriores se publicaron mediante PR pequeños: [backend #8](https://github.com/ferchox920/ecommerce_fast_api/pull/8) enlaza frontend y guía; [frontend #5](https://github.com/ferchox920/e-fast/pull/5) documenta la autorización y corrige una espera de prueba. La CI original del ajuste registró 21 aprobadas / 1 fallida: buscar `2` en toda la fila podía coincidir con el precio `0.29` antes del cambio de cantidad. Ahora espera el elemento de cantidad exacta antes del siguiente clic; no cambió código de producción, retries ni escenarios. Ambas ejecuciones del SHA corregido pasaron 22 + 22 antes de fusionar.
+
+Evidencia inspeccionada después de las fusiones:
+
+- Backend main `9dfed1eac708d42d9e5c2572320df67192dcec33`: [CI](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36710703706), [CodeQL](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36710703750); 106 unidad/API, 3 servicios y 8 comercio/concurrencia aprobadas; Ruff, migraciones vacías y dos verificaciones de seeds idempotentes con cero conexiones externas. Una advertencia upstream de deprecación de BlockingPortal, sin fallo.
+- Frontend main `ccd072cd95026e883fa2f090ad5d51e171f33773`: [CI](https://github.com/ferchox920/e-fast/actions/runs/36712552785), [CodeQL](https://github.com/ferchox920/e-fast/actions/runs/36712552769); lint, formato, tipos, build, auditorías npm completa/producción, 92 Jest en 23 suites y 6 controles del arnés verdes. Matriz conservada: 109 filas, cero sin correspondencia.
+- Contrato HTTP/WebSocket real: 1 aprobada, 0 fallidas/omitidas, PostgreSQL/Redis reales y backend fijado, sin MSW. Full-stack de producción: 22 + 22 aprobadas desde servicios limpios, contrato adicional aprobado en cada vuelta y limpieza de recursos propios. [Informes y logs](https://github.com/ferchox920/e-fast/actions/runs/36712552785/artifacts/11095116807). Este registro corresponde a esos SHA; los checks de cualquier commit documental posterior se enlazan en su PR y en la entrega final.
+
+Material accesible: [guía y 23 capturas](../review/author-review.md), [presentación para CV e entrevista](../review/portfolio.md). Límites: proveedor local sin cobros ni validación de Mercado Pago real, envío/impuestos mediante fixtures, móvil Chromium emulado, sesión en memoria y revisión visual humana pendiente. No hubo despliegue, release, licencia nueva ni borrado de ramas. Próxima acción: evaluación visual humana con la guía existente.
