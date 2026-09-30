@@ -192,9 +192,9 @@ test('login inválido, teclado, categoría, variante y edición completa del car
   await page.getByRole('button', { name: 'Limpiar', exact: true }).click();
   await shop(page, request);
   await page.getByRole('button', { name: 'Aumentar cantidad de artículo 1', exact: true }).click();
-  await expect(page.locator('main li').first()).toContainText('2');
+  await expect(page.locator('main li').first().getByText('2', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Reducir cantidad de artículo 1', exact: true }).click();
-  await expect(page.locator('main li').first()).toContainText('1');
+  await expect(page.locator('main li').first().getByText('1', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Quitar', exact: true }).click();
   await expect(page.getByText('Tu carrito está vacío.', { exact: false })).toBeVisible();
   await page.getByRole('link', { name: 'Explorar productos' }).click();
@@ -228,11 +228,11 @@ for (const { status, adjustment } of [
       await page
         .getByRole('button', { name: 'Aumentar cantidad de artículo 1', exact: true })
         .click();
-      await expect(page.locator('main li').first()).toContainText('2');
+      await expect(page.locator('main li').first().getByText('2', { exact: true })).toBeVisible();
       await page
         .getByRole('button', { name: 'Aumentar cantidad de artículo 1', exact: true })
         .click();
-      await expect(page.locator('main li').first()).toContainText('3');
+      await expect(page.locator('main li').first().getByText('3', { exact: true })).toBeVisible();
     }
     if (['discount', 'combined', 'rounding'].includes(adjustment)) {
       const name = `Descuento E2E ${Date.now()}`;
