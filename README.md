@@ -54,7 +54,7 @@ Los 11 escenarios únicos se ejecutan en escritorio y móvil: 22 ejecuciones por
 
 Los reportes independientes, capturas, trazas de fallos y logs quedan en `output/playwright/run-1`, `run-2` y los logs contiguos. `npx playwright show-report output/playwright/run-1/report` abre el informe. La CI los conserva como `full-stack-diagnostics`. Consulta [resultados y limitaciones](docs/verification/integration-results.md).
 
-La [guía de comprobación del autor](docs/review/author-review.md) conserva capturas reales de escritorio y móvil, accesos ficticios y cinco comprobaciones antes de fusionar. `E2E_REVIEW_MINUTES=60` mantiene los servicios locales durante ese plazo tras la última vuelta y los limpia al finalizar; escribir `cerrar` y Enter termina antes. CI no habilita esa espera. Este entorno es local, sin despliegue ni cobros reales.
+La [guía de comprobación del autor](docs/review/author-review.md) conserva capturas reales de escritorio y móvil, accesos ficticios y cinco comprobaciones. La revisión visual humana está pendiente; el autor autorizó el cierre basándose en revisión técnica y pruebas automatizadas, sin exigirla antes de fusionar. `E2E_REVIEW_MINUTES=60` mantiene los servicios locales durante ese plazo tras la última vuelta y los limpia al finalizar; escribir `cerrar` y Enter termina antes. CI no habilita esa espera. Este entorno es local, sin despliegue ni cobros reales.
 
 ## Estado inicial observado
 

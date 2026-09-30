@@ -2,7 +2,7 @@
 
 ## Resultado preparado
 
-Esta guía contiene capturas reales y un entorno local de producción. La inspección del agente y las pruebas de navegador son automatizadas; **la aprobación visual del autor sigue pendiente**. Los PR permanecen abiertos. No hay despliegue público ni pagos reales.
+Esta guía contiene capturas reales e instrucciones para un entorno local de producción. La inspección del agente y las pruebas de navegador son automatizadas; **la revisión visual humana sigue pendiente**. El autor autorizó el 30 de septiembre de 2026 fusionar basándose en revisión técnica y pruebas automatizadas y retiró la confirmación visual humana previa. Los PR #1 de ambos repositorios se fusionaron bajo esa autorización. No hay despliegue público ni pagos reales.
 
 Backend fijado: `807ab0140a155320bca2419949c80b046db9eece`. Frontend: HEAD de [PR #1](https://github.com/ferchox920/e-fast/pull/1); CI y SHA final se registran en el PR. Backend inicial de esta revisión: `aed8ea566e53d8d305f5cada33f8b0f63573f3e8`; frontend inicial: `aa338db4c179b5ad5e2db00852ace12ec155c906`.
 
@@ -57,6 +57,6 @@ La presentación del carrito y del pedido sigue siendo básica; conserva etiquet
 
 Límites relevantes: proveedor HTTP local sin validación del checkout real de Mercado Pago; envío/impuestos mediante fixtures explícitos; móvil Chromium emulado; sesión en memoria. Seeds, persistencia y webhook son reales en servicios descartables.
 
-## Condición antes de fusionar
+## Revisión humana pendiente
 
-El autor debe confirmar explícitamente que comprobó este resultado visual y funcional tras los últimos cambios. La CI verde por sí sola no acredita esa comprobación. Tras esa confirmación se revisarán otra vez SHA/base/checks/protecciones, se fusionará primero backend y se verificará main; después frontend y su main. No se saltan protecciones, no se borran ramas ni se despliega.
+La revisión visual y funcional del autor sigue pendiente y no bloquea esta etapa de cierre, por su autorización explícita del 30 de septiembre de 2026. La CI verde no acredita una comprobación humana. El cierre exige controles correctos de main después de las fusiones en orden, backend primero y frontend después. No se saltan protecciones, no se borran ramas ni se despliega. Las capturas y las cinco comprobaciones anteriores quedan disponibles para la posterior evaluación humana.
