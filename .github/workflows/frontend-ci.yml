@@ -50,7 +50,7 @@ jobs:
         run: npm run test:e2e
       - name: Preserve both browser reports and service logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: full-stack-diagnostics
           path: frontend/output/playwright
@@ -82,7 +82,7 @@ jobs:
       - run: npm test -- --ci --runInBand --json --outputFile=jest-results.json
       - run: npm run build
       - if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-test-diagnostics
           path: |
@@ -165,7 +165,7 @@ jobs:
           cd frontend
           npm run test:contract
       - if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: backend-contract-diagnostics
           path: backend.log
