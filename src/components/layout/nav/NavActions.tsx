@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   useCallback,
@@ -67,7 +67,7 @@ export default function NavActions({
   }, [cancelScheduledClose, logoutPending]);
 
   const handlePointerLeaveAccount = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
+    (event: ReactPointerEvent<HTMLFieldSetElement>) => {
       const nextTarget = event.relatedTarget as EventTarget | null;
       if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
         return;
@@ -78,7 +78,7 @@ export default function NavActions({
   );
 
   const handleAccountBlur = useCallback(
-    (event: ReactFocusEvent<HTMLDivElement>) => {
+    (event: ReactFocusEvent<HTMLFieldSetElement>) => {
       const nextTarget = event.relatedTarget as EventTarget | null;
       if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
         return;
@@ -101,7 +101,7 @@ export default function NavActions({
   }, [logoutPending, onLogout]);
 
   const handleAccountKeyDown = useCallback(
-    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    (event: ReactKeyboardEvent<HTMLFieldSetElement>) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
         closeAccountMenu();
@@ -144,8 +144,9 @@ export default function NavActions({
 
       {user && <NotificationBell />}
 
-      <div
-        className="relative"
+      <fieldset
+        aria-label="Cuenta"
+        className="relative min-w-0 border-0 p-0"
         onPointerEnter={openAccountMenu}
         onPointerLeave={handlePointerLeaveAccount}
         onFocus={openAccountMenu}
@@ -221,7 +222,7 @@ export default function NavActions({
             <span className="sr-only">Mi cuenta</span>
           </Link>
         )}
-      </div>
+      </fieldset>
 
       <Link
         href="/lista-deseos"

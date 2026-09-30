@@ -30,8 +30,8 @@ export default function LoginForm({
   isLoading = false,
   showPassword = false,
   errorMessage = null,
-  forgotPasswordHref = '/recuperar',
-  registerHref = '/registro',
+  forgotPasswordHref,
+  registerHref,
   isSubmitDisabled = false,
   socialButtons,
   onEmailChange,
@@ -50,13 +50,14 @@ export default function LoginForm({
     <>
       <div className="space-y-2 text-center">
         <h3 className="text-lg font-semibold">Inicia sesión en MyApp</h3>
-        <p className="text-sm text-neutral-500">
-          Usa tus credenciales o las opciones sociales para continuar.
-        </p>
+        <p className="text-sm text-neutral-500">Usa tu email y contraseña para continuar.</p>
       </div>
 
       {errorMessage && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
@@ -103,12 +104,14 @@ export default function LoginForm({
 
         <div className="flex items-center justify-between text-sm">
           <span className="text-neutral-500">La sesión termina al recargar la página.</span>
-          <Link
-            href={forgotPasswordHref}
-            className="font-medium text-indigo-500 hover:text-indigo-600"
-          >
-            Olvidé mi contraseña
-          </Link>
+          {forgotPasswordHref && (
+            <Link
+              href={forgotPasswordHref}
+              className="font-medium text-indigo-500 hover:text-indigo-600"
+            >
+              Olvidé mi contraseña
+            </Link>
+          )}
         </div>
 
         <button
@@ -142,12 +145,14 @@ export default function LoginForm({
         </div>
       )}
 
-      <p className="text-center text-xs text-neutral-500">
-        ¿Eres nuevo?{' '}
-        <Link href={registerHref} className="font-semibold text-indigo-500 hover:text-indigo-600">
-          Crea una cuenta
-        </Link>
-      </p>
+      {registerHref && (
+        <p className="text-center text-xs text-neutral-500">
+          ¿Eres nuevo?{' '}
+          <Link href={registerHref} className="font-semibold text-indigo-500 hover:text-indigo-600">
+            Crea una cuenta
+          </Link>
+        </p>
+      )}
     </>
   );
 }

@@ -53,10 +53,14 @@ const flushMicrotasks = async () => {
 
 let dateNowSpy: jest.SpyInstance<number, []>;
 let originalWebSocket: typeof WebSocket | undefined;
+let infoSpy: jest.SpyInstance;
+let warningSpy: jest.SpyInstance;
 type MutableGlobal = typeof globalThis & { WebSocket?: typeof WebSocket };
 const mutableGlobal = globalThis as MutableGlobal;
 
 beforeEach(() => {
+  infoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
+  warningSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
   jest.useFakeTimers();
   let now = 0;
   dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => {
@@ -79,6 +83,19 @@ afterEach(() => {
   }
   jest.useRealTimers();
   dateNowSpy.mockRestore();
+  try {
+    for (const call of infoSpy.mock.calls)
+      expect(call[0]).toMatch(
+        /^NotificationWS (connecting to|connected|disconnected|attempting reconnect)$/,
+      );
+    for (const call of warningSpy.mock.calls)
+      expect(call[0]).toMatch(
+        /^NotificationWS (connection closed \(1006\) - scheduling retry|stopped due to unauthorized response|encountered an error)$/,
+      );
+  } finally {
+    infoSpy.mockRestore();
+    warningSpy.mockRestore();
+  }
 });
 
 describe('NotificationWSClient', () => {

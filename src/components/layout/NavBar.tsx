@@ -59,7 +59,7 @@ export default function NavBar({
     setIsSearchOpen(true);
   };
 
-  const closeSearch = () => setIsSearchOpen(false);
+  const closeSearch = useCallback(() => setIsSearchOpen(false), []);
 
   const handleLogout = useCallback(async () => {
     setIsMenuOpen(false);
@@ -80,6 +80,7 @@ export default function NavBar({
           <div className="flex flex-1 items-center gap-2">
             <div className="md:hidden">
               <button
+                type="button"
                 onClick={toggleMenu}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-gray-500 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 aria-label={isMenuOpen ? 'Cerrar menu' : 'Abrir menu'}

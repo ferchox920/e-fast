@@ -26,8 +26,7 @@ export interface ProductCardProps {
   imageAlt?: string | null;
 }
 
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=60';
+const FALLBACK_IMAGE = '/product-placeholder.svg';
 
 const formatCurrency = (value: number, currency?: CurrencyCode | null) => {
   const resolvedCurrency: string = (currency ?? 'EUR') as string;

@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   useGetCartQuery,
   useUpdateCartItemMutation,
   useRemoveCartItemMutation,
+  cartApi,
+  useCreateOrGetCartMutation,
 } from '@/store/api/cartApi';
 import { useCreateOrderFromCartMutation } from '@/store/api/ordersApi';
 import { useListActivePromotionsQuery } from '@/store/api/promotionsApi';
-import { useAppSelector } from '@/store/hooks';
-import { getOrCreateGuestToken } from '@/lib/guestToken';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getOrCreateGuestToken, retireGuestToken } from '@/lib/guestToken';
 import { apiErrorMessage } from '@/lib/apiError';
 
 const money = (value: number, currency: string) =>
@@ -19,15 +21,21 @@ const money = (value: number, currency: string) =>
 
 export default function CartPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user.session.accessToken);
-  const { data: cart, isLoading, isError, error, refetch } = useGetCartQuery();
+  const { data: cart, isLoading, isError, error, refetch } = useGetCartQuery(undefined);
   const { data: promotions = [] } = useListActivePromotionsQuery();
   const [updateItem, { isLoading: updating }] = useUpdateCartItemMutation();
   const [removeItem, { isLoading: removing }] = useRemoveCartItemMutation();
   const [checkout, { isLoading: checkingOut }] = useCreateOrderFromCartMutation();
+  const [ensureCart] = useCreateOrGetCartMutation();
   const [promotionId, setPromotionId] = useState('');
   const [message, setMessage] = useState('');
   const [guestOrderId, setGuestOrderId] = useState('');
+  const submitting = useRef(false);
+  useEffect(() => {
+    setGuestOrderId(sessionStorage.getItem('guest-order-confirmation') ?? '');
+  }, []);
 
   const changeQuantity = async (itemId: string, quantity: number) => {
     if (quantity < 1) return;
@@ -49,6 +57,8 @@ export default function CartPage() {
   };
 
   const createOrder = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
     try {
       setMessage('');
       const result = await checkout({
@@ -56,16 +66,28 @@ export default function CartPage() {
         ...(promotionId ? { promotion_id: promotionId } : {}),
       }).unwrap();
       if (token) router.push(`/orders/${result.id}`);
-      else setGuestOrderId(String(result.id));
+      else {
+        retireGuestToken();
+        setGuestOrderId(String(result.id));
+        sessionStorage.setItem('guest-order-confirmation', String(result.id));
+        await ensureCart(undefined).unwrap();
+      }
+      dispatch(cartApi.util.invalidateTags([{ type: 'Cart', id: 'CURRENT' }]));
     } catch (failure) {
       setMessage(apiErrorMessage(failure));
+    } finally {
+      submitting.current = false;
     }
   };
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
       <h1 className="text-2xl font-semibold">Carrito</h1>
-      {isLoading && <p role="status">Cargando carrito…</p>}
+      {isLoading && (
+        <p aria-live="polite" aria-atomic="true">
+          Cargando carrito…
+        </p>
+      )}
       {isError && !cart && (
         <div role="alert" className="space-y-2">
           <p>
@@ -90,7 +112,7 @@ export default function CartPage() {
         <>
           <ul className="divide-y rounded-lg border">
             {cart.items.map((item, index) => (
-              <li key={item.id} className="flex items-center justify-between gap-4 p-4">
+              <li key={item.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
                 <div>
                   <p className="font-medium">Artículo {index + 1}</p>
                   <p>{money(item.line_total, cart.currency)}</p>
@@ -162,7 +184,7 @@ export default function CartPage() {
         </p>
       )}
       {guestOrderId && (
-        <div role="status">
+        <div aria-live="polite" aria-atomic="true">
           <p>Pedido invitado creado: {guestOrderId}</p>
           <p>
             Guarda este identificador. Para consultar pedidos desde la cuenta debes ingresar antes

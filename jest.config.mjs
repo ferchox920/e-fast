@@ -12,7 +12,7 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   testEnvironment: 'jsdom',
   // The live HTTP contract uses node:test in a dedicated CI job with PostgreSQL and Redis.
-  testPathIgnorePatterns: ['<rootDir>/scripts/contract/'],
+  testPathIgnorePatterns: ['<rootDir>/scripts/contract/', '<rootDir>/tests/e2e/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^until-async$': '<rootDir>/src/test-utils/msw/untilAsync.ts',

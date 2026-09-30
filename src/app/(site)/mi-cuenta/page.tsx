@@ -33,7 +33,11 @@ export default function AccountPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-8">
       <h1 className="text-2xl font-semibold">Mi cuenta</h1>
-      {isLoading && <p role="status">Cargando perfil…</p>}
+      {isLoading && (
+        <p aria-live="polite" aria-atomic="true">
+          Cargando perfil…
+        </p>
+      )}
       {error && (
         <div role="alert">
           <p>{apiErrorMessage(error)}</p>
@@ -64,7 +68,11 @@ export default function AccountPage() {
           </button>
         </>
       )}
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p aria-live="polite" aria-atomic="true">
+          {message}
+        </p>
+      )}
     </main>
   );
 }

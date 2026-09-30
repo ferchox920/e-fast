@@ -73,25 +73,21 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
     return <ProductGallery images={product.images} />;
   }, [isPending, product]);
 
-  useEffect(() => {
-    if (!slug) return;
-    if (!product && !isLoading) {
-      refetch();
-    }
-  }, [slug, product, isLoading, refetch]);
-
   const variants = useMemo(() => product?.variants ?? [], [product?.variants]);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
   const ensuredCartRef = useRef(false);
+  const submitting = useRef(false);
 
   const [createOrGetCart, { isLoading: ensuringCart }] = useCreateOrGetCartMutation();
   const [addCartItem, { isLoading: addingCartItem }] = useAddCartItemMutation();
 
   useEffect(() => {
     if (variants.length > 0) {
-      setSelectedVariantId(String(variants[0].id));
+      const available =
+        variants.find((variant) => variant.stock_on_hand > variant.stock_reserved) ?? variants[0];
+      setSelectedVariantId(String(available.id));
     } else {
       setSelectedVariantId(null);
     }
@@ -202,10 +198,12 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
   };
 
   const handleAddToCart = async () => {
-    if (!selectedVariant) {
+    if (submitting.current) return;
+    if (!selectedVariant || availableStock === 0) {
       setFeedback({ type: 'error', message: 'Selecciona una variante disponible.' });
       return;
     }
+    submitting.current = true;
     try {
       setFeedback(null);
       if (!ensuredCartRef.current) {
@@ -222,11 +220,13 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
         type: 'error',
         message: cartError ?? getErrorMessage(err, 'No pudimos agregar el producto al carrito.'),
       });
+    } finally {
+      submitting.current = false;
     }
   };
 
   const isProcessing = ensuringCart || addingCartItem;
-  const addDisabled = isProcessing || !selectedVariant;
+  const addDisabled = isProcessing || !selectedVariant || availableStock === 0;
 
   if (isPending && !product) {
     return (
@@ -272,7 +272,7 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
               : 'border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
           } disabled:cursor-not-allowed disabled:opacity-60`}
         >
-          <span>{isFavorite ? '\u2665' : '\u2661'}</span>
+          <span>{isFavorite ? '♥' : '♡'}</span>
           <span>{isFavorite ? 'En tu lista de deseos' : 'Agregar a favoritos'}</span>
         </button>
       </header>

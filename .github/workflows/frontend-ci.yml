@@ -14,6 +14,49 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  full-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: frontend
+      - uses: actions/checkout@v7
+        with:
+          repository: ferchox920/ecommerce_fast_api
+          ref: b5c4941056bf88574de475a70ef1b163ca210afc
+          path: backend
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: python -m pip install -r backend/requirements.txt
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Production browser journeys twice against disposable services
+        working-directory: frontend
+        env:
+          E2E_BACKEND_DIR: ../backend
+          E2E_PYTHON: python
+          E2E_REPEAT: '2'
+        run: npm run test:e2e
+      - name: Preserve both browser reports and service logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: full-stack-diagnostics
+          path: frontend/output/playwright
+          if-no-files-found: ignore
+          retention-days: 7
+
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -78,7 +121,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: ferchox920/ecommerce_fast_api
-          ref: e90c112c522d6017858b753206950aece233838a
+          ref: b5c4941056bf88574de475a70ef1b163ca210afc
           path: backend
       - uses: actions/setup-node@v7
         with:

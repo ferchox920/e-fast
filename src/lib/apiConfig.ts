@@ -1,5 +1,13 @@
 const API_SUFFIX = '/api/v1';
 
+export function isAllowedWebSocketTransport(url: URL, pageHostname: string): boolean {
+  const loopback = new Set(['localhost', '127.0.0.1', '[::1]']);
+  return (
+    url.protocol === 'wss:' ||
+    (url.protocol === 'ws:' && loopback.has(url.hostname) && loopback.has(pageHostname))
+  );
+}
+
 export function getApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
   if (!configured) {

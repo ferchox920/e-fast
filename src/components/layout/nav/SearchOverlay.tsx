@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { SearchIcon } from './icons';
 
 interface SearchOverlayProps {
@@ -20,12 +21,29 @@ export default function SearchOverlay({
   onClose,
 }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
+      if (event.key === 'Tab') {
+        const controls = Array.from(
+          dialogRef.current?.querySelectorAll<HTMLElement>('a,button,input') ?? [],
+        ).filter((element) => element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
     };
 
     const focusTimeout = window.setTimeout(() => {
@@ -39,12 +57,15 @@ export default function SearchOverlay({
       window.clearTimeout(focusTimeout);
       document.body.classList.remove('overflow-hidden');
       window.removeEventListener('keydown', handleKeyDown);
+      previousFocus?.focus();
     };
   }, [isOpen, onClose]);
 
   const handleBackdropClick = () => {
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -53,7 +74,10 @@ export default function SearchOverlay({
       }`}
       aria-hidden={!isOpen}
     >
-      <div
+      <button
+        type="button"
+        aria-label="Cerrar buscador"
+        tabIndex={-1}
         className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
@@ -61,6 +85,7 @@ export default function SearchOverlay({
       />
 
       <div
+        ref={dialogRef}
         className={`relative mx-auto w-full max-w-5xl transform transition-transform duration-300 ease-out ${
           isOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
@@ -79,7 +104,16 @@ export default function SearchOverlay({
                 {brandLabel}
               </Link>
             </div>
-            <div className="flex flex-1 items-center gap-2">
+            <form
+              className="flex flex-1 items-center gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                router.push(
+                  `/products?search=${encodeURIComponent(inputRef.current?.value.trim() ?? '')}`,
+                );
+                onClose();
+              }}
+            >
               <div className="relative flex-1">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
                   <SearchIcon />
@@ -100,7 +134,7 @@ export default function SearchOverlay({
               >
                 Cerrar
               </button>
-            </div>
+            </form>
           </div>
 
           <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-start">
@@ -113,6 +147,10 @@ export default function SearchOverlay({
                   <button
                     key={term}
                     type="button"
+                    onClick={() => {
+                      router.push(`/products?search=${encodeURIComponent(term)}`);
+                      onClose();
+                    }}
                     className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                   >
                     {term}

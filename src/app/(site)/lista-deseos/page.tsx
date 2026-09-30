@@ -36,7 +36,11 @@ export default function WishesPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-8">
       <h1 className="text-2xl font-semibold">Lista de deseos</h1>
-      {isLoading && <p role="status">Cargando deseos…</p>}
+      {isLoading && (
+        <p aria-live="polite" aria-atomic="true">
+          Cargando deseos…
+        </p>
+      )}
       {error && (
         <div role="alert">
           <p>{apiErrorMessage(error)}</p>

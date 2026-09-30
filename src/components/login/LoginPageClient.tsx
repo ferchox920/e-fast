@@ -51,7 +51,11 @@ export default function LoginPageClient() {
 
       router.replace(targetRoute);
     } catch (error) {
-      setErrorMessage(apiErrorMessage(error));
+      setErrorMessage(
+        error && typeof error === 'object' && 'status' in error && error.status === 400
+          ? 'Email o contraseña incorrectos.'
+          : apiErrorMessage(error),
+      );
     }
   };
 
@@ -60,8 +64,7 @@ export default function LoginPageClient() {
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold text-neutral-900">Ingresar</h1>
         <p className="text-sm text-neutral-600">
-          Usa tu email y contraseña para acceder a tu cuenta MyApp. Si todavía no tienes una, te
-          ayudamos a crearla en minutos.
+          Ingresa para consultar tus pedidos y continuar tu compra.
         </p>
       </header>
 

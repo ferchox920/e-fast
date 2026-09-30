@@ -7,9 +7,9 @@ interface LoginHeroProps {
 }
 
 const DEFAULT_TIPS = [
-  'Usa feedback inmediato para estados de error o carga.',
-  'Permite acceso rápido a recuperación de contraseña.',
-  'Mantén consistencia visual con el resto del onboarding.',
+  'Consulta el estado de tus pedidos desde tu cuenta.',
+  'Los importes de la compra se confirman al crear el pedido.',
+  'Tu sesión termina al recargar la página.',
 ];
 
 export default function LoginHero({
@@ -33,7 +33,7 @@ export default function LoginHero({
       </div>
 
       <div className="space-y-2 text-sm text-neutral-500">
-        <p className="font-medium text-neutral-400">Consejos de UX</p>
+        <p className="font-medium text-neutral-400">Tu cuenta</p>
         <ul className="space-y-1 text-neutral-500">
           {tips.map((tip) => (
             <li key={tip}>• {tip}</li>

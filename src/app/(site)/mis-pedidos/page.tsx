@@ -25,7 +25,11 @@ export default function MyOrdersPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-8">
       <h1 className="text-2xl font-semibold">Mis pedidos</h1>
-      {isLoading && <p role="status">Cargando pedidos…</p>}
+      {isLoading && (
+        <p aria-live="polite" aria-atomic="true">
+          Cargando pedidos…
+        </p>
+      )}
       {error && (
         <div role="alert">
           <p>{apiErrorMessage(error)}</p>

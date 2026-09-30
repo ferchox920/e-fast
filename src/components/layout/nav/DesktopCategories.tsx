@@ -68,9 +68,10 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
       {categoryGroups.map((group) => {
         const isActive = activeGroupId === group.id;
         return (
-          <div
+          <fieldset
+            aria-label={group.name}
             key={group.id}
-            className="relative"
+            className="relative min-w-0 border-0 p-0"
             onMouseEnter={() => openGroup(group.id)}
             onMouseLeave={scheduleClose}
             onBlur={(event) => {
@@ -93,11 +94,12 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
               {group.name}
             </button>
 
-            <div
+            <fieldset
+              aria-label={`Opciones de ${group.name}`}
               id={`category-panel-${group.id}`}
               onMouseEnter={() => openGroup(group.id)}
               onMouseLeave={scheduleClose}
-              className={`absolute left-0 mt-3 min-w-60 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-200 focus:outline-none ${
+              className={`absolute left-0 border-0 p-0 mt-3 min-w-60 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-200 focus:outline-none ${
                 isActive
                   ? 'visible translate-y-0 opacity-100'
                   : 'invisible -translate-y-2 opacity-0'
@@ -121,8 +123,8 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
                   </Link>
                 ))}
               </div>
-            </div>
-          </div>
+            </fieldset>
+          </fieldset>
         );
       })}
     </nav>

@@ -26,7 +26,7 @@ const formatCurrency = (value: number, currency = 'ARS') =>
 
 export default function MiniCart({ onCloseMenu }: MiniCartProps) {
   const [ensureCart] = useCreateOrGetCartMutation();
-  const { error, isLoading, isFetching, refetch } = useGetCartQuery();
+  const { error, isLoading, isFetching, refetch } = useGetCartQuery(undefined);
   const cart = useAppSelector(selectCart);
   const items = useAppSelector(selectCartItems);
   const totalItems = useAppSelector(selectCartItemsCount);

@@ -9,7 +9,13 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <Suspense fallback={<p role="status">Cargando ingreso…</p>}>
+    <Suspense
+      fallback={
+        <p aria-live="polite" aria-atomic="true">
+          Cargando ingreso…
+        </p>
+      }
+    >
       <LoginPageClient />
     </Suspense>
   );

@@ -16,28 +16,29 @@ export default function OrderPage() {
     error,
     isLoading,
     refetch,
-  } = useGetOrderByIdQuery({ orderId: id }, { skip: !token });
+  } = useGetOrderByIdQuery({ orderId: id }, { skip: !token, refetchOnMountOrArgChange: true });
   const [createPreference, { isLoading: creatingPreference }] = useCreatePaymentForOrderMutation();
   const [paymentUrl, setPaymentUrl] = useState('');
   const [message, setMessage] = useState('');
-  const idempotencyKey = useRef<{ orderId: string; value: string } | null>(null);
+  const submitting = useRef(false);
   const paymentEnabled = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === 'true';
 
   const preparePayment = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
     try {
       setMessage('');
-      if (idempotencyKey.current?.orderId !== id) {
-        idempotencyKey.current = { orderId: id, value: crypto.randomUUID() };
-      }
       const payment = await createPreference({
         orderId: id,
-        idempotencyKey: idempotencyKey.current.value,
+        idempotencyKey: `order-${id}`,
       }).unwrap();
       const target = payment.init_point ?? payment.sandbox_init_point;
       if (!target) throw new Error('missing payment link');
       setPaymentUrl(target);
     } catch (failure) {
       setMessage(apiErrorMessage(failure));
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -45,7 +46,7 @@ export default function OrderPage() {
     return (
       <main className="mx-auto max-w-3xl p-8">
         <p>Ingresa para consultar el pedido.</p>
-        <Link href="/login" className="underline">
+        <Link href={`/login?redirect=${encodeURIComponent(`/orders/${id}`)}`} className="underline">
           Ingresar
         </Link>
       </main>
@@ -53,7 +54,11 @@ export default function OrderPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-5 p-8">
       <h1 className="text-2xl font-semibold">Pedido</h1>
-      {isLoading && <p role="status">Cargando pedido…</p>}
+      {isLoading && (
+        <p aria-live="polite" aria-atomic="true">
+          Cargando pedido…
+        </p>
+      )}
       {error && (
         <div role="alert">
           <p>{apiErrorMessage(error)}</p>
@@ -64,7 +69,24 @@ export default function OrderPage() {
       )}
       {order && (
         <>
-          <p>Estado: {order.status}</p>
+          <p>
+            {order.payment_status === 'approved'
+              ? 'Pago aprobado'
+              : order.payment_status === 'rejected'
+                ? 'Pago rechazado'
+                : order.payment_status === 'pending'
+                  ? 'Pago pendiente'
+                  : `Estado del pago: ${order.payment_status}`}
+          </p>
+          {order.payment_status === 'pending' && (
+            <p>El proveedor todavía no confirmó el pago. Puedes actualizar el estado.</p>
+          )}
+          {order.payment_status === 'rejected' && (
+            <p>El proveedor rechazó el pago. El pedido no se marcó como pagado.</p>
+          )}
+          <button type="button" onClick={() => refetch()} className="underline">
+            Actualizar estado
+          </button>
           <p>
             Total confirmado por el servidor:{' '}
             {new Intl.NumberFormat('es-AR', { style: 'currency', currency: order.currency }).format(

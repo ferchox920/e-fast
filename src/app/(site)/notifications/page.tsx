@@ -101,7 +101,11 @@ export default function NotificationsPage() {
       </header>
 
       {isLoading ? (
-        <div className="py-10 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-10 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Cargando historial...
         </div>
       ) : isError ? (
@@ -120,7 +124,11 @@ export default function NotificationsPage() {
           </button>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="py-10 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-10 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           No se encontraron notificaciones para este filtro.
         </div>
       ) : (

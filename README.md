@@ -1,6 +1,6 @@
 # e-fast
 
-Cliente Next.js 15 y RTK Query para la API de [ecommerce_fast_api](https://github.com/ferchox920/ecommerce_fast_api). Esta rama integra el frontend con el contrato fijado en `e90c112c522d6017858b753206950aece233838a` (`portfolio/backend-foundation`, PR #1). El backend sigue siendo un repositorio independiente.
+Cliente Next.js 15 y RTK Query para la API de [ecommerce_fast_api](https://github.com/ferchox920/ecommerce_fast_api). Las pruebas reales fijan `b5c4941056bf88574de475a70ef1b163ca210afc` (`portfolio/backend-foundation`, PR #1). El backend sigue siendo un repositorio independiente. El OpenAPI guardado del SHA anterior sigue vigente: el único cambio del backend permite sustituir el origen HTTP del proveedor exclusivamente en pruebas locales.
 
 ## Requisitos y configuración
 
@@ -24,7 +24,29 @@ Configura `NEXT_PUBLIC_API_BASE_URL` también en el entorno del build. No hay un
 
 La [matriz frontend-backend](docs/verification/frontend-backend-contract.md) enumera los endpoints RTK Query y su correspondencia con el [OpenAPI fijado](docs/verification/backend-openapi-e90c112.json). Se regenera con `node scripts/contract/generate-matrix.mjs docs/verification/backend-openapi-e90c112.json`. Para WebSocket y comportamientos transaccionales se revisaron además routers, schemas y pruebas del backend.
 
-GitHub Actions ejecuta lint, tipos, Jest, build, CodeQL y un job separado que instala el backend fijado, migra y carga seeds en PostgreSQL y Redis descartables y ejecuta la prueba HTTP del recorrido comercial. El job no llama a Mercado Pago, Cloudinary ni correo. La preferencia de pago requiere sustituir el límite externo de Mercado Pago para el futuro recorrido Playwright completo; el navegador no envía webhooks.
+GitHub Actions ejecuta lint, tipos, Jest, build, CodeQL, contrato HTTP/WebSocket y un job Playwright separado que repite el recorrido comercial dos veces con servicios descartables. No llama a Mercado Pago, Cloudinary ni correo. Un proceso independiente firma y envía eventos al webhook real; regresar del checkout no confirma un pago.
+
+## Recorrido full-stack reproducible
+
+Requiere Docker con Compose, Python 3.13 y los puertos locales 55434, 56380, 59000, 59001 y 59002 libres. Ejecuta desde este repositorio:
+
+```bash
+git clone https://github.com/ferchox920/ecommerce_fast_api ../ecommerce-fast-api-e2e
+git -C ../ecommerce-fast-api-e2e checkout --detach b5c4941056bf88574de475a70ef1b163ca210afc
+python -m venv ../ecommerce-fast-api-e2e/.venv
+../ecommerce-fast-api-e2e/.venv/bin/python -m pip install -r ../ecommerce-fast-api-e2e/requirements.txt
+npm ci
+npx playwright install --with-deps chromium
+E2E_BACKEND_DIR=../ecommerce-fast-api-e2e E2E_REPEAT=2 npm run test:e2e
+```
+
+En PowerShell usa `.venv/Scripts/python.exe` para instalar Python y asigna `$env:E2E_BACKEND_DIR='../ecommerce-fast-api-e2e'` y `$env:E2E_REPEAT='2'` antes de `npm run test:e2e`. El runner detecta ese ejecutable. `E2E_PYTHON` permite indicar otro Python instalado con los requisitos del backend.
+
+No copies archivos privados de entorno. El runner comprueba el SHA, construye Next en producción, crea PostgreSQL 16 sin volumen persistente y Redis 7, aplica migraciones/seeds, inicia el proveedor local, la API y el frontend, y espera disponibilidad con timeout. Finalmente elimina solo sus propios procesos y proyecto Compose. No ejecutes dos runners simultáneos: usan puertos fijos.
+
+`scripts/e2e/backend-ref.json` y ambos checkouts del workflow deben apuntar al mismo SHA. Las credenciales ficticias y secretos del runner sirven exclusivamente para sus servicios locales. `E2E_BUILD=true` habilita imágenes locales sin optimización para este build; `NEXT_PUBLIC_PAYMENTS_ENABLED=true` muestra la preferencia de pago. `MERCADO_PAGO_API_BASE_URL` exige `APP_ENV=test` y un origen HTTP de loopback; producción mantiene el proveedor oficial. No existen endpoints de prueba en la aplicación.
+
+Los reportes independientes, capturas, trazas de fallos y logs quedan en `output/playwright/run-1`, `run-2` y los logs contiguos. `npx playwright show-report output/playwright/run-1/report` abre el informe. La CI los conserva como `full-stack-diagnostics`. Consulta [resultados y limitaciones](docs/verification/integration-results.md).
 
 ## Estado inicial observado
 

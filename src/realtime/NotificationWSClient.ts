@@ -1,7 +1,7 @@
 import type { NotificationWsPayload } from '@/types/notifications';
 import { ZWsPayload } from '@/types/notifications';
 import { showErrorToast, showInfoToast } from '@/lib/toast';
-import { getWebSocketBaseUrl } from '@/lib/apiConfig';
+import { getWebSocketBaseUrl, isAllowedWebSocketTransport } from '@/lib/apiConfig';
 
 type NotificationCallback = (payload: NotificationWsPayload) => void;
 type StatusCallback = (status: ConnectionStatus) => void;
@@ -240,7 +240,10 @@ export class NotificationWSClient {
       throw new Error(`Invalid WebSocket protocol for ${url}`);
     }
 
-    if (process.env.NODE_ENV === 'production' && url.protocol !== 'wss:') {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      !isAllowedWebSocketTransport(url, window.location.hostname)
+    ) {
       throw new Error('Secure WebSocket (wss://) is required in production environments');
     }
 

@@ -156,7 +156,11 @@ export default function NotificationDropdown({
   const content = useMemo(() => {
     if (isLoading) {
       return (
-        <div className="py-6 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-6 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Cargando notificaciones...
         </div>
       );
@@ -182,7 +186,11 @@ export default function NotificationDropdown({
 
     if (!items.length) {
       return (
-        <div className="py-6 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-6 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           No tienes notificaciones.
         </div>
       );

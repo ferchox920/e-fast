@@ -123,24 +123,42 @@ describe('normalizeNotification', () => {
   });
 
   it('returns null when payload validation fails', () => {
-    const result = normalizeNotification(
-      build({
-        type: 'product_question',
-        payload: { product_id: 'missing-question-id' },
-      }),
-    );
+    const warning = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = normalizeNotification(
+        build({
+          type: 'product_question',
+          payload: { product_id: 'missing-question-id' },
+        }),
+      );
 
-    expect(result).toBeNull();
+      expect(result).toBeNull();
+      expect(warning).toHaveBeenCalledWith(
+        'normalizeNotification: invalid payload for type "product_question"',
+      );
+      expect(warning).toHaveBeenCalledTimes(1);
+    } finally {
+      warning.mockRestore();
+    }
   });
 
   it('returns null when notification shape is invalid', () => {
-    const invalid = {
-      ...baseNotification,
-      type: null,
-      payload: null,
-    };
+    const warning = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const invalid = {
+        ...baseNotification,
+        type: null,
+        payload: null,
+      };
 
-    const result = normalizeNotification(invalid as unknown as NotificationRead);
-    expect(result).toBeNull();
+      const result = normalizeNotification(invalid as unknown as NotificationRead);
+      expect(result).toBeNull();
+      expect(warning).toHaveBeenCalledWith(
+        'normalizeNotification: received invalid notification shape',
+      );
+      expect(warning).toHaveBeenCalledTimes(1);
+    } finally {
+      warning.mockRestore();
+    }
   });
 });
