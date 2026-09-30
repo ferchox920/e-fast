@@ -16,7 +16,8 @@
     "test:contract": "node --test scripts/contract/live-api.test.mjs",
     "test:routes": "node scripts/contract/generate-matrix.mjs docs/verification/backend-openapi-e90c112.json",
     "test:watch": "jest --watch",
-    "test:e2e": "node scripts/e2e/run-full-stack.mjs"
+    "test:e2e": "node scripts/e2e/run-full-stack.mjs",
+    "test:harness": "node --test scripts/e2e/lifecycle.check.mjs scripts/e2e/runtime.check.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.1",

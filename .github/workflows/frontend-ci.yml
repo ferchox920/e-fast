@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: ferchox920/ecommerce_fast_api
-          ref: b5c4941056bf88574de475a70ef1b163ca210afc
+          ref: aed8ea566e53d8d305f5cada33f8b0f63573f3e8
           path: backend
       - uses: actions/setup-node@v7
         with:
@@ -71,6 +71,13 @@ jobs:
       - run: npm ci
       - run: npm run test:routes && git diff --exit-code -- docs/verification/frontend-backend-contract.md
       - run: npm run lint
+      - run: npm run format:check
+      - name: Audit complete dependency tree
+        run: npm audit --json > npm-audit.json
+      - name: Audit production dependency tree
+        if: '!cancelled()'
+        run: npm audit --omit=dev --json > npm-audit-production.json
+      - run: npm run test:harness
       - run: npm run typecheck
       - run: npm test -- --ci --runInBand --json --outputFile=jest-results.json
       - run: npm run build
@@ -78,7 +85,10 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: frontend-test-diagnostics
-          path: jest-results.json
+          path: |
+            jest-results.json
+            npm-audit.json
+            npm-audit-production.json
           if-no-files-found: ignore
           retention-days: 7
 
@@ -121,7 +131,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: ferchox920/ecommerce_fast_api
-          ref: b5c4941056bf88574de475a70ef1b163ca210afc
+          ref: aed8ea566e53d8d305f5cada33f8b0f63573f3e8
           path: backend
       - uses: actions/setup-node@v7
         with:

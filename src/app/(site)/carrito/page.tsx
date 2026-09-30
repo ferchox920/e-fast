@@ -24,7 +24,9 @@ export default function CartPage() {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user.session.accessToken);
   const { data: cart, isLoading, isError, error, refetch } = useGetCartQuery(undefined);
-  const { data: promotions = [] } = useListActivePromotionsQuery();
+  const { data: promotions = [] } = useListActivePromotionsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const [updateItem, { isLoading: updating }] = useUpdateCartItemMutation();
   const [removeItem, { isLoading: removing }] = useRemoveCartItemMutation();
   const [checkout, { isLoading: checkingOut }] = useCreateOrderFromCartMutation();

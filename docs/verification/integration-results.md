@@ -1,6 +1,6 @@
 # Verificación de integración
 
-Los apartados de la primera etapa conservan evidencia histórica. El resultado vigente de la segunda etapa está al final.
+Los apartados de la primera etapa conservan evidencia histórica. El cierre vigente de las cuatro brechas posteriores a la segunda etapa está al final.
 
 ## Referencias fijadas
 
@@ -32,7 +32,7 @@ El resultado de GitHub Actions y CodeQL se verifica en el PR del SHA publicado. 
 
 ### Preparación y referencias
 
-- Clones nuevos `D:/e-fast-stage2` y `D:/ecommerce-fast-api-stage2`, árboles inicialmente limpios, `fetch origin --prune` en ambos. No se usó el checkout ajeno con cambios de `D:/fast_api`.
+- Clones nuevos de ambos repositorios, árboles inicialmente limpios, `fetch origin --prune` en ambos. Se preservó el checkout ajeno con cambios.
 - Frontend inicial: `3454f40feab9e736a07759aaf69369080c4ecfbd`, rama `portfolio/frontend-integration`, [PR existente #1](https://github.com/ferchox920/e-fast/pull/1).
 - Backend inicial: `e90c112c522d6017858b753206950aece233838a`; ambas ramas remotas coincidían con las referencias auditadas y ambos PR estaban abiertos y sin fusionar.
 - Backend publicado y utilizado: `b5c4941056bf88574de475a70ef1b163ca210afc`, [PR existente #1](https://github.com/ferchox920/ecommerce_fast_api/pull/1). Cambia únicamente la configuración del origen HTTP del proveedor y sus pruebas. El contrato público no cambia: se conserva OpenAPI/matriz de la primera etapa.
@@ -130,3 +130,80 @@ Se sustituyó el proveedor HTTP y no se hicieron cobros. No se valida disponibil
 El backend conserva el aviso de Passlib sobre `bcrypt.__about__` durante el seed (la creación de usuarios y login pasan); no se amplió esta etapa a renovar autenticación Python. Los 109 métodos/rutas corresponden al contrato guardado: no equivalen a 109 recorridos probados ni a una nueva auditoría completa de DTO.
 
 Próxima acción: revisión humana conjunta de los dos PR abiertos con los reportes de esta etapa.
+
+## Cierre de cuatro brechas posterior a etapa 2
+
+### Referencias y alcance
+
+Se retomaron las ramas remotas de los PR con árboles limpios y `git fetch origin --prune`; no había avances posteriores a las referencias auditadas. Frontend inicial: `b41cc2902ae143b83bdb535f531f29768fdcde91`. Backend inicial: `b5c4941056bf88574de475a70ef1b163ca210afc`; publicado primero como [aed8ea5](https://github.com/ferchox920/ecommerce_fast_api/commit/aed8ea566e53d8d305f5cada33f8b0f63573f3e8). Ambos checkouts CI y el runner fijan ese SHA. No cambian rutas ni DTO públicos: OpenAPI y las 109 filas de la matriz permanecen iguales. Los dos PR siguen abiertos, sin fusionar.
+
+Entorno local: Node 24.19.0, npm 11.6.2, Python 3.13, Playwright 1.63.0 / Chromium 153; PostgreSQL 16 y Redis 7 descartables. Instalaciones desde package-lock y requirements; sin bases o credenciales ajenas.
+
+### Correcciones y protección
+
+| Brecha                 | Implementación                                                                                                                                                                                                                                                                | Prueba                                                                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Importe de preferencia | Un ítem de cantidad uno representa el total autorizado; Decimal se serializa como número JSON exacto; metadata conserva líneas/snapshots y desglose. Rechaza importes no finitos, no positivos, fuera del rango Numeric o con fracciones de centavo antes del HTTP.           | 5 casos monetarios y 5 rechazos nuevos en el proveedor; 5 casos RTK sin precios del navegador; 4 nuevos escenarios ajustados del navegador en ambos tamaños.                                            |
+| Primer aprobado        | Verifica pago único, pedido pagado, paid_at, moneda/importe, decremento de stock, liberación de reservas y exactamente un movimiento sale con la cantidad del pedido. Replay conserva todo. Pending/rejected conservan inventario, reservas, estado de pedido y paid_at nulo. | 7 escenarios de pago por navegador, incluyendo dos webhooks inválidos en el combinado; API backend también protege importe/moneda con 409.                                                              |
+| Limpieza y errores E2E | Procesos propios/grupos Unix o árbol Windows; plazo y escalado forzado, logs drenados, retirada Docker incluso ante error, fallo original preservado. Detector por contexto/páginas y método/ruta/status, sin exclusión global de recursos.                                   | 6 pruebas del arnés: terminación adversarial, proceso ajeno intacto, descendiente terminado, último chunk de log, retirada aun con fallo, JS/hidratación/recursos/5xx/red/externos y permisos precisos. |
+| CI formato y auditoría | Gates de formato, auditoría completa y producción con salida original; informes JSON guardados ante fallos; producción se ejecuta aun si falla auditoría completa.                                                                                                            | Ejecución local y jobs del SHA publicado; sin continue-on-error, filtros ni audit fix force.                                                                                                            |
+
+La representación del proveedor usa los campos documentados `items.quantity`, `items.unit_price`, `currency_id` y `metadata`: [referencia oficial Mercado Pago](https://www.mercadopago.com.ar/developers/es/reference/online-payments/checkout-pro-preferences/create-preference/post). El doble local calcula la suma de los ítems en centavos con BigInt; no consulta ni copia el total de PostgreSQL. El navegador solo envía identificador del pedido y clave idempotente.
+
+Promociones se crean/activan por la API administrativa real. Envío/impuestos son un fixture explícito SQLAlchemy sobre el pedido pendiente en la base descartable, antes de crear la preferencia: el recorrido público actual no calcula esos cargos. El fixture exige test/local y ausencia de preferencia. No se agregaron endpoints ni funcionalidades comerciales.
+
+La detección nueva encontró una imagen externa y `/collections` inexistente en la portada: se usa el recurso local y el catálogo existente. El carrito vuelve a consultar promociones al montar. Cancelaciones normales de Next requieren GET local, query RSC, header `rsc: 1` y `net::ERR_ABORTED`: únicamente precarga marcada por Next o navegación con respuesta 200 del mismo origen/ruta. Las solicitudes fallidas sin esas condiciones siguen fallando. HTTP deliberados: GET carrito 404 inicial, POST login 400 solo en credenciales inválidas, GET pedido ajeno 404 solo en el contexto de propiedad. Consola de recurso se reconcilia con la respuesta autorizada exacta; otras páginas y contexto secundario tienen listeners y limpieza.
+
+### Fallos observados antes de la verificación final
+
+- Proveedor: 10 pruebas nuevas fallaron antes de corregirlo (4 deseleccionadas por filtro de diagnóstico); después, las 14 del proveedor pasaron.
+- Primer diagnóstico navegador quedó inválido por ejecutar npm ci mientras Next/Playwright tenían archivos bloqueados: EPERM y módulos parcialmente retirados. No se cuenta como suite aprobada. Se retiraron exclusivamente servicios propios y se reinstaló desde lockfile con salida 0 antes de repetir.
+- Diagnósticos posteriores revelaron cancelaciones normales RSC y relaciones ORM faltantes del fixture de cargos. Una vuelta completa registró 16 aprobadas y 6 fallidas; no se ocultaron ni omitieron los casos. Se registraron las relaciones del pedido y se repitió desde cero. Las ejecuciones interrumpidas no se cuentan como verificación final.
+- La prueba del detector falló una vez porque su respuesta 200 simulada usaba otro puerto/origen; se corrigió el fixture manteniendo la aserción de origen exacto.
+
+### Backend local y CI del SHA final
+
+Ruff: salida 0. Suite completa: 106 aprobadas, 0 fallidas/omitidas (aviso Starlette/anyio). Migraciones vacías hasta e2b7a93c4d10, seeds dos veces idempotentes y cero conexiones externas. Servicios/comercio/concurrencia: 11 aprobadas en PostgreSQL/Redis reales; proyecto retirado.
+
+Se comprobaron jobs y logs de [Backend CI](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36657030303): unidad 106; servicios 3; comercio/concurrencia 8; migraciones y seeds dos veces; todo verde. [CodeQL backend](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36657030451) verde. El seed conserva el aviso previo de Passlib/bcrypt; creación de usuarios/login funcionan.
+
+### Límites
+
+No se hicieron cobros ni llamadas a Mercado Pago, Cloudinary o correo. No se verifica aceptación real del proveedor, su checkout ni credenciales. Los cargos son fixture, no UX de cálculo de envío/impuestos. Móvil es Chromium emulado, no Safari/dispositivo físico. La sesión sigue en memoria. No se amplió el alcance a refactor visual o actualización general de dependencias.
+
+### Evidencia monetaria e inventario observada localmente
+
+Primera vuelta, escritorio; todos los importes en ARS. Provider es el importe calculado por el doble a partir del payload. Inventario muestra `on_hand / reserved / movimientos de este pedido`.
+
+| Escenario             | Subtotal | Descuento | Envío | Impuesto | Total API = proveedor | Cantidad | Antes       | Primer evento | Replay      |
+| --------------------- | -------: | --------: | ----: | -------: | --------------------: | -------: | ----------- | ------------- | ----------- |
+| Pendiente             | 45999.00 |         0 |     0 |        0 |              45999.00 |        1 | 500 / 1 / 1 | 500 / 1 / 1   | 500 / 1 / 1 |
+| Aprobado sin ajustes  | 45999.00 |         0 |     0 |        0 |              45999.00 |        1 | 500 / 2 / 1 | 499 / 1 / 2   | 499 / 1 / 2 |
+| Rechazado             | 45999.00 |         0 |     0 |        0 |              45999.00 |        1 | 500 / 2 / 1 | 500 / 2 / 1   | 500 / 2 / 1 |
+| Descuento             | 45999.00 |   4599.90 |     0 |        0 |              41399.10 |        1 | 499 / 2 / 1 | 498 / 1 / 2   | 498 / 1 / 2 |
+| Cargos                | 45999.00 |         0 |  1.21 |     0.79 |              46001.00 |        1 | 500 / 3 / 1 | 499 / 2 / 2   | 499 / 2 / 2 |
+| Combinado             | 45999.00 |   4599.90 |  1.21 |     0.79 |              41401.10 |        1 | 498 / 2 / 1 | 497 / 1 / 2   | 497 / 1 / 2 |
+| Centavos y cantidad 3 |     0.87 |      0.09 |  0.11 |     0.02 |                  0.91 |        3 | 500 / 3 / 1 | 497 / 0 / 2   | 497 / 0 / 2 |
+
+Las reservas previas pueden incluir otros pedidos pendientes; se verifica el delta exacto de cada variante. Movimiento inicial reserve; en aprobado se agrega una sola sale por la cantidad exacta. `payment-inventory-evidence` adjunta pedido/pago antes, después y replay, payload del proveedor y movimientos reales. En combinado, importe y moneda incorrectos devolvieron 409 sin alterar stock ni paid_at; después el webhook correcto se aceptó. El replay devuelve `{status: duplicate}` y conserva paid_at, importes, pago único e inventario.
+
+Cierre adversarial local: escalado forzado en 332 ms con grace 200 ms y force 1500 ms; plazo comprobado menor de 2500 ms; proceso ajeno sigue vivo. La prueba de descendientes confirmó su terminación y último chunk del log. La prueba con fallo de cierre conserva la misma instancia del error original y aun intenta retirar Docker. Las vueltas reales retiraron solo sus proyectos/servicios y no registraron fallos de limpieza.
+
+### Verificación final frontend local
+
+| Control                                              | Resultado ejecutado                                                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm ci                                               | Salida 0; 500 paquetes desde lockfile; advertencias upstream inflight/glob; 0 vulnerabilidades.                                                       |
+| npm run check                                        | Lint, tipos y formato: salida 0; 0 diagnósticos de lint.                                                                                              |
+| Jest CLI directa (preserva argumentos en PowerShell) | 23 suites, 90 aprobadas, 0 fallidas/omitidas; JSON guardado.                                                                                          |
+| npm run test:harness                                 | 6 aprobadas, 0 fallidas/omitidas.                                                                                                                     |
+| npm run test:routes                                  | 109 filas, 0 sin correspondencia; matriz sin cambios.                                                                                                 |
+| Build de producción                                  | Salida 0; 19 páginas. Build del runner también verde.                                                                                                 |
+| E2E_REPEAT=2                                         | 11 escenarios únicos x 2 proyectos Chromium = 22 ejecuciones por vuelta. 22 + 22 aprobadas (72.730s y 71.737s), 0 fallidas/omitidas/flaky; retries 0. |
+| Contrato HTTP/WebSocket real dentro del runner       | 1 aprobada por vuelta, 0 fallidas/omitidas; sin MSW.                                                                                                  |
+| npm audit --json                                     | Salida 0; total 0 en todas las severidades.                                                                                                           |
+| npm audit --omit=dev --json                          | Salida 0; total 0 en todas las severidades.                                                                                                           |
+
+Ambas vueltas aplicaron migraciones/seeds desde bases nuevas y retiraron sus propios contenedores, red y procesos. Los informes separados guardan JSON, capturas y adjuntos `payment-inventory-evidence`; CI conserva ambos informes/logs como `full-stack-diagnostics`. La evidencia local anterior no sustituye CI: [PR frontend y checks del HEAD publicado](https://github.com/ferchox920/e-fast/pull/1/checks), [workflow frontend](https://github.com/ferchox920/e-fast/actions/workflows/frontend-ci.yml), [CodeQL frontend](https://github.com/ferchox920/e-fast/actions/workflows/codeql.yml). Los resultados del SHA final se registran en el PR tras inspeccionar jobs y logs.
+
+Próxima acción única: revisión humana conjunta de los dos PR una vez cerrado técnicamente este trabajo.

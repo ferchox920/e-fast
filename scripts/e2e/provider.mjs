@@ -18,7 +18,12 @@ async function body(req) {
   for await (const chunk of req) text += chunk;
   return JSON.parse(text || '{}');
 }
-async function emit(record, eventId) {
+function cents(value) {
+  const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(String(value));
+  if (!match) throw new Error('Provider payload requires whole positive cents');
+  return BigInt(match[1]) * 100n + BigInt((match[2] ?? '').padEnd(2, '0'));
+}
+async function emit(record, eventId, expectedStatus = 200) {
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
@@ -26,6 +31,7 @@ async function emit(record, eventId) {
         fileURLToPath(new URL('./webhook-emitter.mjs', import.meta.url)),
         record.payment.id,
         eventId,
+        String(expectedStatus),
       ],
       { env: process.env, stdio: ['ignore', 'pipe', 'pipe'] },
     );
@@ -66,7 +72,15 @@ const server = createServer(async (req, res) => {
         const input = await body(req);
         const record = preferences.get(input.preferenceId);
         if (!record) return send(res, 404, {});
-        return send(res, 200, await emit(record, input.eventId));
+        return send(res, 200, await emit(record, input.eventId, input.expectedStatus ?? 200));
+      }
+      if (url.pathname === '/__control/payment') {
+        const input = await body(req);
+        const record = preferences.get(input.preferenceId);
+        if (!record) return send(res, 404, {});
+        for (const key of ['transaction_amount', 'currency_id', 'status'])
+          if (key in input) record.payment[key] = input[key];
+        return send(res, 200, record.payment);
       }
     }
     if (url.pathname === '/checkout/preferences' && req.method === 'POST') {
@@ -83,15 +97,24 @@ const server = createServer(async (req, res) => {
       const payment = {
         id: String(10000 + sequence),
         external_reference: input.external_reference,
-        transaction_amount: input.items.reduce(
-          (sum, item) => sum + item.quantity * item.unit_price,
-          0,
-        ),
+        transaction_amount:
+          Number(
+            input.items.reduce(
+              (sum, item) => sum + cents(item.unit_price) * BigInt(item.quantity),
+              0n,
+            ),
+          ) / 100,
         currency_id: input.items[0].currency_id,
         status: 'pending',
         status_detail: 'local-test',
       };
-      preferences.set(id, { preference, payment, back_urls: input.back_urls, events: [] });
+      preferences.set(id, {
+        preference,
+        payment,
+        payload: input,
+        back_urls: input.back_urls,
+        events: [],
+      });
       if (key) keys.set(key, preference);
       return send(res, 201, preference);
     }

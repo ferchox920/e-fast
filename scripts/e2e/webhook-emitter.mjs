@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-const [resourceId, eventId] = process.argv.slice(2);
+const [resourceId, eventId, expectedStatus = '200'] = process.argv.slice(2);
 const base = process.env.CONTRACT_API_BASE_URL;
 if (!base?.startsWith('http://127.0.0.1:') || !resourceId || !eventId)
   throw new Error('Local API and event required');
@@ -18,5 +18,6 @@ const response = await fetch(`${base}/payments/mercado-pago/webhook?data.id=${re
   signal: AbortSignal.timeout(10000),
 });
 const result = await response.json();
-if (!response.ok) throw new Error(`Webhook failed: ${response.status} ${JSON.stringify(result)}`);
-console.log(JSON.stringify(result));
+if (![200, 409].includes(Number(expectedStatus)) || response.status !== Number(expectedStatus))
+  throw new Error(`Webhook failed: ${response.status} ${JSON.stringify(result)}`);
+console.log(JSON.stringify(response.ok ? result : { httpStatus: response.status, ...result }));

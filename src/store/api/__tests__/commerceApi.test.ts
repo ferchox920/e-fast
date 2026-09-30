@@ -94,4 +94,31 @@ describe('DTO comerciales contra el backend fijado', () => {
         .unwrap(),
     ).rejects.toMatchObject({ status: 403 });
   });
+
+  it.each([25, 22.5, 27, 24.5, 0.91])(
+    'conserva el importe autorizado %s sin enviar precios del navegador',
+    async (amount) => {
+      server.use(
+        http.post(`${base}/payments/orders/:orderId`, async ({ request }) => {
+          expect(await request.text()).toBe('');
+          expect(request.headers.get('Idempotency-Key')).toBe('server-total-only');
+          return HttpResponse.json(
+            { id: 'payment', amount, currency: 'ARS', status: 'pending' },
+            { status: 201 },
+          );
+        }),
+      );
+      const store = makeStore();
+      const payment = await store
+        .dispatch(
+          paymentsApi.endpoints.createPaymentForOrder.initiate({
+            orderId: 'order',
+            idempotencyKey: 'server-total-only',
+          }),
+        )
+        .unwrap();
+      expect(payment.amount).toBe(amount);
+      expect(payment.currency).toBe('ARS');
+    },
+  );
 });

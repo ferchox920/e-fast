@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { createWriteStream, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { createRequire } from 'node:module';
+import { spawnOwned, cleanupResources } from './lifecycle.mjs';
 
 const require = createRequire(import.meta.url);
 const root = resolve('.');
@@ -38,11 +39,12 @@ const env = {
   PYTHONPATH: backend,
 };
 mkdirSync('output/playwright', { recursive: true });
-async function run(command, args, cwd = root, capture = false) {
+async function run(command, args, cwd = root, capture = false, timeoutMs = undefined) {
   return new Promise((resolveRun, reject) => {
     const child = spawn(command, args, {
       cwd,
       env,
+      timeout: timeoutMs,
       stdio: capture ? ['ignore', 'pipe', 'inherit'] : 'inherit',
     });
     let output = '';
@@ -72,11 +74,11 @@ for (let iteration = 1; iteration <= repeats; iteration++) {
   const children = [];
   function start(command, args, label, cwd = root) {
     const log = createWriteStream(`output/playwright/${iteration}-${label}.log`);
-    const child = spawn(command, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawnOwned(command, args, { cwd, env, stdio: ['ignore', 'pipe', 'pipe'] });
     child.stdout.pipe(log, { end: false });
     child.stderr.pipe(log, { end: false });
     child.on('error', (error) => log.write(String(error)));
-    children.push(child);
+    children.push({ child, log });
     return child;
   }
   async function ready(url, child) {
@@ -90,6 +92,7 @@ for (let iteration = 1; iteration <= repeats; iteration++) {
     }
     throw new Error(`Readiness timeout: ${url}`);
   }
+  let originalError = null;
   try {
     await run('docker', [...composeArgs, 'up', '-d', '--wait', '--wait-timeout', '60']);
     await run(python, ['-m', 'alembic', 'upgrade', 'head'], backend);
@@ -125,17 +128,13 @@ for (let iteration = 1; iteration <= repeats; iteration++) {
     ]);
     await run(process.execPath, ['--test', 'scripts/contract/live-api.test.mjs']);
     console.log(`Clean full-stack iteration ${iteration}/${repeats} passed`);
+  } catch (error) {
+    originalError = error;
   } finally {
-    for (const child of children.reverse()) {
-      if (child.exitCode !== null) continue;
-      if (process.platform === 'win32')
-        await run('taskkill', ['/PID', String(child.pid), '/T', '/F']).catch(() => {});
-      else {
-        const exited = new Promise((done) => child.once('exit', done));
-        child.kill('SIGTERM');
-        await exited;
-      }
-    }
-    await run('docker', [...composeArgs, 'down', '--remove-orphans']);
+    await cleanupResources(
+      children,
+      () => run('docker', [...composeArgs, 'down', '--remove-orphans'], root, false, 30000),
+      originalError,
+    );
   }
 }
