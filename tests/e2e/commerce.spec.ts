@@ -426,6 +426,7 @@ for (const { status, adjustment } of [
     ).toBeVisible();
     await capture(page, 'return-session');
     await page.getByRole('link', { name: 'Ingresar y consultar pedido' }).click();
+    await expect(page.getByLabel('Email', { exact: true })).toBeVisible();
     await capture(page, 'return-login');
     await page.getByLabel('Email', { exact: true }).fill('user1.dev@example.com');
     await page.getByLabel('Contraseña', { exact: true }).fill('UserDev123!');

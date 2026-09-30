@@ -24,7 +24,7 @@ Todas usan datos ficticios. Son PNG sin edición, exportados de los adjuntos del
 | Confirmación invitado      | [Ver](images/desktop-guest-confirmation.png)   | [Ver](images/mobile-guest-confirmation.png)   |
 | Pedido ajeno denegado      | [Ver](images/desktop-foreign-order-denied.png) | [Ver](images/mobile-foreign-order-denied.png) |
 
-También se comprobó directamente con Playwright CLI en Chrome 155 la selección de talla M y la edición a cantidad 2: [carrito editado en escritorio](images/desktop-cart-edit.png), total servido 91.998,00 ARS. Las 22 capturas de la tabla proceden de la segunda vuelta E2E (Chromium 153 / Playwright 1.63); esta captura adicional proviene del navegador local del agente. Ninguna representa una comprobación humana del autor.
+También se comprobó directamente con Playwright CLI en Chrome 155 la selección de talla M y la edición a cantidad 2: [carrito editado en escritorio](images/desktop-cart-edit.png), total servido 91.998,00 ARS. Las 22 capturas de la tabla proceden de las vueltas E2E (Chromium 153 / Playwright 1.63); las de login se regeneraron esperando el formulario visible. Esta captura adicional proviene del navegador local del agente. Ninguna representa una comprobación humana del autor.
 
 ## Acceso en el equipo del autor
 
