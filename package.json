@@ -24,7 +24,7 @@
     "next": "15.5.26",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-redux": "^9.2.0",
+    "react-redux": "^9.3.0",
     "react-window": "^1.8.11",
     "zod": "^3.25.76"
   },
