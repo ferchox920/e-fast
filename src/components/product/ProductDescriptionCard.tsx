@@ -32,7 +32,7 @@ export default function ProductDescriptionCard({
             Destacados
           </h3>
           <ul className="list-inside list-disc space-y-1">
-            {highlights!.map((highlight) => (
+            {highlights?.map((highlight) => (
               <li key={highlight}>{highlight}</li>
             ))}
           </ul>

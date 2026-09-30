@@ -14,7 +14,7 @@ const mapReportPeriodParams = (params?: ReportPeriodParams) => {
 
 export const reportsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getSalesReport: build.query<SalesReport, ReportPeriodParams | void>({
+    getSalesReport: build.query<SalesReport, ReportPeriodParams | undefined>({
       query: (params) => ({
         url: '/reports/sales',
         params: mapReportPeriodParams(params ?? undefined),
@@ -25,14 +25,19 @@ export const reportsApi = baseApi.injectEndpoints({
       query: () => ({ url: '/reports/inventory/value' }),
       providesTags: [{ type: 'Report', id: 'INVENTORY_VALUE' }],
     }),
-    getPurchasesCostAnalysisReport: build.query<CostAnalysisReport, ReportPeriodParams | void>({
-      query: (params) => ({
-        url: '/reports/purchases/cost-analysis',
-        params: mapReportPeriodParams(params ?? undefined),
-      }),
-      providesTags: [{ type: 'Report', id: 'COST_ANALYSIS' }],
-    }),
-    getInventoryRotationReport: build.query<InventoryRotationReport, ReportPeriodParams | void>({
+    getPurchasesCostAnalysisReport: build.query<CostAnalysisReport, ReportPeriodParams | undefined>(
+      {
+        query: (params) => ({
+          url: '/reports/purchases/cost-analysis',
+          params: mapReportPeriodParams(params ?? undefined),
+        }),
+        providesTags: [{ type: 'Report', id: 'COST_ANALYSIS' }],
+      },
+    ),
+    getInventoryRotationReport: build.query<
+      InventoryRotationReport,
+      ReportPeriodParams | undefined
+    >({
       query: (params) => ({
         url: '/reports/inventory/rotation',
         params: mapReportPeriodParams(params ?? undefined),

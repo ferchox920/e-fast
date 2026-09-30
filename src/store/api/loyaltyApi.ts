@@ -8,7 +8,7 @@ import type {
 
 export const loyaltyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getLoyaltyProfile: build.query<LoyaltyProfileRead, { user_id?: string } | void>({
+    getLoyaltyProfile: build.query<LoyaltyProfileRead, { user_id?: string } | undefined>({
       query: (params) => ({
         url: '/loyalty/profile',
         params: params ?? undefined,

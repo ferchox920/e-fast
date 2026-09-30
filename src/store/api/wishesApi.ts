@@ -39,7 +39,7 @@ export const wishesApi = baseApi.injectEndpoints({
         url: `/wishes/${wishId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, _error, { wishId, productId }) => [
+      invalidatesTags: (_result, _error, { wishId, productId }) => [
         { type: 'Wish', id: 'LIST' },
         { type: 'Wish', id: wishId },
         ...(productId ? [{ type: 'Wish' as const, id: `PRODUCT:${productId}` }] : []),

@@ -49,7 +49,7 @@ describe('login RTK Query contra el contrato OAuth2PasswordRequestForm', () => {
     let refreshCount = 0;
     server.use(
       http.post(url, () =>
-        HttpResponse.json({ detail: 'Incorrect email or password' }, { status: 401 }),
+        HttpResponse.json({ detail: 'Incorrect email or password' }, { status: 400 }),
       ),
       http.post('http://localhost:8000/api/v1/auth/refresh', () => {
         refreshCount += 1;
@@ -61,7 +61,7 @@ describe('login RTK Query contra el contrato OAuth2PasswordRequestForm', () => {
       store
         .dispatch(authApi.endpoints.login.initiate({ email: user.email, password: 'wrong' }))
         .unwrap(),
-    ).rejects.toMatchObject({ status: 401 });
+    ).rejects.toMatchObject({ status: 400 });
     expect(refreshCount).toBe(0);
     expect(store.getState().user.session.accessToken).toBeNull();
   });

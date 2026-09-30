@@ -140,7 +140,6 @@ const buildMeta = (type: NotificationType, payload: unknown): NotificationMeta |
         badge: `Nivel ${data.level}`,
       };
     }
-    case 'generic':
     default:
       return undefined;
   }

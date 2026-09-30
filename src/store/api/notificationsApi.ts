@@ -70,7 +70,7 @@ const normalizeNotificationsResponse = (
 
 export const notificationsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    listNotifications: build.query<ListNotificationsResponse, ListNotificationsParams | void>({
+    listNotifications: build.query<ListNotificationsResponse, ListNotificationsParams | undefined>({
       query: ({ limit = 50, offset = 0 } = {}) => ({
         url: '/notifications',
         params: { limit, offset },
@@ -91,7 +91,7 @@ export const notificationsApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'Notification' as const, id },
         { type: 'NotificationList' as const, id: 'LIST' },
       ],
