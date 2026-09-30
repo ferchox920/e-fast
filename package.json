@@ -15,11 +15,12 @@
     "test": "jest",
     "test:contract": "node --test scripts/contract/live-api.test.mjs",
     "test:routes": "node scripts/contract/generate-matrix.mjs docs/verification/backend-openapi-e90c112.json",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:e2e": "node scripts/e2e/run-full-stack.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.1",
-    "next": "15.5.12",
+    "next": "15.5.26",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-redux": "^9.2.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.2",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.15",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -56,5 +58,10 @@
     "*.{ts,tsx,js,jsx,json,md,css}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.28"
+    }
   }
 }
