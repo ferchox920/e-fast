@@ -10,6 +10,7 @@ import {
   useNotificationConnectionStatus,
 } from '@/notifications/hooks';
 import { formatRelativeTime } from '@/notifications/utils';
+import { apiErrorMessage } from '@/lib/apiError';
 
 const PAGE_SIZE = 25;
 
@@ -62,21 +63,7 @@ export default function NotificationsPage() {
     setPage(1);
   };
 
-  let errorDetails: string | null = null;
-  if (isError && error && typeof error === 'object') {
-    if ('status' in error) {
-      const statusPart = typeof error.status === 'number' ? `${error.status} ` : '';
-      const data =
-        'data' in error && error.data != null
-          ? typeof error.data === 'string'
-            ? error.data
-            : JSON.stringify(error.data)
-          : 'Error desconocido';
-      errorDetails = `${statusPart}${data}`;
-    } else if ('message' in error && error.message) {
-      errorDetails = error.message;
-    }
-  }
+  const errorDetails = isError ? apiErrorMessage(error) : null;
 
   return (
     <section className="space-y-6">
@@ -114,7 +101,11 @@ export default function NotificationsPage() {
       </header>
 
       {isLoading ? (
-        <div className="py-10 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-10 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Cargando historial...
         </div>
       ) : isError ? (
@@ -133,7 +124,11 @@ export default function NotificationsPage() {
           </button>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="py-10 text-center text-sm text-neutral-500" role="status">
+        <div
+          className="py-10 text-center text-sm text-neutral-500"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           No se encontraron notificaciones para este filtro.
         </div>
       ) : (

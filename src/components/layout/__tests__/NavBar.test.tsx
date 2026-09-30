@@ -1,9 +1,10 @@
-import React from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import NavBar, { type NavBarCategoryGroup } from '../NavBar';
 import { renderWithProviders } from '@/test-utils/renderWithProviders';
+
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
 jest.mock('@/components/cart/MiniCart', () => ({
   __esModule: true,

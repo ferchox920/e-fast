@@ -17,7 +17,7 @@ interface MiniCartProps {
   onCloseMenu: () => void;
 }
 
-const formatCurrency = (value: number, currency = 'EUR') =>
+const formatCurrency = (value: number, currency = 'ARS') =>
   new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency,
@@ -26,7 +26,7 @@ const formatCurrency = (value: number, currency = 'EUR') =>
 
 export default function MiniCart({ onCloseMenu }: MiniCartProps) {
   const [ensureCart] = useCreateOrGetCartMutation();
-  const { error, isLoading, isFetching, refetch } = useGetCartQuery();
+  const { error, isLoading, isFetching, refetch } = useGetCartQuery(undefined);
   const cart = useAppSelector(selectCart);
   const items = useAppSelector(selectCartItems);
   const totalItems = useAppSelector(selectCartItemsCount);

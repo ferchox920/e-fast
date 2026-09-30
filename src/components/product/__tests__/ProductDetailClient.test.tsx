@@ -2,6 +2,7 @@ import type { ProductImageRead, ProductRead } from '@/types/product';
 import { renderWithProviders } from '@/test-utils/renderWithProviders';
 
 jest.mock('@/store/api/productApi', () => ({
+  ...jest.requireActual('@/store/api/productApi'),
   useGetProductBySlugQuery: jest.fn(),
   useGetProductQuestionsQuery: jest.fn(),
   usePostProductQuestionMutation: jest.fn(),

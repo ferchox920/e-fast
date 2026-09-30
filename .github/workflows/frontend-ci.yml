@@ -1,0 +1,173 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, 'portfolio/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: frontend
+      - uses: actions/checkout@v7
+        with:
+          repository: ferchox920/ecommerce_fast_api
+          ref: 807ab0140a155320bca2419949c80b046db9eece
+          path: backend
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: python -m pip install -r backend/requirements.txt
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Production browser journeys twice against disposable services
+        working-directory: frontend
+        env:
+          E2E_BACKEND_DIR: ../backend
+          E2E_PYTHON: python
+          E2E_REPEAT: '2'
+        run: npm run test:e2e
+      - name: Preserve both browser reports and service logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: full-stack-diagnostics
+          path: frontend/output/playwright
+          if-no-files-found: ignore
+          retention-days: 7
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:routes && git diff --exit-code -- docs/verification/frontend-backend-contract.md
+      - run: npm run lint
+      - run: npm run format:check
+      - name: Audit complete dependency tree
+        run: npm audit --json > npm-audit.json
+      - name: Audit production dependency tree
+        if: '!cancelled()'
+        run: npm audit --omit=dev --json > npm-audit-production.json
+      - run: npm run test:harness
+      - run: npm run typecheck
+      - run: npm test -- --ci --runInBand --json --outputFile=jest-results.json
+      - run: npm run build
+      - if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: frontend-test-diagnostics
+          path: |
+            jest-results.json
+            npm-audit.json
+            npm-audit-production.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  backend-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: ecommerce
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U app -d ecommerce"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      APP_ENV: test
+      SECRET_KEY: ci-contract-secret-only-123456789
+      REFRESH_SECRET_KEY: ci-contract-refresh-secret-only-123456789
+      DATABASE_URL: postgresql+psycopg://app:app@localhost:5432/ecommerce
+      ASYNC_DATABASE_URL: postgresql+asyncpg://app:app@localhost:5432/ecommerce
+      REDIS_URL: redis://localhost:6379/0
+      CONTRACT_API_BASE_URL: http://127.0.0.1:8000/api/v1
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: frontend
+      - uses: actions/checkout@v7
+        with:
+          repository: ferchox920/ecommerce_fast_api
+          ref: 807ab0140a155320bca2419949c80b046db9eece
+          path: backend
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install from pinned dependencies
+        run: |
+          cd frontend && npm ci
+          cd ../backend && python -m pip install -r requirements.txt
+      - name: Migrate and seed empty PostgreSQL
+        working-directory: backend
+        run: |
+          python -m alembic upgrade head
+          python scripts/seed_dev_users.py
+          python scripts/seed_dev_products.py
+          python scripts/seed_product_relationships.py
+      - name: Exercise live API without MSW
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd backend && exec python -m uvicorn app.main:app --host 127.0.0.1 --port 8000) > backend.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true; wait "$api_pid" 2>/dev/null || true' EXIT
+          node frontend/scripts/contract/wait-ready.mjs
+          cd frontend
+          npm run test:contract
+      - if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: backend-contract-diagnostics
+          path: backend.log
+          if-no-files-found: ignore
+          retention-days: 7

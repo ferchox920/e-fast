@@ -2,6 +2,11 @@
 
 const STORAGE_KEY = 'myapp_guest_token';
 
+export const retireGuestToken = (): void => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(STORAGE_KEY);
+};
+
 export const getOrCreateGuestToken = (): string | undefined => {
   if (typeof window === 'undefined') return undefined;
 

@@ -30,7 +30,7 @@ export const exposureApi = baseApi.injectEndpoints({
     }),
     clearExposureCache: build.mutation<
       ClearExposureCacheResponse,
-      Partial<GetExposureParams> | void
+      Partial<GetExposureParams> | undefined
     >({
       query: (params) => ({
         url: '/exposure/cache',

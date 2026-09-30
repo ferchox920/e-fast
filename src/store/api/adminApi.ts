@@ -23,7 +23,7 @@ import type {
 } from '@/types/admin';
 
 const envCurrency = process.env.NEXT_PUBLIC_DEFAULT_CURRENCY?.trim();
-const DEFAULT_CURRENCY = envCurrency && envCurrency.length ? envCurrency : 'USD';
+const DEFAULT_CURRENCY = envCurrency?.length ? envCurrency : 'USD';
 
 type MaybePaginated<T> = Paginated<T> | T[] | undefined;
 
@@ -446,7 +446,7 @@ const transformAnalyticsDashboardResponse = (
   };
 };
 
-const extractLimit = (params: { limit?: number } | void, fallback: number): number => {
+const extractLimit = (params: { limit?: number } | undefined, fallback: number): number => {
   if (
     params &&
     typeof params === 'object' &&
@@ -498,7 +498,7 @@ export const adminApi = baseApi.injectEndpoints({
       providesTags: [{ type: 'AdminAnalytics', id: 'DASHBOARD' }],
     }),
 
-    listUsers: build.query<Paginated<UserRead>, ListUsersParams | void>({
+    listUsers: build.query<Paginated<UserRead>, ListUsersParams | undefined>({
       query: (params) => {
         const page = params?.page ?? 1;
         const pageSize = params?.page_size ?? 50;
@@ -543,7 +543,7 @@ export const adminApi = baseApi.injectEndpoints({
         method: 'PATCH',
         params: { make_admin: makeAdmin },
       }),
-      invalidatesTags: (result, error, { userId }) => [
+      invalidatesTags: (_result, _error, { userId }) => [
         { type: 'User', id: userId },
         { type: 'UserList', id: 'LIST' },
       ],
@@ -555,7 +555,7 @@ export const adminApi = baseApi.injectEndpoints({
         method: 'PATCH',
         params: { active },
       }),
-      invalidatesTags: (result, error, { userId }) => [
+      invalidatesTags: (_result, _error, { userId }) => [
         { type: 'User', id: userId },
         { type: 'UserList', id: 'LIST' },
       ],
@@ -563,7 +563,7 @@ export const adminApi = baseApi.injectEndpoints({
 
     getPendingProductQuestions: build.query<
       Paginated<AdminPendingQuestionSummary>,
-      { limit?: number } | void
+      { limit?: number } | undefined
     >({
       query: (params) => {
         const limit = extractLimit(params, 5);
@@ -633,7 +633,7 @@ export const adminApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: (result, error, { categoryId }) => [
+      invalidatesTags: (_result, _error, { categoryId }) => [
         { type: 'CatalogCategory', id: categoryId },
         { type: 'CatalogCategory', id: 'LIST' },
       ],
@@ -643,13 +643,16 @@ export const adminApi = baseApi.injectEndpoints({
         url: `/admin/categories/${categoryId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { categoryId }) => [
+      invalidatesTags: (_result, _error, { categoryId }) => [
         { type: 'CatalogCategory', id: categoryId },
         { type: 'CatalogCategory', id: 'LIST' },
       ],
     }),
 
-    listAdminPromotions: build.query<AdminPromotionPayload[], { status_filter?: string } | void>({
+    listAdminPromotions: build.query<
+      AdminPromotionPayload[],
+      { status_filter?: string } | undefined
+    >({
       query: (params) => ({
         url: '/admin/promotions',
         params: params?.status_filter ? { status_filter: params.status_filter } : undefined,

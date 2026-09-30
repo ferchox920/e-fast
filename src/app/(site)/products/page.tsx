@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
 import ProductCardGrid from '@/components/product/ProductCardGrid';
 import { useGetProductsQuery } from '@/store/api/productApi';
@@ -11,6 +12,15 @@ import { mapProductsToCards } from '@/components/product/utils/mapProductToCard'
 const PRODUCTS_PER_PAGE = 12;
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={<main aria-live="polite">Cargando catálogo…</main>}>
+      <ProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsContent() {
+  const params = useSearchParams();
   const dispatch = useAppDispatch();
   const catalogFilters = useAppSelector(selectCatalogFilters);
   const [searchInput, setSearchInput] = useState('');
@@ -19,6 +29,13 @@ export default function ProductsPage() {
     category: '',
     brand: '',
   });
+
+  useEffect(() => {
+    const category = params.get('category') ?? '';
+    const search = params.get('search') ?? '';
+    setSearchInput(search);
+    setAppliedFilters((current) => ({ ...current, category, search }));
+  }, [params]);
 
   const { data, isLoading, isFetching, isError, error, refetch } = useGetProductsQuery({
     search: appliedFilters.search || undefined,

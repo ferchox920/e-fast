@@ -254,7 +254,8 @@ export function AdminProductImagesPanel({
 
       {status ? (
         <div
-          role="status"
+          aria-live="polite"
+          aria-atomic="true"
           className={`rounded-md border px-3 py-2 text-sm ${
             status.type === 'success'
               ? 'border-green-200 bg-green-50 text-green-700'

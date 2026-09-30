@@ -10,7 +10,7 @@ export const scoringApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Scoring', id: 'RANKINGS' }],
     }),
-    getScoringRankings: build.query<ScoringRankingItem[], ScoringRankingsParams | void>({
+    getScoringRankings: build.query<ScoringRankingItem[], ScoringRankingsParams | undefined>({
       query: (params) => ({
         url: '/internal/scoring/rankings',
         params: params ?? undefined,

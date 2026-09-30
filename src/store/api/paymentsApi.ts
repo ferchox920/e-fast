@@ -1,17 +1,18 @@
 import { baseApi } from './baseApi';
 import type {
   CreatePaymentForOrderArgs,
-  MercadoPagoWebhookPayload,
+  PaymentRefundArgs,
   Payment,
-  WebhookAck,
+  PaymentAuditRead,
 } from '@/types/payment';
 
 export const paymentsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createPaymentForOrder: build.mutation<Payment, CreatePaymentForOrderArgs>({
-      query: ({ orderId }) => ({
+      query: ({ orderId, idempotencyKey }) => ({
         url: `/payments/orders/${orderId}`,
         method: 'POST',
+        headers: { 'Idempotency-Key': idempotencyKey },
       }),
       invalidatesTags: (result, _error, { orderId }) => [
         { type: 'Payment', id: result?.id ?? `ORDER:${orderId}` },
@@ -19,15 +20,23 @@ export const paymentsApi = baseApi.injectEndpoints({
         { type: 'AdminOrder', id: 'LIST' },
       ],
     }),
-    mercadoPagoWebhook: build.mutation<WebhookAck, MercadoPagoWebhookPayload>({
-      query: (body) => ({
-        url: '/payments/mercado-pago/webhook',
+    refundPaymentAdmin: build.mutation<Payment, PaymentRefundArgs>({
+      query: ({ paymentId, idempotencyKey, body }) => ({
+        url: `/payments/${paymentId}/refund`,
         method: 'POST',
+        headers: { 'Idempotency-Key': idempotencyKey },
         body,
       }),
       invalidatesTags: [{ type: 'AdminOrder', id: 'LIST' }],
     }),
+    getPaymentAuditAdmin: build.query<PaymentAuditRead, string>({
+      query: (paymentId) => `/payments/${paymentId}/audit`,
+    }),
   }),
 });
 
-export const { useCreatePaymentForOrderMutation, useMercadoPagoWebhookMutation } = paymentsApi;
+export const {
+  useCreatePaymentForOrderMutation,
+  useRefundPaymentAdminMutation,
+  useGetPaymentAuditAdminQuery,
+} = paymentsApi;

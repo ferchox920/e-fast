@@ -18,10 +18,14 @@ const testApi = baseApi.injectEndpoints({
     getProtected: build.query<{ ok: boolean }, void>({
       query: () => ({ url: '/protected' }),
     }),
+    changeProtected: build.mutation<{ ok: boolean }, void>({
+      query: () => ({ url: '/protected', method: 'POST' }),
+    }),
   }),
 });
 
 const getProtectedEndpoint = testApi.endpoints.getProtected;
+const changeProtectedEndpoint = testApi.endpoints.changeProtected;
 
 const createStore = (preloadedState?: Partial<RootReducerState>) => {
   return configureStore({
@@ -33,6 +37,23 @@ const createStore = (preloadedState?: Partial<RootReducerState>) => {
 };
 
 describe('baseApi baseQueryWithReauth', () => {
+  it.each([403, 404, 409, 422, 429, 503])(
+    'conserva el error HTTP %i sin reintentar una mutación',
+    async (status) => {
+      const store = createStore();
+      let count = 0;
+      server.use(
+        http.post(`${TEST_BASE_URL}/protected`, () => {
+          count += 1;
+          return HttpResponse.json({ detail: 'failure' }, { status });
+        }),
+      );
+      await expect(
+        store.dispatch(changeProtectedEndpoint.initiate()).unwrap(),
+      ).rejects.toMatchObject({ status });
+      expect(count).toBe(1);
+    },
+  );
   it('uses the current access token when requesting protected resources', async () => {
     const store = createStore();
     store.dispatch(

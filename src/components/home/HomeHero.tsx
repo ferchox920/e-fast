@@ -3,8 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-const HERO_IMAGE =
-  'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1600&q=80';
+const HERO_IMAGE = '/product-placeholder.svg';
 
 export default function HomeHero() {
   return (
@@ -12,7 +11,7 @@ export default function HomeHero() {
       <div className="absolute inset-0">
         <Image
           src={HERO_IMAGE}
-          alt="Cliente sonriendo mientras abre una caja de compra online"
+          alt=""
           fill
           priority
           className="object-cover"
@@ -41,7 +40,7 @@ export default function HomeHero() {
               Comprar ahora
             </Link>
             <Link
-              href="/collections"
+              href="/products"
               className="inline-flex items-center justify-center rounded-full border border-neutral-200 px-6 py-3 text-sm font-semibold text-neutral-700 transition hover:border-neutral-300 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-300"
             >
               Explorar categorías

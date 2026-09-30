@@ -40,7 +40,7 @@ const mapListOrdersParams = (params?: ListOrdersParams) => {
 
 export const ordersApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    listOrders: build.query<OrderRead[], ListOrdersParams | void>({
+    listOrders: build.query<OrderRead[], ListOrdersParams | undefined>({
       query: (params) => ({
         url: '/orders',
         params: mapListOrdersParams(params ?? undefined),
@@ -69,7 +69,7 @@ export const ordersApi = baseApi.injectEndpoints({
         { type: 'AdminOrder', id: result?.id ?? orderId },
       ],
     }),
-    createOrderFromCart: build.mutation<OrderRead, OrderFromCartPayload | void>({
+    createOrderFromCart: build.mutation<OrderRead, OrderFromCartPayload | undefined>({
       query: (body) => ({
         url: '/orders/from-cart',
         method: 'POST',

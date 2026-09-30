@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import LoginPageClient from '@/components/login/LoginPageClient';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Ingresar | MyApp',
@@ -7,5 +8,15 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <LoginPageClient />;
+  return (
+    <Suspense
+      fallback={
+        <p aria-live="polite" aria-atomic="true">
+          Cargando ingreso…
+        </p>
+      }
+    >
+      <LoginPageClient />
+    </Suspense>
+  );
 }

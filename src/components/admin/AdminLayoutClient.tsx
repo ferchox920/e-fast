@@ -16,9 +16,7 @@ interface AdminNavItem {
 
 const NAV_ITEMS: AdminNavItem[] = [
   { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/orders', label: 'Pedidos' },
   { href: '/admin/products', label: 'Productos' },
-  { href: '/admin/promotions', label: 'Promociones' },
   { href: '/admin/customers', label: 'Clientes' },
   { href: '/admin/analytics', label: 'Analíticas' },
 ];
@@ -50,14 +48,10 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
   }, [user]);
 
   useEffect(() => {
-    if (status === 'idle') {
-      return;
-    }
-
-    if (!isAdmin) {
+    if (status === 'anonymous') {
       router.replace(REDIRECT_LOGIN_PATH);
     }
-  }, [isAdmin, router, status]);
+  }, [router, status]);
 
   const handleLogout = useCallback(async () => {
     if (isLoggingOut) return;
@@ -79,10 +73,21 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
     );
   }
 
-  if (!isAdmin) {
+  if (status === 'anonymous') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-neutral-100 text-neutral-600">
-        <p className="text-sm">Redirigiendo…</p>
+        <p className="text-sm">Ingresa para acceder a la administración…</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-neutral-100 text-neutral-700">
+        <div role="alert" className="space-y-3 text-center">
+          <p>No tienes permiso para acceder a la administración.</p>
+          <Link href="/">Volver a la tienda</Link>
+        </div>
       </div>
     );
   }

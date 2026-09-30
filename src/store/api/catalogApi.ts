@@ -93,7 +93,7 @@ export const catalogApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: (result, error, { brandId }) => [
+      invalidatesTags: (_result, _error, { brandId }) => [
         { type: 'CatalogBrand', id: brandId },
         { type: 'CatalogBrand', id: 'LIST' },
       ],
@@ -115,7 +115,7 @@ export const catalogApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: (result, error, { categoryId }) => [
+      invalidatesTags: (_result, _error, { categoryId }) => [
         { type: 'CatalogCategory', id: categoryId },
         { type: 'CatalogCategory', id: 'LIST' },
       ],
@@ -125,7 +125,7 @@ export const catalogApi = baseApi.injectEndpoints({
         url: `/categories/${categoryId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { categoryId }) => [
+      invalidatesTags: (_result, _error, { categoryId }) => [
         { type: 'CatalogCategory', id: categoryId },
         { type: 'CatalogCategory', id: 'LIST' },
       ],

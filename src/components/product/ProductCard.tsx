@@ -11,6 +11,7 @@ import { useAppSelector } from '@/store/hooks';
 import { selectCartError, selectCartStatus } from '@/store/slices/cartSlice';
 import type { CurrencyCode, UUID } from '@/types/common';
 import type { Product } from '@/types/product';
+import { availableVariant } from './utils/productAvailability';
 
 export interface ProductCardProps {
   product: Product;
@@ -26,8 +27,7 @@ export interface ProductCardProps {
   imageAlt?: string | null;
 }
 
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=60';
+const FALLBACK_IMAGE = '/product-placeholder.svg';
 
 const formatCurrency = (value: number, currency?: CurrencyCode | null) => {
   const resolvedCurrency: string = (currency ?? 'EUR') as string;
@@ -84,13 +84,20 @@ export default function ProductCard({
     imageUrl ?? product.primary_image?.url ?? product.images?.[0]?.url ?? FALLBACK_IMAGE;
   const primaryAltText = imageAlt ?? product.primary_image?.alt_text ?? title;
   const resolvedVariantId =
-    defaultVariantId ?? (product.variants?.[0]?.id ? String(product.variants[0].id) : null);
+    defaultVariantId ?? availableVariant(product, defaultQuantity)?.id ?? null;
+  const purchaseVariant = product.variants?.find(
+    (variant) => String(variant.id) === String(resolvedVariantId),
+  );
 
   const isProcessing = ensuringCart || addingCartItem;
-  const addDisabled = isProcessing || !resolvedVariantId;
+  const addDisabled =
+    isProcessing ||
+    !product.active ||
+    !purchaseVariant?.active ||
+    purchaseVariant.stock_on_hand - purchaseVariant.stock_reserved < defaultQuantity;
 
   const handleAddToCart = async () => {
-    if (!resolvedVariantId) {
+    if (addDisabled || !resolvedVariantId) {
       setFeedback({ type: 'error', message: 'Selecciona una variante disponible.' });
       return;
     }

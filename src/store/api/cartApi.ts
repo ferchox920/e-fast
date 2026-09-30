@@ -16,7 +16,7 @@ const resolveGuestToken = (explicit?: string | null) => {
 
 export const cartApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    createOrGetCart: build.mutation<CartRead, CartCreatePayload | void>({
+    createOrGetCart: build.mutation<CartRead, CartCreatePayload | undefined>({
       query: (args) => {
         const guestToken = resolveGuestToken(args?.guestToken ?? null);
         return {
@@ -31,7 +31,7 @@ export const cartApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'Cart', id: 'CURRENT' }],
     }),
 
-    getCart: build.query<CartRead, Pick<CartCreatePayload, 'guestToken'> | void>({
+    getCart: build.query<CartRead, Pick<CartCreatePayload, 'guestToken'> | undefined>({
       query: (args) => {
         const guestToken = resolveGuestToken(args?.guestToken ?? null);
         return {

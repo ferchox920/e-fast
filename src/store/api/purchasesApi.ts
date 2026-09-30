@@ -42,7 +42,7 @@ export const purchasesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Purchase', id: 'SUPPLIERS' }],
     }),
-    listSuppliers: build.query<SupplierRead[], ListSuppliersParams | void>({
+    listSuppliers: build.query<SupplierRead[], ListSuppliersParams | undefined>({
       query: (params) => ({
         url: '/purchases/suppliers',
         params: mapListSuppliersParams(params ?? undefined),
@@ -126,7 +126,7 @@ export const purchasesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Purchase', id: 'PO_LIST' }],
     }),
-    getReplenishmentAlerts: build.query<StockAlert[], SupplierFilterParams | void>({
+    getReplenishmentAlerts: build.query<StockAlert[], SupplierFilterParams | undefined>({
       query: (params) => ({
         url: '/purchases/replenishment/alerts',
         params: mapSupplierFilterParams(params ?? undefined),
@@ -140,7 +140,10 @@ export const purchasesApi = baseApi.injectEndpoints({
         })),
       ],
     }),
-    getReplenishmentSuggestions: build.query<ReplenishmentSuggestion, SupplierFilterParams | void>({
+    getReplenishmentSuggestions: build.query<
+      ReplenishmentSuggestion,
+      SupplierFilterParams | undefined
+    >({
       query: (params) => ({
         url: '/purchases/replenishment/suggestions',
         params: mapSupplierFilterParams(params ?? undefined),

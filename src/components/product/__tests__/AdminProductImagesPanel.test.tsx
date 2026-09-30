@@ -79,7 +79,7 @@ describe('AdminProductImagesPanel', () => {
     };
 
     server.use(
-      http.post('http://127.0.0.1:8000/api/v1/products/:productId/images', async () => {
+      http.post('http://localhost:8000/api/v1/products/:productId/images', async () => {
         return HttpResponse.json(newImage);
       }),
     );
@@ -119,7 +119,7 @@ describe('AdminProductImagesPanel', () => {
 
     server.use(
       http.post(
-        'http://127.0.0.1:8000/api/v1/products/:productId/images/:imageId/primary',
+        'http://localhost:8000/api/v1/products/:productId/images/:imageId/primary',
         async () => {
           return HttpResponse.json(updatedProduct);
         },

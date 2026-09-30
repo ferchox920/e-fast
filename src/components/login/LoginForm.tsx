@@ -11,7 +11,6 @@ export interface LoginFormSocialButton {
 export interface LoginFormProps {
   email: string;
   password: string;
-  rememberMe: boolean;
   isLoading?: boolean;
   showPassword?: boolean;
   errorMessage?: string | null;
@@ -21,7 +20,6 @@ export interface LoginFormProps {
   socialButtons?: LoginFormSocialButton[];
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
-  onRememberMeChange: (value: boolean) => void;
   onTogglePassword: () => void;
   onSubmit: () => void;
 }
@@ -29,17 +27,15 @@ export interface LoginFormProps {
 export default function LoginForm({
   email,
   password,
-  rememberMe,
   isLoading = false,
   showPassword = false,
   errorMessage = null,
-  forgotPasswordHref = '/recuperar',
-  registerHref = '/registro',
+  forgotPasswordHref,
+  registerHref,
   isSubmitDisabled = false,
   socialButtons,
   onEmailChange,
   onPasswordChange,
-  onRememberMeChange,
   onTogglePassword,
   onSubmit,
 }: LoginFormProps) {
@@ -54,13 +50,14 @@ export default function LoginForm({
     <>
       <div className="space-y-2 text-center">
         <h3 className="text-lg font-semibold">Inicia sesión en MyApp</h3>
-        <p className="text-sm text-neutral-500">
-          Usa tus credenciales o las opciones sociales para continuar.
-        </p>
+        <p className="text-sm text-neutral-500">Usa tu email y contraseña para continuar.</p>
       </div>
 
       {errorMessage && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {errorMessage}
         </div>
       )}
@@ -106,22 +103,15 @@ export default function LoginForm({
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <label className="inline-flex items-center gap-2 text-neutral-600">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(event) => onRememberMeChange(event.target.checked)}
-              className="rounded border-neutral-300 text-indigo-500 focus:ring-indigo-400"
-              disabled={isLoading}
-            />
-            Recordarme
-          </label>
-          <Link
-            href={forgotPasswordHref}
-            className="font-medium text-indigo-500 hover:text-indigo-600"
-          >
-            Olvidé mi contraseña
-          </Link>
+          <span className="text-neutral-500">La sesión termina al recargar la página.</span>
+          {forgotPasswordHref && (
+            <Link
+              href={forgotPasswordHref}
+              className="font-medium text-indigo-500 hover:text-indigo-600"
+            >
+              Olvidé mi contraseña
+            </Link>
+          )}
         </div>
 
         <button
@@ -155,12 +145,14 @@ export default function LoginForm({
         </div>
       )}
 
-      <p className="text-center text-xs text-neutral-500">
-        ¿Eres nuevo?{' '}
-        <Link href={registerHref} className="font-semibold text-indigo-500 hover:text-indigo-600">
-          Crea una cuenta
-        </Link>
-      </p>
+      {registerHref && (
+        <p className="text-center text-xs text-neutral-500">
+          ¿Eres nuevo?{' '}
+          <Link href={registerHref} className="font-semibold text-indigo-500 hover:text-indigo-600">
+            Crea una cuenta
+          </Link>
+        </p>
+      )}
     </>
   );
 }
