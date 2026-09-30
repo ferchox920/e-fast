@@ -7,10 +7,20 @@ const api = 'http://127.0.0.1:59002/api/v1';
 const provider = 'http://127.0.0.1:59001';
 const control = { 'x-test-control': 'e2e-control-only' };
 
+async function capture(page: Page, name: string) {
+  await test.info().attach(name, {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png',
+  });
+}
+
 test('imagen local de fallback y variante agotada sin envío al carrito', async ({ page }) => {
   await page.goto('/products');
   const card = page.locator('a[href="/products/e2e-sin-imagen"]').first();
   await expect(card.locator('img')).toHaveAttribute('src', '/product-placeholder.svg');
+  const article = card.locator('xpath=..');
+  await expect(article.getByText('Agotado', { exact: true })).toBeVisible();
+  await expect(article.getByRole('button', { name: 'Agregar', exact: true })).toBeDisabled();
   await card.click();
   await expect(
     page.getByText('Este producto no tiene imagenes disponibles.', { exact: true }),
@@ -18,6 +28,7 @@ test('imagen local de fallback y variante agotada sin envío al carrito', async 
   await expect(
     page.getByRole('button', { name: 'Agregar al carrito', exact: true }),
   ).toBeDisabled();
+  await expect(page.getByText('Agotado', { exact: true })).toBeVisible();
 });
 
 async function login(page: Page, user = 'user1', redirect = '/products') {
@@ -47,6 +58,7 @@ async function shop(page: Page, request: APIRequestContext, slug?: string) {
   );
   expect(product).toBeTruthy();
   await expect(page.getByRole('heading', { name: 'Nuestro catálogo' })).toBeVisible();
+  await capture(page, 'catalog');
   if (product.category_id) {
     await page
       .getByRole('combobox', { name: 'Categoria', exact: true })
@@ -59,11 +71,13 @@ async function shop(page: Page, request: APIRequestContext, slug?: string) {
   await expect(page.getByRole('heading', { name: product.title, exact: true })).toBeVisible();
   const variant = page.getByRole('combobox', { name: 'Talla', exact: true });
   if (await variant.count()) await variant.selectOption({ index: 0 });
+  await capture(page, 'variant-detail');
   await page.getByRole('button', { name: 'Agregar al carrito', exact: true }).click();
   await expect(page.getByText('Producto agregado al carrito.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^Abrir carrito/ }).click();
   await page.getByRole('link', { name: 'Ver carrito', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Carrito', exact: true })).toBeVisible();
+  await capture(page, 'cart');
   return product;
 }
 
@@ -323,6 +337,7 @@ for (const { status, adjustment } of [
     }
     await page.getByRole('link', { name: 'Continuar al proveedor de pago' }).click();
     await expect(page.getByRole('heading', { name: 'Checkout local de pruebas' })).toBeVisible();
+    await capture(page, 'local-provider');
     await page
       .getByRole('button', {
         name:
@@ -409,7 +424,9 @@ for (const { status, adjustment } of [
     await expect(
       page.getByText('Tu sesión terminó al salir del comercio.', { exact: false }),
     ).toBeVisible();
+    await capture(page, 'return-session');
     await page.getByRole('link', { name: 'Ingresar y consultar pedido' }).click();
+    await capture(page, 'return-login');
     await page.getByLabel('Email', { exact: true }).fill('user1.dev@example.com');
     await page.getByLabel('Contraseña', { exact: true }).fill('UserDev123!');
     await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
@@ -445,6 +462,7 @@ test('deniega un pedido ajeno desde la interfaz', async ({ page, request, browse
   await expect(otherPage.locator('main').getByRole('alert')).toContainText(
     'No encontramos el recurso solicitado.',
   );
+  await capture(otherPage, 'foreign-order-denied');
   await other.close();
   otherMonitor.finish();
 });
@@ -459,6 +477,7 @@ test('invitado conserva confirmación y no ofrece consulta sin sesión', async (
   expect(order.user_id).toBeNull();
   await expect(page.getByText(`Pedido invitado creado: ${order.id}`)).toBeVisible();
   await expect(page.getByText('Tu carrito está vacío.', { exact: false })).toBeVisible();
+  await capture(page, 'guest-confirmation');
   await page.reload();
   await expect(page.getByText(`Pedido invitado creado: ${order.id}`)).toBeVisible();
   await expect(page.getByText('Tu carrito está vacío.', { exact: false })).toBeVisible();

@@ -1,19 +1,16 @@
 import type { Product } from '@/types/product';
 import type { ProductCardProps } from '@/components/product/ProductCard';
-
-const ACTIVE_BADGE = 'Disponible';
-const INACTIVE_BADGE = 'Inactivo';
+import { availableVariant, productAvailabilityLabel } from './productAvailability';
 
 export const mapProductToCard = (product: Product): ProductCardProps => {
   const primaryImage = product.primary_image ?? product.images?.[0] ?? null;
 
   return {
     product,
-    badges: [product.active ? ACTIVE_BADGE : INACTIVE_BADGE],
+    badges: [productAvailabilityLabel(product)],
     rating: null,
     reviewCount: null,
-    defaultVariantId:
-      product.variants && product.variants.length > 0 ? String(product.variants[0].id) : null,
+    defaultVariantId: availableVariant(product)?.id ? String(availableVariant(product)?.id) : null,
     defaultQuantity: 1,
     imageUrl: primaryImage?.url ?? null,
     imageAlt: primaryImage?.alt_text ?? null,

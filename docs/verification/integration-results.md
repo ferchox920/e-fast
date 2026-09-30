@@ -1,6 +1,6 @@
 # Verificación de integración
 
-Los apartados de la primera etapa conservan evidencia histórica. El cierre vigente de las cuatro brechas posteriores a la segunda etapa está al final.
+Los apartados de etapas anteriores conservan evidencia histórica. El estado vigente de la preparación visual previa a fusión está al final.
 
 ## Referencias fijadas
 
@@ -207,3 +207,19 @@ Cierre adversarial local: escalado forzado en 332 ms con grace 200 ms y force 15
 Ambas vueltas aplicaron migraciones/seeds desde bases nuevas y retiraron sus propios contenedores, red y procesos. Los informes separados guardan JSON, capturas y adjuntos `payment-inventory-evidence`; CI conserva ambos informes/logs como `full-stack-diagnostics`. La evidencia local anterior no sustituye CI: [PR frontend y checks del HEAD publicado](https://github.com/ferchox920/e-fast/pull/1/checks), [workflow frontend](https://github.com/ferchox920/e-fast/actions/workflows/frontend-ci.yml), [CodeQL frontend](https://github.com/ferchox920/e-fast/actions/workflows/codeql.yml). Los resultados del SHA final se registran en el PR tras inspeccionar jobs y logs.
 
 Próxima acción única: revisión humana conjunta de los dos PR una vez cerrado técnicamente este trabajo.
+
+## Snapshot y preparación visual antes de fusionar
+
+Referencias iniciales de esta revisión: backend `aed8ea566e53d8d305f5cada33f8b0f63573f3e8`, frontend `aa338db4c179b5ad5e2db00852ace12ec155c906`. Fetch en ambas ramas remotas y árboles inicialmente limpios; PR #1 abiertos, base main, sin conflictos observados al iniciar. No se alteró el checkout ajeno ni se modificó main.
+
+Backend publicado primero: [807ab0140a155320bca2419949c80b046db9eece](https://github.com/ferchox920/ecommerce_fast_api/commit/807ab0140a155320bca2419949c80b046db9eece). El proveedor lee `product_title_snapshot`, atributo real de OrderLine. Cinco casos parametrizados usan el modelo real y verifican título histórico literal, SKU, cantidad, variante y precio; inicialmente 5 fallaron / 9 deseleccionadas por filtro (title=null); después 27 relacionadas aprobadas y Ruff verde. [Backend CI](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36661957065) y [CodeQL](https://github.com/ferchox920/ecommerce_fast_api/actions/runs/36661957071) verdes; logs inspeccionados: 106 unidad/API, 3 servicios, 8 comercio/concurrencia, migraciones vacías y seeds idempotentes. Contrato público, importes y garantías sin cambios; no se regeneran OpenAPI/matriz.
+
+El pin activo del runner, ambos checkouts CI y README ahora usan 807ab01; los SHA de secciones anteriores son evidencia histórica. Frontend se publica en el PR existente; resultados de CI del HEAD se registran en su descripción, sin interpretar CI como aprobación humana.
+
+Se preparó la [guía concreta del autor y sus capturas](../review/author-review.md). Los adjuntos capturan catálogo/detalle/variante/carrito, proveedor local, tres estados de pago, retorno/login, invitado y denegación de pedido ajeno en ambos proyectos. PNG sin edición, datos ficticios. El modo E2E_REVIEW_MINUTES mantiene los servicios propios hasta 60 minutos después de la última vuelta y aplica la limpieza existente; cerrar + Enter termina antes. Se ejecutó y comprobó el cierre manual del primer entorno, luego se creó otro desde cero.
+
+Inspección visual automatizada: se encontró Disponible en un producto agotado. La corrección usa variantes activas y stock libre (`on_hand - reserved`) para etiqueta y selección rápida, deshabilita agregar sin stock y muestra Agotado en detalle. No sustituye la validación transaccional del backend. Pruebas antes: 3 fallidas / 2 aprobadas; después suite completa 92 aprobadas, 0 fallidas/omitidas (23 suites). E2E protege etiqueta y botón agotado en catálogo/detalle; incluye teclado, cantidad, creación, pagos y autorización. La presentación de carrito/pedido sigue básica y las filas de carrito son Artículo N (DTO sin título); se declara en la guía, sin refactor o funcionalidad comercial nueva.
+
+Verificación local final: lint/formato/tipos verdes; arnés 6 aprobadas; matriz 109 filas sin cambios; build de producción 19 páginas verde. Dos vueltas desde PostgreSQL/Redis nuevos: 22 + 22 aprobadas, 84.744s y 81.297s, skipped/unexpected/flaky=0 y retries=0; contrato HTTP/WebSocket real 1 aprobado en cada vuelta. El primer proyecto fue retirado; el segundo queda temporalmente abierto para la revisión local del autor y luego se limpia automáticamente. El lector no debe confundir esa espera deliberada con recursos abandonados. Las auditorías y la instalación limpia se vuelven a verificar en CI del commit publicado.
+
+**Aprobación visual y funcional del autor pendiente. Ambos PR permanecen abiertos.** La autorización de fusión está condicionada a esa comprobación concreta; no se solicitará una revisión de GitHub inventada ni se omitirán protecciones. Después se fusionará backend, se verificará su main, se conservará el SHA exacto accesible y se fusionará frontend; luego se verificará su main. CV y puntos de entrevista finales se entregarán tras ambos main verdes. No hay despliegue, release, cobro real ni borrado de ramas.

@@ -7,6 +7,7 @@ import ProductGallery from './ProductGallery';
 import ProductGallerySkeleton from './ProductGallerySkeleton';
 import ProductQuestions from './ProductQuestions';
 import type { ProductRead } from '@/types/product';
+import { productAvailabilityLabel } from './utils/productAvailability';
 import { useCreateOrGetCartMutation, useAddCartItemMutation } from '@/store/api/cartApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectCartError, selectCartStatus } from '@/store/slices/cartSlice';
@@ -496,9 +497,7 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
               </div>
               <div className="rounded-lg border border-neutral-200 bg-white p-4">
                 <dt className="text-xs uppercase tracking-wide text-neutral-500">Estado</dt>
-                <dd className="text-sm text-neutral-800">
-                  {product.active ? 'Disponible' : 'Inactivo'}
-                </dd>
+                <dd className="text-sm text-neutral-800">{productAvailabilityLabel(product)}</dd>
               </div>
             </dl>
           </article>

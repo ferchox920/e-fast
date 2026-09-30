@@ -85,7 +85,31 @@ describe('mapProductToCard', () => {
 
     const card = mapProductToCard(product);
 
-    expect(card.defaultVariantId).toBe('var-1');
+    expect(card.defaultVariantId).toBeNull();
     expect(card.badges).toEqual(['Inactivo']);
+  });
+
+  it('marks fully reserved variants as sold out and selects no purchase variant', () => {
+    const product = {
+      ...baseProduct(),
+      variants: [{ ...createVariant('reserved'), stock_reserved: 10 }],
+    };
+    const card = mapProductToCard(product);
+    expect(card.badges).toEqual(['Agotado']);
+    expect(card.defaultVariantId).toBeNull();
+  });
+
+  it('selects an active variant with available stock instead of the first exhausted one', () => {
+    const product = {
+      ...baseProduct(),
+      variants: [
+        { ...createVariant('empty'), stock_on_hand: 0 },
+        { ...createVariant('inactive'), active: false },
+        createVariant('available'),
+      ],
+    };
+    const card = mapProductToCard(product);
+    expect(card.badges).toEqual(['Disponible']);
+    expect(card.defaultVariantId).toBe('available');
   });
 });

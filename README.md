@@ -1,6 +1,6 @@
 # e-fast
 
-Cliente Next.js 15 y RTK Query para la API de [ecommerce_fast_api](https://github.com/ferchox920/ecommerce_fast_api). Las pruebas reales fijan `aed8ea566e53d8d305f5cada33f8b0f63573f3e8` (`portfolio/backend-foundation`, PR #1). El backend sigue siendo un repositorio independiente. El OpenAPI guardado sigue vigente: las correcciones del proveedor HTTP local y del importe de la preferencia no cambian rutas ni DTO públicos.
+Cliente Next.js 15 y RTK Query para la API de [ecommerce_fast_api](https://github.com/ferchox920/ecommerce_fast_api). Las pruebas reales fijan `807ab0140a155320bca2419949c80b046db9eece` (`portfolio/backend-foundation`, PR #1). El backend sigue siendo un repositorio independiente. El OpenAPI guardado sigue vigente: las correcciones del proveedor HTTP local y del importe de la preferencia no cambian rutas ni DTO públicos.
 
 ## Requisitos y configuración
 
@@ -36,7 +36,7 @@ Requiere Docker con Compose, Python 3.13 y los puertos locales 55434, 56380, 590
 
 ```bash
 git clone https://github.com/ferchox920/ecommerce_fast_api ../ecommerce-fast-api-e2e
-git -C ../ecommerce-fast-api-e2e checkout --detach aed8ea566e53d8d305f5cada33f8b0f63573f3e8
+git -C ../ecommerce-fast-api-e2e checkout --detach 807ab0140a155320bca2419949c80b046db9eece
 python -m venv ../ecommerce-fast-api-e2e/.venv
 ../ecommerce-fast-api-e2e/.venv/bin/python -m pip install -r ../ecommerce-fast-api-e2e/requirements.txt
 npm ci
@@ -53,6 +53,8 @@ Los 11 escenarios únicos se ejecutan en escritorio y móvil: 22 ejecuciones por
 `scripts/e2e/backend-ref.json` y ambos checkouts del workflow deben apuntar al mismo SHA. Las credenciales ficticias y secretos del runner sirven exclusivamente para sus servicios locales. `E2E_BUILD=true` habilita imágenes locales sin optimización para este build; `NEXT_PUBLIC_PAYMENTS_ENABLED=true` muestra la preferencia de pago. `MERCADO_PAGO_API_BASE_URL` exige `APP_ENV=test` y un origen HTTP de loopback; producción mantiene el proveedor oficial. No existen endpoints de prueba en la aplicación.
 
 Los reportes independientes, capturas, trazas de fallos y logs quedan en `output/playwright/run-1`, `run-2` y los logs contiguos. `npx playwright show-report output/playwright/run-1/report` abre el informe. La CI los conserva como `full-stack-diagnostics`. Consulta [resultados y limitaciones](docs/verification/integration-results.md).
+
+La [guía de comprobación del autor](docs/review/author-review.md) conserva capturas reales de escritorio y móvil, accesos ficticios y cinco comprobaciones antes de fusionar. `E2E_REVIEW_MINUTES=60` mantiene los servicios locales durante ese plazo tras la última vuelta y los limpia al finalizar; escribir `cerrar` y Enter termina antes. CI no habilita esa espera. Este entorno es local, sin despliegue ni cobros reales.
 
 ## Estado inicial observado
 

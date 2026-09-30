@@ -67,6 +67,9 @@ console.log(`Pinned backend ${observed}`);
 await run(process.execPath, [require.resolve('next/dist/bin/next'), 'build', '--turbopack']);
 const repeats = Number(process.env.E2E_REPEAT ?? 1);
 if (![1, 2].includes(repeats)) throw new Error('E2E_REPEAT must be 1 or 2');
+const reviewMinutes = Number(process.env.E2E_REVIEW_MINUTES ?? 0);
+if (!Number.isInteger(reviewMinutes) || reviewMinutes < 0 || reviewMinutes > 60)
+  throw new Error('E2E_REVIEW_MINUTES must be 0..60');
 for (let iteration = 1; iteration <= repeats; iteration++) {
   env.E2E_ITERATION = String(iteration);
   const project = `efast-stage2-${process.pid}-${iteration}`;
@@ -128,6 +131,29 @@ for (let iteration = 1; iteration <= repeats; iteration++) {
     ]);
     await run(process.execPath, ['--test', 'scripts/contract/live-api.test.mjs']);
     console.log(`Clean full-stack iteration ${iteration}/${repeats} passed`);
+    if (reviewMinutes > 0 && iteration === repeats) {
+      console.log(`Visual review available at ${front} for ${reviewMinutes} minutes.`);
+      console.log('Fictitious account: user1.dev@example.com / UserDev123!');
+      console.log('Type cerrar + Enter to clean up early. This does not approve or merge a PR.');
+      await new Promise((done) => {
+        const close = () => {
+          clearTimeout(timer);
+          process.off('SIGINT', close);
+          process.off('SIGTERM', close);
+          process.stdin.off('data', input);
+          process.stdin.pause();
+          done();
+        };
+        const input = (data) => {
+          if (data.toString().trim() === 'cerrar') close();
+        };
+        const timer = setTimeout(close, reviewMinutes * 60000);
+        process.once('SIGINT', close);
+        process.once('SIGTERM', close);
+        process.stdin.on('data', input);
+        process.stdin.resume();
+      });
+    }
   } catch (error) {
     originalError = error;
   } finally {
