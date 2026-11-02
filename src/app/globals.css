@@ -1,3 +1,14 @@
 @import 'tailwindcss';
 
-/* tus estilos globales opcionales */
+.login-shell {
+  --login-bg: #f4ede4;
+  --login-surface: rgba(255, 251, 247, 0.86);
+  --login-surface-strong: #fffdf8;
+  --login-line: rgba(53, 67, 61, 0.14);
+  --login-ink: #1f2a24;
+  --login-muted: #687169;
+  --login-accent: #146356;
+  --login-accent-strong: #0e4d43;
+  --login-accent-soft: #dceee8;
+  --login-highlight: #c8874d;
+}

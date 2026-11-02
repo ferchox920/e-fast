@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
@@ -18,9 +18,14 @@ const NAV_ITEMS: AdminNavItem[] = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/orders', label: 'Pedidos' },
   { href: '/admin/products', label: 'Productos' },
+  { href: '/admin/catalog', label: 'Catalogo' },
   { href: '/admin/promotions', label: 'Promociones' },
+  { href: '/admin/purchases', label: 'Compras' },
   { href: '/admin/customers', label: 'Clientes' },
+  { href: '/admin/exposure', label: 'Exposure' },
   { href: '/admin/analytics', label: 'Analíticas' },
+  { href: '/admin/reports', label: 'Reportes' },
+  { href: '/admin/questions', label: 'Preguntas' },
 ];
 
 const REDIRECT_LOGIN_PATH = '/login?redirect=/admin/dashboard';
@@ -138,3 +143,5 @@ export default function AdminLayoutClient({ children }: AdminLayoutClientProps) 
     </div>
   );
 }
+
+

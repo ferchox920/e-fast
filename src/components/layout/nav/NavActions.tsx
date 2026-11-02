@@ -34,6 +34,8 @@ export default function NavActions({
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logoutPending = Boolean(isLogoutPending);
+  const isAdminUser =
+    user?.is_superuser === true || ((user as { role?: string | null } | null)?.role ?? null) === 'admin';
 
   const cancelScheduledClose = useCallback(() => {
     if (closeTimeoutRef.current) {
@@ -166,7 +168,7 @@ export default function NavActions({
               <UserIcon />
             </button>
             <div
-              className={`absolute right-0 mt-2 w-52 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-150 ${
+              className={`absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl shadow-stone-900/10 transition duration-150 ${
                 isAccountMenuOpen
                   ? 'pointer-events-auto translate-y-0 opacity-100'
                   : 'pointer-events-none -translate-y-1 opacity-0'
@@ -175,32 +177,44 @@ export default function NavActions({
               aria-orientation="vertical"
             >
               <div className="py-1">
-                <span className="block truncate px-4 py-2 text-sm italic text-gray-500">
+                <span className="block truncate border-b border-stone-100 px-4 py-2 text-sm italic text-stone-500">
                   {user.email}
                 </span>
                 <Link
                   href="/mi-cuenta"
-                  className="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100"
+                  className="block px-4 py-2 text-sm text-stone-700 transition hover:bg-stone-100"
                   role="menuitem"
                   onClick={handleAccountLinkClick}
                 >
                   Mi Cuenta
                 </Link>
-                <Link
-                  href="/mis-pedidos"
-                  className="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-100"
-                  role="menuitem"
-                  onClick={handleAccountLinkClick}
-                >
-                  Mis Pedidos
-                </Link>
+                {!isAdminUser ? (
+                  <Link
+                    href="/orders"
+                    className="block px-4 py-2 text-sm text-stone-700 transition hover:bg-stone-100"
+                    role="menuitem"
+                    onClick={handleAccountLinkClick}
+                  >
+                    Mis Pedidos
+                  </Link>
+                ) : null}
+                {isAdminUser ? (
+                  <Link
+                    href="/admin/dashboard"
+                    className="block px-4 py-2 text-sm font-semibold text-stone-900 transition hover:bg-stone-100"
+                    role="menuitem"
+                    onClick={handleAccountLinkClick}
+                  >
+                    Dashboard Admin
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   onClick={handleLogoutWithClose}
                   className={`block w-full px-4 py-2 text-left text-sm transition ${
                     logoutPending
                       ? 'cursor-progress text-red-400'
-                      : 'text-red-600 hover:bg-gray-100'
+                      : 'text-red-700 hover:bg-stone-100'
                   }`}
                   role="menuitem"
                   aria-live="polite"

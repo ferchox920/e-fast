@@ -12,13 +12,14 @@ describe('LoginLayout', () => {
     expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
   });
 
-  it('applies dark theme styles', () => {
+  it('renders the layout shell styles', () => {
     const { container } = render(
-      <LoginLayout theme="dark" hero={<div>Dark Hero</div>} form={<div>Dark Form</div>} />,
+      <LoginLayout hero={<div>Hero Block</div>} form={<div>Form Block</div>} />,
     );
 
-    expect(container.firstChild).toHaveClass('bg-neutral-900');
-    expect(screen.getByText('Dark Hero').parentElement).toHaveClass('bg-neutral-900');
-    expect(screen.getByText('Dark Form').parentElement).toHaveClass('bg-neutral-950');
+    expect(container.firstChild).toHaveClass('rounded-[32px]');
+    expect(screen.getByText('Hero Block').parentElement?.parentElement).toHaveClass(
+      'bg-[linear-gradient(145deg,#163f38_0%,#1f5f53_52%,#102b27_100%)]',
+    );
   });
 });

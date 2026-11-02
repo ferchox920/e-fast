@@ -1,8 +1,10 @@
 import { baseApi } from './baseApi';
 import type {
+  CheckoutQuoteInput,
+  CheckoutQuoteRead,
   ListOrdersParams,
   OrderCreateInput,
-  OrderFromCartPayload,
+  OrderFromCartInput,
   OrderLineCreateInput,
   OrderRead,
   ShipmentCreateInput,
@@ -40,7 +42,7 @@ const mapListOrdersParams = (params?: ListOrdersParams) => {
 
 export const ordersApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    listOrders: build.query<OrderRead[], ListOrdersParams | void>({
+    listOrders: build.query<OrderRead[], ListOrdersParams | undefined>({
       query: (params) => ({
         url: '/orders',
         params: mapListOrdersParams(params ?? undefined),
@@ -61,6 +63,30 @@ export const ordersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'AdminOrder', id: 'LIST' }],
     }),
+    getCheckoutQuote: build.query<CheckoutQuoteRead, CheckoutQuoteInput>({
+      query: (body) => ({
+        url: '/orders/checkout-quote',
+        method: 'POST',
+        body,
+      }),
+    }),
+    createOrderFromCart: build.mutation<OrderRead, OrderFromCartInput | undefined>({
+      query: (payload) => ({
+        url: '/orders/from-cart',
+        method: 'POST',
+        body: {
+          guest_token: payload?.guestToken ?? null,
+          shipping_method: payload?.shipping_method ?? 'standard',
+          applied_promotions: payload?.applied_promotions ?? [],
+          shipping_address: payload?.shipping_address ?? null,
+          notes: payload?.notes ?? null,
+        },
+      }),
+      invalidatesTags: [
+        { type: 'AdminOrder', id: 'LIST' },
+        { type: 'Cart', id: 'CURRENT' },
+      ],
+    }),
     getOrderById: build.query<OrderRead, { orderId: string }>({
       query: ({ orderId }) => ({
         url: `/orders/${orderId}`,
@@ -68,14 +94,6 @@ export const ordersApi = baseApi.injectEndpoints({
       providesTags: (result, _error, { orderId }) => [
         { type: 'AdminOrder', id: result?.id ?? orderId },
       ],
-    }),
-    createOrderFromCart: build.mutation<OrderRead, OrderFromCartPayload | void>({
-      query: (body) => ({
-        url: '/orders/from-cart',
-        method: 'POST',
-        body: body ?? {},
-      }),
-      invalidatesTags: [{ type: 'AdminOrder', id: 'LIST' }],
     }),
     addOrderLine: build.mutation<OrderRead, { orderId: string; body: OrderLineCreateInput }>({
       query: ({ orderId, body }) => ({
@@ -128,9 +146,10 @@ export const {
   useListOrdersQuery,
   useLazyListOrdersQuery,
   useCreateOrderMutation,
+  useGetCheckoutQuoteQuery,
+  useCreateOrderFromCartMutation,
   useGetOrderByIdQuery,
   useLazyGetOrderByIdQuery,
-  useCreateOrderFromCartMutation,
   useAddOrderLineMutation,
   usePayOrderMutation,
   useCancelOrderMutation,

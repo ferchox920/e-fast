@@ -1,0 +1,141 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - navigation [ref=e8]:
+          - button "♂ Hombres" [ref=e10]
+          - button "♀ Mujeres" [ref=e12]
+        - link "MyApp Atelier" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e15]:
+          - button "Abrir buscador" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Buscar productos
+          - link "Ir a mi cuenta" [ref=e22] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e23]
+            - generic [ref=e26]: Mi cuenta
+          - link "Abrir lista de deseos" [ref=e27] [cursor=pointer]:
+            - /url: /lista-deseos
+            - img [ref=e28]
+            - generic [ref=e30]: Lista de deseos
+          - button "Abrir carrito" [ref=e32]:
+            - img [ref=e33]
+            - generic [ref=e38]: Carrito de compras
+      - generic:
+        - dialog:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /
+                  - text: MyApp Atelier
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - searchbox
+                - button: Cerrar
+            - generic:
+              - generic:
+                - heading [level=3]: Busquedas populares
+                - generic:
+                  - button: Sneakers blancas
+                  - button: Blazer negro
+                  - button: Bolso tote
+                  - button: Pantalones cargo
+                  - button: Vestido midi
+    - main [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - heading "Checkout" [level=1] [ref=e42]
+          - paragraph [ref=e43]: Revisa tu pedido, confirma direccion de envio y continua al pago con Mercado Pago.
+        - article [ref=e44]:
+          - heading "Checkout como invitado" [level=2] [ref=e45]
+          - paragraph [ref=e46]: Puedes crear la orden con tu carrito actual. Si ya tienes cuenta, inicia sesion para asociarla a tu historial.
+          - link "Iniciar sesion" [ref=e47] [cursor=pointer]:
+            - /url: /login?redirect=/checkout
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - heading "Direccion de envio" [level=2] [ref=e50]
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - text: Direccion *
+                - textbox "Direccion *" [ref=e53]:
+                  - /placeholder: Calle y numero
+              - generic [ref=e54]:
+                - text: Referencia
+                - textbox "Referencia" [ref=e55]:
+                  - /placeholder: Depto, piso, torre, etc.
+              - generic [ref=e56]:
+                - text: Ciudad *
+                - textbox "Ciudad *" [ref=e57]
+              - generic [ref=e58]:
+                - text: Provincia / Estado *
+                - textbox "Provincia / Estado *" [ref=e59]
+              - generic [ref=e60]:
+                - text: Codigo postal *
+                - textbox "Codigo postal *" [ref=e61]
+              - generic [ref=e62]:
+                - text: Pais *
+                - textbox "Pais *" [ref=e63]: AR
+              - generic [ref=e64]:
+                - text: Telefono de contacto
+                - textbox "Telefono de contacto" [ref=e65]
+              - generic [ref=e66]:
+                - text: Notas para el pedido
+                - textbox "Notas para el pedido" [ref=e67]:
+                  - /placeholder: Indicaciones para envio o entrega
+            - generic [ref=e68]:
+              - button "Generar pago" [disabled] [ref=e69]
+              - button "Actualizar carrito" [ref=e70]
+          - complementary [ref=e71]:
+            - heading "Resumen final" [level=2] [ref=e72]
+            - paragraph [ref=e73]: Cargando carrito...
+    - contentinfo [ref=e74]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - paragraph [ref=e78]: Marca
+          - paragraph [ref=e79]: MyApp Atelier
+          - paragraph [ref=e80]: Moda urbana y essentials de temporada.
+        - region "Navegacion de tienda" [ref=e81]:
+          - heading "Tienda" [level=3] [ref=e82]
+          - list [ref=e83]:
+            - listitem [ref=e84]:
+              - link "Novedades" [ref=e85] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e86]:
+              - link "Mas populares" [ref=e87] [cursor=pointer]:
+                - /url: /products?sort_by=popularity_score&sort_order=desc
+            - listitem [ref=e88]:
+              - link "Hombre" [ref=e89] [cursor=pointer]:
+                - /url: /categorias/hombres/ropa
+            - listitem [ref=e90]:
+              - link "Mujer" [ref=e91] [cursor=pointer]:
+                - /url: /categorias/mujeres/ropa
+        - region "Navegacion de soporte" [ref=e92]:
+          - heading "Soporte" [level=3] [ref=e93]
+          - list [ref=e94]:
+            - listitem [ref=e95]:
+              - link "Mi cuenta" [ref=e96] [cursor=pointer]:
+                - /url: /mi-cuenta
+            - listitem [ref=e97]:
+              - link "Iniciar sesion" [ref=e98] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e99]:
+              - link "Crear cuenta" [ref=e100] [cursor=pointer]:
+                - /url: /registro
+            - listitem [ref=e101]:
+              - link "Notificaciones" [ref=e102] [cursor=pointer]:
+                - /url: /notifications
+            - listitem [ref=e103]:
+              - link "Ayuda de compra" [ref=e104] [cursor=pointer]:
+                - /url: /checkout
+      - generic [ref=e106]:
+        - paragraph [ref=e107]: © 2026 MyApp. All rights reserved.
+        - generic [ref=e108]:
+          - link "Politica de privacidad" [ref=e109] [cursor=pointer]:
+            - /url: /privacidad
+          - link "Terminos y condiciones" [ref=e110] [cursor=pointer]:
+            - /url: /terminos

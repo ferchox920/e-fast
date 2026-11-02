@@ -8,6 +8,7 @@ import {
   useNotificationsList,
   useUnreadCounter,
 } from '@/notifications/hooks';
+import { ICON_BUTTON_CLASS } from '@/components/layout/nav/constants';
 
 const DROPDOWN_LIMIT = 100;
 
@@ -91,7 +92,7 @@ export default function NotificationBell() {
       <button
         ref={buttonRef}
         type="button"
-        className="relative flex items-center justify-center rounded-full border border-transparent bg-white p-2 text-neutral-600 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className={`${ICON_BUTTON_CLASS} relative`}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label={`Notificaciones, ${unreadLabel}`}

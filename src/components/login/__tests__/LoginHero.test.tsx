@@ -6,17 +6,22 @@ describe('LoginHero', () => {
   it('renders default content', () => {
     render(<LoginHero />);
 
-    expect(screen.getByText('Bienvenido de nuevo')).toBeInTheDocument();
-    expect(screen.getByText(/Accede para seguir gestionando tus pedidos/i)).toBeInTheDocument();
+    expect(
+      screen.getByText('Todo lo que importa de tu compra, en un acceso claro.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/seguir tus pedidos, revisar guardados/i)).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 
-  it('accepts custom title, subtitle and tips', () => {
+  it('accepts custom title, subtitle and highlights', () => {
     render(
       <LoginHero
         title="Hola de nuevo"
         subtitle="Continúa administrando tu tienda."
-        tips={['Tip 1', 'Tip 2']}
+        highlights={[
+          { title: 'Tip 1', description: 'Texto 1' },
+          { title: 'Tip 2', description: 'Texto 2' },
+        ]}
       />,
     );
 

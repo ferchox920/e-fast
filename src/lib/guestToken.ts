@@ -20,3 +20,23 @@ export const getOrCreateGuestToken = (): string | undefined => {
     return undefined;
   }
 };
+
+export const getGuestToken = (): string | undefined => {
+  if (typeof window === 'undefined') return undefined;
+
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+export const clearGuestToken = (): void => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // No-op: localStorage can be unavailable in private or restricted contexts.
+  }
+};

@@ -134,10 +134,17 @@ const buildProductsQueryParams = (
     brand: params.brand ?? params.brand_id,
     min_price: params.min_price,
     max_price: params.max_price,
+    sort_by: params.sort_by,
+    sort_order: params.sort_order,
   };
   if (!options?.omitPagination) {
-    mapped.limit = limit;
-    mapped.offset = offset;
+    if (pageSize || page) {
+      mapped.page = page ?? 1;
+      mapped.page_size = pageSize ?? limit ?? 20;
+    } else {
+      mapped.limit = limit;
+      mapped.offset = offset;
+    }
   }
 
   return Object.fromEntries(

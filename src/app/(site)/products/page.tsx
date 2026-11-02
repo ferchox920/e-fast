@@ -1,17 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
 import ProductCardGrid from '@/components/product/ProductCardGrid';
 import { useGetProductsQuery } from '@/store/api/productApi';
+import { useGetScoringRankingsQuery } from '@/store/api/scoringApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { clearCatalogFilters, selectCatalogFilters } from '@/store/slices/catalogSlice';
 import { mapProductsToCards } from '@/components/product/utils/mapProductToCard';
+import type { SortOrder } from '@/types/api';
 
 const PRODUCTS_PER_PAGE = 12;
 
 export default function ProductsPage() {
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
   const catalogFilters = useAppSelector(selectCatalogFilters);
   const [searchInput, setSearchInput] = useState('');
   const [appliedFilters, setAppliedFilters] = useState({
@@ -20,14 +24,40 @@ export default function ProductsPage() {
     brand: '',
   });
 
+  const requestedSortBy = searchParams?.get('sort_by') ?? '';
+  const requestedSortOrder = searchParams?.get('sort_order');
+  const sortBy = requestedSortBy.trim() || undefined;
+  const sortOrder: SortOrder = requestedSortOrder === 'asc' ? 'asc' : 'desc';
+  const isPopularitySort = sortBy === 'popularity_score';
+
   const { data, isLoading, isFetching, isError, error, refetch } = useGetProductsQuery({
     search: appliedFilters.search || undefined,
     category: appliedFilters.category || undefined,
     brand: appliedFilters.brand || undefined,
+    sort_by: sortBy,
+    sort_order: sortOrder,
     limit: PRODUCTS_PER_PAGE,
   });
 
-  const products = useMemo(() => mapProductsToCards(data?.items ?? []), [data?.items]);
+  const { data: scoringRankings } = useGetScoringRankingsQuery(
+    { limit: 200 },
+    { skip: !isPopularitySort },
+  );
+
+  const rankedProducts = useMemo(() => {
+    const items = data?.items ?? [];
+    if (!isPopularitySort || !scoringRankings?.length) return items;
+
+    const rankingMap = new Map(scoringRankings.map((item) => [String(item.product_id), item]));
+    const sorted = [...items].sort((a, b) => {
+      const left = rankingMap.get(String(a.id))?.popularity_score ?? -1;
+      const right = rankingMap.get(String(b.id))?.popularity_score ?? -1;
+      return sortOrder === 'asc' ? left - right : right - left;
+    });
+    return sorted;
+  }, [data?.items, isPopularitySort, scoringRankings, sortOrder]);
+
+  const products = useMemo(() => mapProductsToCards(rankedProducts), [rankedProducts]);
 
   const isPending = isLoading || isFetching;
   const showEmptyState = !isPending && !isError && (data?.items?.length ?? 0) === 0;

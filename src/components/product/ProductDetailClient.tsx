@@ -2,15 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import ProductEngagementSummary from '@/components/engagement/ProductEngagementSummary';
+import { useIngestEventMutation } from '@/store/api/engagementApi';
 import { useGetProductBySlugQuery } from '@/store/api/productApi';
 import ProductGallery from './ProductGallery';
 import ProductGallerySkeleton from './ProductGallerySkeleton';
 import ProductQuestions from './ProductQuestions';
 import type { ProductRead } from '@/types/product';
 import { useCreateOrGetCartMutation, useAddCartItemMutation } from '@/store/api/cartApi';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import { selectCartError, selectCartStatus } from '@/store/slices/cartSlice';
-import { selectWishIds, toggleWish } from '@/store/slices/wishesSlice';
+import { useWishlistActions } from '@/wishes/useWishlistActions';
 
 interface ProductDetailClientProps {
   slug: string;
@@ -33,10 +35,10 @@ const getErrorMessage = (err: unknown, fallback: string) => {
 };
 
 export function ProductDetailClient({ slug, initialProduct }: ProductDetailClientProps) {
-  const dispatch = useAppDispatch();
-  const wishIds = useAppSelector(selectWishIds);
   const cartStatus = useAppSelector(selectCartStatus);
   const cartError = useAppSelector(selectCartError);
+  const currentUser = useAppSelector((state) => state.user.current);
+  const { isFavorite, isMutating: isWishlistMutating, toggleWishlist } = useWishlistActions();
   const { data, currentData, isLoading, isFetching, isError, error, refetch } =
     useGetProductBySlugQuery(slug, {
       skip: !slug,
@@ -46,7 +48,7 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
   const product = data ?? currentData ?? initialProduct ?? null;
   const productIdValue = product?.id ?? initialProduct?.id ?? null;
   const productId = productIdValue ? String(productIdValue) : null;
-  const isFavorite = productId ? wishIds.includes(productId) : false;
+  const wished = productId ? isFavorite(productId) : false;
 
   const isPending = isLoading || isFetching;
 
@@ -88,6 +90,8 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
 
   const [createOrGetCart, { isLoading: ensuringCart }] = useCreateOrGetCartMutation();
   const [addCartItem, { isLoading: addingCartItem }] = useAddCartItemMutation();
+  const [ingestEvent] = useIngestEventMutation();
+  const trackedViewRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (variants.length > 0) {
@@ -113,6 +117,23 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
       setSelectedVariantId(String(fallbackVariant.id));
     }
   }, [variants, selectedVariant]);
+
+  useEffect(() => {
+    if (!productId) return;
+    if (trackedViewRef.current === productId) return;
+
+    trackedViewRef.current = productId;
+    void ingestEvent({
+      event_type: 'view',
+      product_id: productId,
+      user_id: currentUser?.id ? String(currentUser.id) : undefined,
+      metadata: {
+        context: 'product_detail',
+      },
+    }).unwrap().catch(() => {
+      trackedViewRef.current = null;
+    });
+  }, [currentUser?.id, ingestEvent, productId]);
 
   const sizeOptions = useMemo(() => {
     const sizes = new Set<string>();
@@ -160,9 +181,9 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
 
   const decreaseQuantity = () => setQuantity((prev) => Math.max(prev - 1, 1));
   const increaseQuantity = () => setQuantity((prev) => Math.min(prev + 1, 99));
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = async () => {
     if (!productId) return;
-    dispatch(toggleWish(productId));
+    await toggleWishlist(productId);
   };
 
   const handleSizeChange = (value: string) => {
@@ -216,6 +237,18 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
         variantId: String(selectedVariant.id),
         quantity,
       }).unwrap();
+      if (productId) {
+        void ingestEvent({
+          event_type: 'add_to_cart',
+          product_id: productId,
+          user_id: currentUser?.id ? String(currentUser.id) : undefined,
+          price: displayPrice,
+          metadata: {
+            context: 'product_detail',
+            quantity,
+          },
+        }).unwrap().catch(() => undefined);
+      }
       setFeedback({ type: 'success', message: 'Producto agregado al carrito.' });
     } catch (err) {
       setFeedback({
@@ -263,17 +296,17 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
         </div>
         <button
           type="button"
-          onClick={handleToggleFavorite}
-          disabled={!productId}
-          aria-pressed={isFavorite}
+          onClick={() => void handleToggleFavorite()}
+          disabled={!productId || isWishlistMutating}
+          aria-pressed={wished}
           className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-            isFavorite
+            wished
               ? 'border-rose-500 bg-rose-50 text-rose-600 hover:bg-rose-100'
               : 'border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
           } disabled:cursor-not-allowed disabled:opacity-60`}
         >
-          <span>{isFavorite ? '\u2665' : '\u2661'}</span>
-          <span>{isFavorite ? 'En tu lista de deseos' : 'Agregar a favoritos'}</span>
+          <span>{wished ? '\u2665' : '\u2661'}</span>
+          <span>{wished ? 'En tu lista de deseos' : 'Agregar a favoritos'}</span>
         </button>
       </header>
 
@@ -504,6 +537,7 @@ export function ProductDetailClient({ slug, initialProduct }: ProductDetailClien
           </article>
 
           {productId ? <ProductQuestions productId={productId} /> : null}
+          {productId ? <ProductEngagementSummary productId={productId} /> : null}
         </>
       )}
     </section>

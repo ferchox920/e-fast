@@ -1,0 +1,147 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - navigation [ref=e8]:
+          - button "♂ Hombres" [ref=e10]
+          - button "♀ Mujeres" [ref=e12]
+        - link "MyApp Atelier" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e15]:
+          - button "Abrir buscador" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Buscar productos
+          - link "Ir a mi cuenta" [ref=e22] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e23]
+            - generic [ref=e26]: Mi cuenta
+          - link "Abrir lista de deseos" [ref=e27] [cursor=pointer]:
+            - /url: /lista-deseos
+            - img [ref=e28]
+            - generic [ref=e30]: Lista de deseos
+          - button "Abrir carrito" [ref=e32]:
+            - img [ref=e33]
+            - generic [ref=e38]: Carrito de compras
+      - generic:
+        - dialog:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /
+                  - text: MyApp Atelier
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - searchbox
+                - button: Cerrar
+            - generic:
+              - generic:
+                - heading [level=3]: Busquedas populares
+                - generic:
+                  - button: Sneakers blancas
+                  - button: Blazer negro
+                  - button: Bolso tote
+                  - button: Pantalones cargo
+                  - button: Vestido midi
+    - main [ref=e39]:
+      - main [ref=e40]:
+        - generic [ref=e41]:
+          - img "Modelo con look urbano de temporada" [ref=e43]
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]: nueva temporada 2026
+              - heading "Indumentaria que define tu estilo." [level=1] [ref=e48]
+              - paragraph [ref=e49]: Descubri drops semanales de ropa urbana, essentials y piezas premium para armar looks completos sin salir de casa.
+              - generic [ref=e50]:
+                - link "Comprar indumentaria" [ref=e51] [cursor=pointer]:
+                  - /url: /products
+                - link "Ver mas populares" [ref=e52] [cursor=pointer]:
+                  - /url: /products?sort_by=popularity_score&sort_order=desc
+            - generic [ref=e53]:
+              - paragraph [ref=e54]: Lookbook de la semana
+              - paragraph [ref=e55]: Basicos, denim y outerwear para todos los dias.
+              - paragraph [ref=e56]: Curamos outfits por temporada y talles reales para que combines prendas en segundos.
+              - generic [ref=e57]:
+                - generic [ref=e58]: Envio express
+                - generic [ref=e59]: 24-48 hs
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - heading "Promociones activas" [level=2] [ref=e63]
+            - paragraph [ref=e64]: Beneficios vigentes para aprovechar desde la tienda.
+          - link "Ver todas" [ref=e65] [cursor=pointer]:
+            - /url: /promotions
+        - generic [ref=e82]:
+          - heading "Explora el catálogo" [level=2] [ref=e83]
+          - paragraph [ref=e84]: Filtra por categoria, marca o busca por palabras clave para encontrar el producto ideal.
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - text: Busqueda
+              - searchbox "Busqueda" [ref=e88]
+            - generic [ref=e89]:
+              - text: Categoria
+              - combobox "Categoria" [disabled] [ref=e90]:
+                - option "Cargando categorias..." [selected]
+                - option "Accesorios"
+                - option "Electronica"
+                - option "Ropa Hombre"
+            - generic [ref=e91]:
+              - text: Marca
+              - combobox "Marca" [disabled] [ref=e92]:
+                - option "Cargando marcas..." [selected]
+                - option "Andina Outdoor"
+                - option "Brand-ca18759c-0442-407d-8df0-72523ed70a3d"
+                - option "Norte Denim"
+          - generic [ref=e93]:
+            - button "Buscando..." [disabled] [ref=e94]
+            - button "Limpiar" [ref=e95]
+        - generic [ref=e158]: Mostrando 0 de 0 productos
+    - contentinfo [ref=e159]:
+      - generic [ref=e161]:
+        - generic [ref=e162]:
+          - paragraph [ref=e163]: Marca
+          - paragraph [ref=e164]: MyApp Atelier
+          - paragraph [ref=e165]: Moda urbana y essentials de temporada.
+        - region "Navegacion de tienda" [ref=e166]:
+          - heading "Tienda" [level=3] [ref=e167]
+          - list [ref=e168]:
+            - listitem [ref=e169]:
+              - link "Novedades" [ref=e170] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e171]:
+              - link "Mas populares" [ref=e172] [cursor=pointer]:
+                - /url: /products?sort_by=popularity_score&sort_order=desc
+            - listitem [ref=e173]:
+              - link "Hombre" [ref=e174] [cursor=pointer]:
+                - /url: /categorias/hombres/ropa
+            - listitem [ref=e175]:
+              - link "Mujer" [ref=e176] [cursor=pointer]:
+                - /url: /categorias/mujeres/ropa
+        - region "Navegacion de soporte" [ref=e177]:
+          - heading "Soporte" [level=3] [ref=e178]
+          - list [ref=e179]:
+            - listitem [ref=e180]:
+              - link "Mi cuenta" [ref=e181] [cursor=pointer]:
+                - /url: /mi-cuenta
+            - listitem [ref=e182]:
+              - link "Iniciar sesion" [ref=e183] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e184]:
+              - link "Crear cuenta" [ref=e185] [cursor=pointer]:
+                - /url: /registro
+            - listitem [ref=e186]:
+              - link "Notificaciones" [ref=e187] [cursor=pointer]:
+                - /url: /notifications
+            - listitem [ref=e188]:
+              - link "Ayuda de compra" [ref=e189] [cursor=pointer]:
+                - /url: /checkout
+      - generic [ref=e191]:
+        - paragraph [ref=e192]: © 2026 MyApp. All rights reserved.
+        - generic [ref=e193]:
+          - link "Politica de privacidad" [ref=e194] [cursor=pointer]:
+            - /url: /privacidad
+          - link "Terminos y condiciones" [ref=e195] [cursor=pointer]:
+            - /url: /terminos

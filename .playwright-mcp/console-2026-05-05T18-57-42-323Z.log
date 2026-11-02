@@ -1,0 +1,8 @@
+[    6174ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    6499ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[    6620ms] [LOG] [Fast Refresh] done in 233ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[    8365ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/api/v1/cart:0
+[    8380ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/api/v1/categories:0
+[    8380ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/api/v1/cart:0
+[    8381ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/api/v1/cart:0
+[    8381ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:8000/api/v1/products?limit=100&offset=0:0

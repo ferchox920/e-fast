@@ -69,19 +69,19 @@ export default function NavBar({
   }, [onLogout]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm relative">
+    <header className="sticky top-0 z-50 w-full border-b border-stone-200/80 bg-stone-50/90 shadow-[0_8px_24px_-18px_rgba(28,25,23,0.45)] backdrop-blur relative">
       {isLogoutPending ? (
         <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 overflow-hidden">
-          <div className="h-full w-full animate-pulse bg-gradient-to-r from-indigo-400 via-indigo-500 to-purple-500" />
+          <div className="h-full w-full animate-pulse bg-gradient-to-r from-stone-300 via-amber-500 to-stone-900" />
         </div>
       ) : null}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center">
+        <div className="flex h-20 items-center py-2">
           <div className="flex flex-1 items-center gap-2">
             <div className="md:hidden">
               <button
                 onClick={toggleMenu}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-transparent bg-white text-gray-500 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300/80 bg-stone-50 text-stone-700 transition hover:bg-white hover:text-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2"
                 aria-label={isMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
               >
                 <MenuIcon isOpen={isMenuOpen} />
@@ -93,7 +93,7 @@ export default function NavBar({
           <div className="flex flex-1 justify-center">
             <Link
               href={brandHref}
-              className="text-lg font-semibold text-indigo-600 transition hover:text-indigo-700 md:text-xl"
+              className="rounded-md px-2 py-1 text-center text-sm font-semibold uppercase tracking-[0.34em] text-stone-900 transition hover:text-stone-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2 md:text-base"
               onClick={closeMenu}
             >
               {brandLabel}

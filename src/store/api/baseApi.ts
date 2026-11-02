@@ -6,11 +6,22 @@ import type { RootState } from '@/store';
 import { clearUser, updateAccessToken } from '@/store/slices/userSlice';
 import type { TokenRefresh } from '@/types/user';
 
-const rawBaseQuery = fetchBaseQuery({
-  baseUrl:
+export const resolveApiBaseUrl = () => {
+  const configured =
     process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ??
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ??
-    'http://localhost:8000/api/v1',
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('NEXT_PUBLIC_API_URL is required in production builds');
+  }
+
+  return 'http://localhost:8000/api/v1';
+};
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: resolveApiBaseUrl(),
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const session = state.user?.session;

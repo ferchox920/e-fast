@@ -39,7 +39,7 @@ export const catalogApi = baseApi.injectEndpoints({
     }),
     listAllCategoriesAdmin: build.query<Category[], void>({
       query: () => ({
-        url: '/categories/all',
+        url: '/admin/categories',
       }),
       transformResponse: (response: PaginatedResponse<Category> | Category[]) =>
         normalizeListResponse(response),
@@ -100,7 +100,7 @@ export const catalogApi = baseApi.injectEndpoints({
     }),
     createCategoryAdmin: build.mutation<Category, CategoryCreateInput>({
       query: (body) => ({
-        url: '/categories',
+        url: '/admin/categories',
         method: 'POST',
         body,
       }),
@@ -111,7 +111,7 @@ export const catalogApi = baseApi.injectEndpoints({
       { categoryId: string; body: CategoryUpdateInput }
     >({
       query: ({ categoryId, body }) => ({
-        url: `/categories/${categoryId}`,
+        url: `/admin/categories/${categoryId}`,
         method: 'PUT',
         body,
       }),
@@ -122,7 +122,7 @@ export const catalogApi = baseApi.injectEndpoints({
     }),
     deleteCategoryAdmin: build.mutation<void, { categoryId: string }>({
       query: ({ categoryId }) => ({
-        url: `/categories/${categoryId}`,
+        url: `/admin/categories/${categoryId}`,
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { categoryId }) => [

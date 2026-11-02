@@ -33,6 +33,7 @@ export interface ProductVariantBase {
   color_hex?: string | null;
   stock_on_hand: number;
   stock_reserved: number;
+  weight_grams?: number;
   price_override?: number | null;
   active: boolean;
   allow_backorder: boolean;
@@ -55,6 +56,7 @@ export interface ProductVariantUpdate extends Partial<ProductVariantBase> {
 export interface ProductVariant extends ProductVariantBase {
   id: UUID | string;
   product_id: UUID | string;
+  weight_grams: number;
   reorder_point: number;
   reorder_qty: number;
   primary_supplier_id?: UUID | string | null;
@@ -191,11 +193,11 @@ export interface ProductListParams {
   page?: number;
   page_size?: number;
   /**
-   * @deprecated Usa page/page_size cuando el backend proporcione paginacion basada en pagina.
+   * @deprecated Usa page/page_size. Se mantiene para compatibilidad con llamadas legacy.
    */
   limit?: number;
   /**
-   * @deprecated Usa page/page_size cuando el backend proporcione paginacion basada en pagina.
+   * @deprecated Usa page/page_size. Se mantiene para compatibilidad con llamadas legacy.
    */
   offset?: number;
 }

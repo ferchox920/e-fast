@@ -50,7 +50,7 @@ describe('LoginForm', () => {
     render(<LoginForm {...baseProps} errorMessage="Credenciales inválidas" />);
 
     expect(screen.getByText(/Credenciales inválidas/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Google' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Google/ })).toBeInTheDocument();
   });
 
   it('disables submit when requested', async () => {

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import ProductFiltersBar from '@/components/filters/ProductFiltersBar';
 import HomeHero from '@/components/home/HomeHero';
+import PublicPromotionsSection from '@/components/promotion/PublicPromotionsSection';
 import ProductCardGrid from '@/components/product/ProductCardGrid';
 import { useGetProductsQuery } from '@/store/api/productApi';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -62,6 +63,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
       <HomeHero />
+      <PublicPromotionsSection />
 
       <section className="space-y-2">
         <h2 className="text-3xl font-semibold text-neutral-900">Explora el catálogo</h2>

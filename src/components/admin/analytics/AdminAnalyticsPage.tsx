@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import Link from 'next/link';
@@ -95,24 +95,24 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-2">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Analíticas avanzadas</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Analiticas avanzadas</h1>
           <p className="text-sm text-neutral-600">
-            Explora el detalle de ventas, engagement, inventario y operaciones en un único lugar.
+            Explora el detalle de ventas, engagement, inventario y operaciones en un unico lugar.
           </p>
         </div>
         {data?.period ? (
           <p className="text-xs text-neutral-500">
             Periodo analizado:{' '}
-            {data.period.start ? new Date(data.period.start).toLocaleDateString('es-ES') : 'N/D'} ��{' '}
-            {data.period.end ? new Date(data.period.end).toLocaleDateString('es-ES') : 'N/D'}
+            {data.period.start ? new Date(data.period.start).toLocaleDateString('es-ES') : 'N/D'}{' '}
+            | {data.period.end ? new Date(data.period.end).toLocaleDateString('es-ES') : 'N/D'}
           </p>
         ) : null}
       </header>
 
       {isError ? (
         <section className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
-          <p className="font-medium">No pudimos cargar el panel de analíticas.</p>
-          <p>Verifica tu conexión o vuelve a intentarlo en unos minutos.</p>
+          <p className="font-medium">No pudimos cargar el panel de analiticas.</p>
+          <p>Verifica tu conexion o vuelve a intentarlo en unos minutos.</p>
         </section>
       ) : null}
 
@@ -123,12 +123,12 @@ export default function AdminAnalyticsPage() {
           </p>
           <p className="mt-3 text-3xl font-bold text-neutral-900">
             {loading
-              ? '•••'
+              ? '...'
               : formatCurrency(totalRevenue?.value ?? 0, totalRevenue?.currency ?? 'USD')}
           </p>
           <p className="mt-2 text-xs text-neutral-500">
             {totalRevenue?.delta_percentage !== undefined && totalRevenue?.delta_percentage !== null
-              ? `Variación vs período previo: ${
+              ? `Variacion vs periodo previo: ${
                   totalRevenue.delta_percentage > 0 ? '+' : ''
                 }${totalRevenue.delta_percentage.toFixed(1)}%`
               : 'Sin comparativa disponible'}
@@ -140,13 +140,11 @@ export default function AdminAnalyticsPage() {
             Pedidos procesados
           </p>
           <p className="mt-3 text-3xl font-bold text-neutral-900">
-            {loading ? '•••' : formatNumber(orders?.value ?? 0)}
+            {loading ? '...' : formatNumber(orders?.value ?? 0)}
           </p>
           <p className="mt-2 text-xs text-neutral-500">
             {orders?.delta_percentage !== undefined && orders?.delta_percentage !== null
-              ? `Variación vs período previo: ${
-                  orders.delta_percentage > 0 ? '+' : ''
-                }${orders.delta_percentage.toFixed(1)}%`
+              ? `Variacion vs periodo previo: ${orders.delta_percentage > 0 ? '+' : ''}${orders.delta_percentage.toFixed(1)}%`
               : 'Sin comparativa disponible'}
           </p>
         </article>
@@ -156,10 +154,10 @@ export default function AdminAnalyticsPage() {
             Ticket promedio
           </p>
           <p className="mt-3 text-3xl font-bold text-neutral-900">
-            {loading ? '•••' : formatCurrency(avgOrderValue, totalRevenue?.currency ?? 'USD')}
+            {loading ? '...' : formatCurrency(avgOrderValue, totalRevenue?.currency ?? 'USD')}
           </p>
           <p className="mt-2 text-xs text-neutral-500">
-            Estimado considerando pedidos capturados en el período analizado.
+            Estimado considerando pedidos capturados en el periodo analizado.
           </p>
         </article>
       </section>
@@ -172,7 +170,7 @@ export default function AdminAnalyticsPage() {
                 Rendimiento comercial
               </p>
               <p className="text-sm text-neutral-600">
-                KPIs agregados y top vendedores del período seleccionado.
+                KPIs agregados y top vendedores del periodo seleccionado.
               </p>
             </div>
             <span className="text-xs font-semibold text-indigo-600">
@@ -233,7 +231,7 @@ export default function AdminAnalyticsPage() {
               </ul>
             ) : (
               <p className="mt-3 text-sm text-neutral-500">
-                {loading ? 'Obteniendo ranking...' : 'Sin ventas registradas para este período.'}
+                {loading ? 'Obteniendo ranking...' : 'Sin ventas registradas para este periodo.'}
               </p>
             )}
           </div>
@@ -266,7 +264,7 @@ export default function AdminAnalyticsPage() {
                   <div>
                     <p className="font-medium text-neutral-900">{item.product_title}</p>
                     <p className="text-xs text-neutral-500">
-                      SKU: {item.sku} �� Stock: {formatNumber(item.stock_on_hand)}
+                      SKU: {item.sku} | Stock: {formatNumber(item.stock_on_hand)}
                     </p>
                   </div>
                   <div className="text-right">
@@ -275,7 +273,7 @@ export default function AdminAnalyticsPage() {
                     </p>
                     {typeof item.last_unit_cost === 'number' ? (
                       <p className="text-xs text-neutral-500">
-                        Último costo: {formatCurrency(item.last_unit_cost, totalRevenue?.currency)}
+                        Ultimo costo: {formatCurrency(item.last_unit_cost, totalRevenue?.currency)}
                       </p>
                     ) : null}
                   </div>
@@ -284,7 +282,7 @@ export default function AdminAnalyticsPage() {
             </ul>
           ) : (
             <p className="text-sm text-neutral-500">
-              {loading ? 'Calculando inventario...' : 'No hay inventario valuado todavía.'}
+              {loading ? 'Calculando inventario...' : 'No hay inventario valuado todavia.'}
             </p>
           )}
         </article>
@@ -295,10 +293,10 @@ export default function AdminAnalyticsPage() {
           <header className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-                Engagement y conversión
+                Engagement y conversion
               </p>
               <p className="text-sm text-neutral-600">
-                Actividad de usuarios y evolución diaria de compras.
+                Actividad de usuarios y evolucion diaria de compras.
               </p>
             </div>
           </header>
@@ -333,7 +331,7 @@ export default function AdminAnalyticsPage() {
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase text-neutral-500">Tasa de conversión</p>
+                <p className="text-xs uppercase text-neutral-500">Tasa de conversion</p>
                 <p className="text-lg font-semibold text-neutral-900">
                   {formatPercent(engagementTotals.conversion_rate * 100)}
                 </p>
@@ -359,7 +357,7 @@ export default function AdminAnalyticsPage() {
                   >
                     <span className="font-medium text-neutral-800">{formatDate(point.date)}</span>
                     <span className="text-neutral-600">
-                      {formatNumber(point.purchases)} compras ��{' '}
+                      {formatNumber(point.purchases)} compras |{' '}
                       {formatCurrency(point.revenue, totalRevenue?.currency)}
                     </span>
                   </li>
@@ -376,15 +374,15 @@ export default function AdminAnalyticsPage() {
         <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header>
             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-              Mix de exposición y loyalty
+              Mix de exposicion y loyalty
             </p>
             <p className="text-sm text-neutral-600">
-              Distribución por slot e insights de fidelización.
+              Distribucion por slot e insights de fidelizacion.
             </p>
           </header>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Slots de exposición
+              Slots de exposicion
             </p>
             {exposureMix.length ? (
               <ul className="mt-3 space-y-2 text-sm">
@@ -397,13 +395,13 @@ export default function AdminAnalyticsPage() {
               </ul>
             ) : (
               <p className="mt-3 text-sm text-neutral-500">
-                {loading ? 'Calculando CTR por slot...' : 'Sin datos de exposición disponibles.'}
+                {loading ? 'Calculando CTR por slot...' : 'Sin datos de exposicion disponibles.'}
               </p>
             )}
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Distribución de fidelización
+              Distribucion de fidelizacion
             </p>
             {loyaltyDistribution.length ? (
               <ul className="mt-3 space-y-2 text-sm">
@@ -413,7 +411,7 @@ export default function AdminAnalyticsPage() {
                     <span className="text-neutral-600">
                       {entry.percentage.toFixed(1)}%
                       {typeof entry.customers === 'number'
-                        ? ` �� ${formatNumber(entry.customers)} clientes`
+                        ? ` | ${formatNumber(entry.customers)} clientes`
                         : ''}
                     </span>
                   </li>
@@ -434,7 +432,7 @@ export default function AdminAnalyticsPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
               Estado operativo
             </p>
-            <p className="text-sm text-neutral-600">Pedidos, pagos y envíos por estado.</p>
+            <p className="text-sm text-neutral-600">Pedidos, pagos y envios por estado.</p>
           </header>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
@@ -468,7 +466,7 @@ export default function AdminAnalyticsPage() {
               )}
             </div>
             <div>
-              <p className="text-xs uppercase text-neutral-500">Envíos</p>
+              <p className="text-xs uppercase text-neutral-500">Envios</p>
               {shipmentStatusPairs.length ? (
                 <ul className="mt-2 space-y-1 text-sm">
                   {shipmentStatusPairs.map(([status, value]) => (
@@ -492,7 +490,7 @@ export default function AdminAnalyticsPage() {
                 Alertas de stock
               </p>
               <p className="text-sm text-neutral-600">
-                Variantes por debajo del punto de reposición.
+                Variantes por debajo del punto de reposicion.
               </p>
             </div>
           </header>
@@ -506,7 +504,7 @@ export default function AdminAnalyticsPage() {
                   <div>
                     <p className="font-medium text-amber-900">{buildAlertLabel(alert)}</p>
                     <p className="text-xs text-amber-800">
-                      Disponible: {formatNumber(alert.available)} �� Faltante:{' '}
+                      Disponible: {formatNumber(alert.available)} | Faltante:{' '}
                       {formatNumber(alert.missing)}
                     </p>
                   </div>
@@ -532,14 +530,14 @@ export default function AdminAnalyticsPage() {
                 Preguntas por moderar
               </p>
               <p className="text-sm text-neutral-600">
-                Extraídas directamente del módulo de operaciones.
+                Extraidas directamente del modulo de operaciones.
               </p>
             </div>
             <Link
-              href="/admin/products?tab=questions"
+              href="/admin/questions"
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-500"
             >
-              Ir al módulo
+              Ir al modulo
             </Link>
           </header>
           {operations.pending_questions.length ? (
@@ -550,15 +548,15 @@ export default function AdminAnalyticsPage() {
                   className="rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2"
                 >
                   <p className="font-medium text-neutral-900">
-                    {question.product_title ?? 'Producto sin título'}
+                    {question.product_title ?? 'Producto sin titulo'}
                   </p>
                   <p className="text-neutral-600 line-clamp-2">{question.body}</p>
                   <div className="mt-2 flex items-center justify-between text-xs text-neutral-500">
                     <span>
-                      {question.author_name ?? 'Anónimo'} �� {formatDate(question.created_at ?? '')}
+                      {question.author_name ?? 'Anonimo'} | {formatDate(question.created_at ?? '')}
                     </span>
                     <Link
-                      href={`/admin/products/${question.product_id}?tab=questions`}
+                      href="/admin/questions"
                       className="font-semibold text-indigo-600 hover:text-indigo-500"
                     >
                       Revisar
@@ -569,7 +567,7 @@ export default function AdminAnalyticsPage() {
             </ul>
           ) : (
             <p className="text-sm text-neutral-500">
-              {loading ? 'Sincronizando moderación...' : 'No hay preguntas pendientes.'}
+              {loading ? 'Sincronizando moderacion...' : 'No hay preguntas pendientes.'}
             </p>
           )}
         </article>
@@ -581,7 +579,7 @@ export default function AdminAnalyticsPage() {
                 Promociones activas
               </p>
               <p className="text-sm text-neutral-600">
-                Estado de campañas y próximos vencimientos.
+                Estado de campanas y proximos vencimientos.
               </p>
             </div>
             <Link
@@ -605,7 +603,7 @@ export default function AdminAnalyticsPage() {
                   <div className="mt-1 flex items-center justify-between text-xs text-neutral-500">
                     <span className="uppercase">{promo.status}</span>
                     <span>
-                      {formatDate(promo.starts_at ?? null)} �� {formatDate(promo.ends_at ?? null)}
+                      {formatDate(promo.starts_at ?? null)} | {formatDate(promo.ends_at ?? null)}
                     </span>
                   </div>
                 </li>

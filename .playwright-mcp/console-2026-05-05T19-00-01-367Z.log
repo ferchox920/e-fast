@@ -1,0 +1,9 @@
+[     123ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[     418ms] [LOG] [Fast Refresh] done in 400ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[     597ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[     828ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[     866ms] [LOG] [Fast Refresh] done in 150ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[     868ms] [WARNING] Image with src "https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?auto=format&fit=crop&w=1200&q=80" was detected as the Largest Contentful Paint (LCP). Please add the "priority" property if this image is above the fold.
+Read more: https://nextjs.org/docs/api-reference/next/image#priority @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:968
+[   19412ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[   19416ms] [LOG] [Fast Refresh] done in 105ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809

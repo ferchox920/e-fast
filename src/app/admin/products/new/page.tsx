@@ -58,6 +58,27 @@ const parseNumber = (value: string, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const getApiErrorMessage = (error: unknown): string => {
+  if (!error || typeof error !== 'object') {
+    return 'Error al crear el producto. Intenta nuevamente.';
+  }
+  const data = (error as { data?: unknown }).data;
+  if (typeof data === 'string') return data;
+  if (data && typeof data === 'object') {
+    const detail = (data as { detail?: unknown }).detail;
+    if (typeof detail === 'string') return detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      const first = detail[0];
+      if (typeof first === 'string') return first;
+      if (first && typeof first === 'object' && 'msg' in first) {
+        const msg = (first as { msg?: unknown }).msg;
+        if (typeof msg === 'string') return msg;
+      }
+    }
+  }
+  return 'Error al crear el producto. Intenta nuevamente.';
+};
+
 const createVariantDraft = (): VariantDraft => ({
   id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
   sku: '',
@@ -164,13 +185,13 @@ export default function AdminProductNewPage() {
 
     const normalizedSlug = slug.trim() ? slugify(slug) : slugify(title);
     if (!normalizedSlug) {
-      setFormError('No se pudo generar un slug vÃ¡lido. Verifica el nombre del producto.');
+      setFormError('No se pudo generar un slug valido. Verifica el nombre del producto.');
       return;
     }
 
     const basePrice = parseNumber(price, NaN);
     if (!Number.isFinite(basePrice) || basePrice <= 0) {
-      setFormError('Ingresa un precio base vÃ¡lido mayor a cero.');
+      setFormError('Ingresa un precio base valido mayor a cero.');
       return;
     }
 
@@ -184,8 +205,8 @@ export default function AdminProductNewPage() {
               return {
                 sku: variant.sku.trim(),
                 barcode: variant.barcode.trim() || undefined,
-                size_label: variant.size_label.trim() || 'Talla Ãºnica',
-                color_name: variant.color_name.trim() || 'Ãšnico',
+                size_label: variant.size_label.trim() || 'Talla unica',
+                color_name: variant.color_name.trim() || 'Unico',
                 color_hex: variant.color_hex.trim() || undefined,
                 stock_on_hand: parseNumber(variant.stock_on_hand, 0),
                 stock_reserved: parseNumber(variant.stock_reserved, 0),
@@ -213,16 +234,14 @@ export default function AdminProductNewPage() {
 
     try {
       const created = await createProduct(payload).unwrap();
-      setStatus({ type: 'success', message: 'Producto creado correctamente. Redirigiendoâ€¦' });
+      setStatus({ type: 'success', message: 'Producto creado correctamente. Redirigiendo...' });
       setTimeout(() => {
         router.push(`/admin/products/${created.slug ?? created.id}/edit`);
       }, 600);
       resetForm();
     } catch (error) {
       console.error('createProduct', error);
-      const message =
-        (error as { data?: { detail?: string }; status?: unknown })?.data?.detail ??
-        'Error al crear el producto. Intenta nuevamente.';
+      const message = getApiErrorMessage(error);
       setStatus({ type: 'error', message });
     }
   };
@@ -232,7 +251,7 @@ export default function AdminProductNewPage() {
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold text-neutral-900">Nuevo producto</h1>
         <p className="text-sm text-neutral-600">
-          Completa la informaciÃ³n necesaria para publicar un nuevo producto en el catÃ¡logo.
+          Completa la informacion necesaria para publicar un nuevo producto en el catalogo.
         </p>
       </header>
 
@@ -257,9 +276,9 @@ export default function AdminProductNewPage() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">InformaciÃ³n bÃ¡sica</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">Informacion basica</h2>
             <p className="text-sm text-neutral-500">
-              Estos datos se mostrarÃ¡n en la ficha del producto y en las listas del catÃ¡logo.
+              Estos datos se mostraran en la ficha del producto y en las listas del catalogo.
             </p>
           </header>
 
@@ -311,36 +330,36 @@ export default function AdminProductNewPage() {
           </div>
 
           <label className="mt-4 flex flex-col gap-1 text-sm">
-            <span className="text-neutral-600">DescripciÃ³n</span>
+            <span className="text-neutral-600">Descripcion</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               className="min-h-[140px] rounded-lg border border-neutral-200 px-3 py-2 text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              placeholder="Describe el producto, sus caracterÃ­sticas y beneficios..."
+              placeholder="Describe el producto, sus caracteristicas y beneficios..."
             />
           </label>
         </section>
 
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">OrganizaciÃ³n</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">Organizacion</h2>
             <p className="text-sm text-neutral-500">
-              Define a quÃ© categorÃ­a y marca pertenece el producto para facilitar su bÃºsqueda.
+              Define a que categoria y marca pertenece el producto para facilitar su busqueda.
             </p>
           </header>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="text-neutral-600">CategorÃ­a</span>
+              <span className="text-neutral-600">Categoria</span>
               <select
                 value={categoryId}
                 onChange={(event) => setCategoryId(event.target.value)}
                 className="h-10 rounded-lg border border-neutral-200 bg-white px-3 text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:opacity-60"
                 disabled={categoriesLoading}
               >
-                <option value="">Selecciona una categorÃ­a</option>
+                <option value="">Selecciona una categoria</option>
                 {categoriesLoading ? (
-                  <option disabled>Cargando categorÃ­as...</option>
+                  <option disabled>Cargando categorias...</option>
                 ) : (
                   categoryOptions.map((category) => (
                     <option key={category.id} value={String(category.id)}>
@@ -376,14 +395,14 @@ export default function AdminProductNewPage() {
 
         <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <header className="mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">ImÃ¡genes</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">Imagenes</h2>
             <p className="text-sm text-neutral-500">
-              Guarda el producto primero para habilitar la gestiÃ³n de la galerÃ­a de imÃ¡genes.
+              Guarda el producto primero para habilitar la gestion de la galeria de imagenes.
             </p>
           </header>
 
           <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-4 text-sm text-neutral-500">
-            <p>Una vez creado el producto podrÃ¡s subir imÃ¡genes desde la pantalla de ediciÃ³n.</p>
+            <p>Una vez creado el producto podras subir imagenes desde la pantalla de edicion.</p>
           </div>
 
           <div className="pointer-events-none mt-4 opacity-60">
@@ -391,7 +410,7 @@ export default function AdminProductNewPage() {
               productId="new-product"
               images={[]}
               canEdit={false}
-              disabledMessage="Guarda el producto para habilitar la subida de imÃ¡genes."
+              disabledMessage="Guarda el producto para habilitar la subida de imagenes."
             />
           </div>
         </section>
@@ -401,7 +420,7 @@ export default function AdminProductNewPage() {
             <div>
               <h2 className="text-lg font-semibold text-neutral-900">Variantes e inventario</h2>
               <p className="text-sm text-neutral-500">
-                Agrega variantes para gestionar stock especÃ­fico por talla, color u otras
+                Agrega variantes para gestionar stock especifico por talla, color u otras
                 combinaciones.
               </p>
             </div>
@@ -410,7 +429,7 @@ export default function AdminProductNewPage() {
               onClick={handleAddVariant}
               className="inline-flex h-9 items-center rounded-lg border border-neutral-200 px-3 text-sm font-semibold text-neutral-700 transition hover:border-neutral-300 hover:text-neutral-900"
             >
-              AÃ±adir variante
+              Anadir variante
             </button>
           </header>
 
@@ -425,7 +444,7 @@ export default function AdminProductNewPage() {
                     Variante #{index + 1}
                   </h3>
                   <p className="text-xs text-neutral-500">
-                    Define el SKU y los datos de stock para esta combinaciÃ³n.
+                    Define el SKU y los datos de stock para esta combinacion.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -510,7 +529,7 @@ export default function AdminProductNewPage() {
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-medium text-neutral-500">
-                  Precio especÃ­fico
+                  Precio especifico
                   <input
                     type="number"
                     min="0"
@@ -520,7 +539,7 @@ export default function AdminProductNewPage() {
                       updateVariantField(variant.id, 'price_override', event.target.value)
                     }
                     className="h-9 rounded-lg border border-neutral-200 px-3 text-sm text-neutral-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                    placeholder="Dejar vacÃ­o para usar precio base"
+                    placeholder="Dejar vacio para usar precio base"
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-xs font-medium text-neutral-500">

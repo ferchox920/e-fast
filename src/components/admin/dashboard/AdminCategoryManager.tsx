@@ -82,6 +82,9 @@ export default function AdminCategoryManager() {
   const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [slugTouched, setSlugTouched] = useState(false);
   const [status, setStatus] = useState<StatusMessage>(null);
+  const [quickEditCategoryId, setQuickEditCategoryId] = useState<string | null>(null);
+  const [quickEditName, setQuickEditName] = useState('');
+  const [quickEditSavingId, setQuickEditSavingId] = useState<string | null>(null);
 
   const isSubmitting = createState.isLoading || updateState.isLoading;
 
@@ -146,6 +149,43 @@ export default function AdminCategoryManager() {
     setSelectedCategory(null);
     setFormState(DEFAULT_FORM_STATE);
     setSlugTouched(false);
+  };
+
+  const startQuickEdit = (category: Category) => {
+    setQuickEditCategoryId(String(category.id));
+    setQuickEditName(category.name ?? '');
+  };
+
+  const cancelQuickEdit = () => {
+    setQuickEditCategoryId(null);
+    setQuickEditName('');
+    setQuickEditSavingId(null);
+  };
+
+  const saveQuickEdit = async (category: Category) => {
+    const categoryId = String(category.id);
+    const nextName = quickEditName.trim();
+    if (!nextName) {
+      setStatus({ type: 'error', message: 'El nombre es obligatorio.' });
+      return;
+    }
+    if (nextName === (category.name ?? '').trim()) {
+      cancelQuickEdit();
+      return;
+    }
+
+    setQuickEditSavingId(categoryId);
+    try {
+      await updateCategory({
+        categoryId,
+        body: { name: nextName },
+      }).unwrap();
+      setStatus({ type: 'success', message: 'Nombre de categoria actualizado.' });
+      cancelQuickEdit();
+    } catch (error) {
+      setStatus({ type: 'error', message: toErrorMessage(error) });
+      setQuickEditSavingId(null);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -229,9 +269,37 @@ export default function AdminCategoryManager() {
                   className="flex items-start justify-between gap-3 bg-white px-4 py-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-neutral-900">
-                      {category.name}
-                    </p>
+                    {quickEditCategoryId === String(category.id) ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={quickEditName}
+                          onChange={(event) => setQuickEditName(event.target.value)}
+                          className="h-8 min-w-0 rounded-md border border-neutral-200 px-2 text-sm text-neutral-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                          disabled={quickEditSavingId === String(category.id)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => saveQuickEdit(category)}
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-60"
+                          disabled={quickEditSavingId === String(category.id)}
+                        >
+                          {quickEditSavingId === String(category.id) ? '...' : 'Guardar'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelQuickEdit}
+                          className="text-xs font-medium text-neutral-500 hover:text-neutral-700"
+                          disabled={quickEditSavingId === String(category.id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="truncate text-sm font-semibold text-neutral-900">
+                        {category.name}
+                      </p>
+                    )}
                     <p className="text-xs text-neutral-500">/{category.slug}</p>
                     {category.description ? (
                       <p className="mt-1 text-xs text-neutral-600">{category.description}</p>
@@ -254,6 +322,15 @@ export default function AdminCategoryManager() {
                     >
                       Editar
                     </button>
+                    {quickEditCategoryId === String(category.id) ? null : (
+                      <button
+                        type="button"
+                        onClick={() => startQuickEdit(category)}
+                        className="text-xs font-medium text-neutral-500 hover:text-neutral-700"
+                      >
+                        Renombrar
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}

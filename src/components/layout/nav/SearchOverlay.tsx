@@ -68,12 +68,12 @@ export default function SearchOverlay({
         aria-modal="true"
         aria-label="Buscador de productos"
       >
-        <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-white shadow-2xl sm:mx-8">
-          <div className="flex flex-col gap-3 border-b border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:gap-4">
+        <div className="mx-4 mt-4 overflow-hidden rounded-3xl border border-stone-200 bg-stone-50 shadow-2xl shadow-stone-950/25 sm:mx-8">
+          <div className="flex flex-col gap-3 border-b border-stone-200 px-5 py-4 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex items-center gap-3">
               <Link
                 href={brandHref}
-                className="text-lg font-semibold text-indigo-600 transition hover:text-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded"
+                className="rounded px-1 text-sm font-semibold uppercase tracking-[0.32em] text-stone-900 transition hover:text-stone-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2"
                 onClick={onClose}
               >
                 {brandLabel}
@@ -81,13 +81,13 @@ export default function SearchOverlay({
             </div>
             <div className="flex flex-1 items-center gap-2">
               <div className="relative flex-1">
-                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-stone-400">
                   <SearchIcon />
                 </span>
                 <input
                   ref={inputRef}
                   type="search"
-                  className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100 sm:text-base"
+                  className="w-full rounded-full border border-stone-300 bg-white py-2 pl-10 pr-4 text-sm text-stone-700 outline-none transition focus:border-stone-500 focus:bg-white focus:ring-2 focus:ring-stone-200 sm:text-base"
                   placeholder="Buscar productos, marcas o categorias"
                   autoComplete="off"
                   aria-label="Buscar productos"
@@ -96,7 +96,7 @@ export default function SearchOverlay({
               <button
                 type="button"
                 onClick={onClose}
-                className="hidden rounded-full border border-transparent px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 sm:inline-flex"
+                className="hidden rounded-full border border-transparent px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2 sm:inline-flex"
               >
                 Cerrar
               </button>
@@ -105,7 +105,7 @@ export default function SearchOverlay({
 
           <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-start">
             <div className="flex flex-1 flex-col gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
                 Busquedas populares
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -113,7 +113,7 @@ export default function SearchOverlay({
                   <button
                     key={term}
                     type="button"
-                    className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-indigo-300 hover:text-indigo-600 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    className="rounded-full border border-stone-300 bg-white px-3 py-1 text-xs font-medium text-stone-700 transition hover:border-stone-500 hover:text-stone-900 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2"
                   >
                     {term}
                   </button>
@@ -125,7 +125,7 @@ export default function SearchOverlay({
           <button
             type="button"
             onClick={onClose}
-            className="flex w-full items-center justify-center border-t border-gray-100 px-5 py-3 text-sm font-medium text-gray-500 transition hover:bg-gray-50 sm:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            className="flex w-full items-center justify-center border-t border-stone-200 px-5 py-3 text-sm font-medium text-stone-600 transition hover:bg-stone-100 sm:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2"
           >
             Cerrar
           </button>

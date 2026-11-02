@@ -19,6 +19,7 @@ export interface CartRead {
   currency: string;
   subtotal_amount: number;
   discount_amount: number;
+  shipping_amount?: number | null;
   total_amount: number;
   created_at: ISODateTime;
   updated_at: ISODateTime | null;
@@ -28,6 +29,10 @@ export interface CartRead {
 export interface CartCreatePayload {
   guestToken?: string | null;
   currency?: string;
+}
+
+export interface CartMergePayload {
+  guestToken: string;
 }
 
 export interface CartItemCreatePayload {

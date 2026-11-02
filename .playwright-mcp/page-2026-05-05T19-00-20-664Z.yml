@@ -1,0 +1,185 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e160] [cursor=pointer]:
+    - img [ref=e161]
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - navigation [ref=e8]:
+          - button "♂ Hombres" [ref=e10]
+          - button "♀ Mujeres" [ref=e12]
+        - link "MyApp Atelier" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e15]:
+          - button "Abrir buscador" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Buscar productos
+          - link "Ir a mi cuenta" [ref=e22] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e23]
+            - generic [ref=e26]: Mi cuenta
+          - link "Abrir lista de deseos" [ref=e27] [cursor=pointer]:
+            - /url: /lista-deseos
+            - img [ref=e28]
+            - generic [ref=e30]: Lista de deseos
+          - button "Abrir carrito (1 articulos)" [ref=e223]:
+            - img [ref=e33]
+            - generic [ref=e38]: Carrito de compras
+            - generic [ref=e224]: "1"
+      - generic:
+        - dialog:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /
+                  - text: MyApp Atelier
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - searchbox
+                - button: Cerrar
+            - generic:
+              - generic:
+                - heading [level=3]: Busquedas populares
+                - generic:
+                  - button: Sneakers blancas
+                  - button: Blazer negro
+                  - button: Bolso tote
+                  - button: Pantalones cargo
+                  - button: Vestido midi
+    - main [ref=e39]:
+      - main [ref=e40]:
+        - generic [ref=e41]:
+          - heading "Nuestro catálogo" [level=1] [ref=e42]
+          - paragraph [ref=e43]: Descubrí las novedades, filtrá por tus categorías favoritas y encontrá lo que buscás en segundos.
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - text: Busqueda
+              - searchbox "Busqueda" [ref=e47]
+            - generic [ref=e48]:
+              - text: Categoria
+              - combobox "Categoria" [ref=e49]:
+                - option "Todas las categorias" [selected]
+                - option "Accesorios"
+                - option "Electronica"
+                - option "Ropa Hombre"
+            - generic [ref=e50]:
+              - text: Marca
+              - combobox "Marca" [ref=e51]:
+                - option "Todas las marcas" [selected]
+                - option "Andina Outdoor"
+                - option "Brand-ca18759c-0442-407d-8df0-72523ed70a3d"
+                - option "Norte Denim"
+          - generic [ref=e52]:
+            - button "Buscar" [ref=e164]
+            - button "Limpiar" [ref=e54]
+        - generic [ref=e165]:
+          - article [ref=e166]:
+            - link "Campera denim clasica frente Disponible Agregar a favoritos" [ref=e167] [cursor=pointer]:
+              - /url: /products/campera-denim-classic
+              - img "Campera denim clasica frente" [ref=e168]
+              - generic [ref=e170]: Disponible
+              - button "Agregar a favoritos" [ref=e171]: ♡
+            - generic [ref=e172]:
+              - generic [ref=e173]:
+                - link "Campera Denim Classic" [ref=e174] [cursor=pointer]:
+                  - /url: /products/campera-denim-classic
+                - generic [ref=e175]: 45.999,00 ARS
+                - paragraph [ref=e176]: Stock 15
+                - paragraph [ref=e178]: DENIM-JACKET-BLU-M
+                - generic [ref=e179]: Azul Oscuro / M
+              - paragraph [ref=e180]: Campera denim clasica con acabado stone washed.
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - link "Ver detalle" [ref=e183] [cursor=pointer]:
+                    - /url: /products/campera-denim-classic
+                  - button "Agregar" [ref=e184]
+                - paragraph [ref=e225]: Producto agregado al carrito.
+          - article [ref=e185]:
+            - link "Mochila impermeable gris Disponible Agregar a favoritos" [ref=e186] [cursor=pointer]:
+              - /url: /products/mochila-urbana-impermeable
+              - img "Mochila impermeable gris" [ref=e187]
+              - generic [ref=e189]: Disponible
+              - button "Agregar a favoritos" [ref=e190]: ♡
+            - generic [ref=e191]:
+              - generic [ref=e192]:
+                - link "Mochila Urbana Impermeable" [ref=e193] [cursor=pointer]:
+                  - /url: /products/mochila-urbana-impermeable
+                - generic [ref=e194]: 28.999,00 ARS
+                - paragraph [ref=e195]: Stock 20
+                - paragraph [ref=e197]: BACKPACK-GRY-UNI
+                - generic [ref=e198]: Gris Carbon / Unica
+              - paragraph [ref=e199]: Mochila de 25L con bolsillos ocultos y tejido impermeable.
+              - generic [ref=e201]:
+                - link "Ver detalle" [ref=e202] [cursor=pointer]:
+                  - /url: /products/mochila-urbana-impermeable
+                - button "Agregar" [ref=e203]
+          - article [ref=e204]:
+            - link "Remera basica organica frente Disponible Agregar a favoritos" [ref=e205] [cursor=pointer]:
+              - /url: /products/remera-basica-organica
+              - img "Remera basica organica frente" [ref=e206]
+              - generic [ref=e208]: Disponible
+              - button "Agregar a favoritos" [ref=e209]: ♡
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - link "Remera Basica Organica" [ref=e212] [cursor=pointer]:
+                  - /url: /products/remera-basica-organica
+                - generic [ref=e213]: 11.999,00 ARS
+                - paragraph [ref=e214]: Stock 12
+                - paragraph [ref=e216]: TEE-WHT-S
+                - generic [ref=e217]: Blanco / S
+              - paragraph [ref=e218]: Remera unisex, algodon organico certificado GOTS.
+              - generic [ref=e220]:
+                - link "Ver detalle" [ref=e221] [cursor=pointer]:
+                  - /url: /products/remera-basica-organica
+                - button "Agregar" [ref=e222]
+        - generic [ref=e117]: Mostrando 3 de 3 productos
+    - contentinfo [ref=e118]:
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: Marca
+          - paragraph [ref=e123]: MyApp Atelier
+          - paragraph [ref=e124]: Moda urbana y essentials de temporada.
+        - region "Navegacion de tienda" [ref=e125]:
+          - heading "Tienda" [level=3] [ref=e126]
+          - list [ref=e127]:
+            - listitem [ref=e128]:
+              - link "Novedades" [ref=e129] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e130]:
+              - link "Mas populares" [ref=e131] [cursor=pointer]:
+                - /url: /products?sort_by=popularity_score&sort_order=desc
+            - listitem [ref=e132]:
+              - link "Hombre" [ref=e133] [cursor=pointer]:
+                - /url: /categorias/hombres/ropa
+            - listitem [ref=e134]:
+              - link "Mujer" [ref=e135] [cursor=pointer]:
+                - /url: /categorias/mujeres/ropa
+        - region "Navegacion de soporte" [ref=e136]:
+          - heading "Soporte" [level=3] [ref=e137]
+          - list [ref=e138]:
+            - listitem [ref=e139]:
+              - link "Mi cuenta" [ref=e140] [cursor=pointer]:
+                - /url: /mi-cuenta
+            - listitem [ref=e141]:
+              - link "Iniciar sesion" [ref=e142] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e143]:
+              - link "Crear cuenta" [ref=e144] [cursor=pointer]:
+                - /url: /registro
+            - listitem [ref=e145]:
+              - link "Notificaciones" [ref=e146] [cursor=pointer]:
+                - /url: /notifications
+            - listitem [ref=e147]:
+              - link "Ayuda de compra" [ref=e148] [cursor=pointer]:
+                - /url: /checkout
+      - generic [ref=e150]:
+        - paragraph [ref=e151]: © 2026 MyApp. All rights reserved.
+        - generic [ref=e152]:
+          - link "Politica de privacidad" [ref=e153] [cursor=pointer]:
+            - /url: /privacidad
+          - link "Terminos y condiciones" [ref=e154] [cursor=pointer]:
+            - /url: /terminos

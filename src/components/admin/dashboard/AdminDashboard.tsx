@@ -7,8 +7,6 @@ import {
   useGetPendingProductQuestionsQuery,
 } from '@/store/api/adminApi';
 import type { AdminLoyaltyDistributionEntry, AdminExposureMixEntry } from '@/types/admin';
-import AdminCategoryManager from './AdminCategoryManager';
-import AdminBrandManager from './AdminBrandManager';
 
 const DONUT_COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f97316', '#ec4899', '#8b5cf6'];
 const BAR_COLORS = ['bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500'];
@@ -373,7 +371,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <Link
-              href="/admin/products?tab=questions"
+              href="/admin/questions"
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-500"
             >
               Ir a moderación
@@ -400,7 +398,7 @@ export default function AdminDashboard() {
                         {question.author_name ?? 'Anónimo'} · {formatDateTime(question.created_at)}
                       </span>
                       <Link
-                        href={`/admin/products/${question.product_id}?tab=questions`}
+                        href={`/admin/products/${question.product_id}/edit?tab=questions`}
                         className="font-semibold text-indigo-600 hover:text-indigo-500"
                       >
                         Revisar
@@ -420,9 +418,23 @@ export default function AdminDashboard() {
         </article>
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-2">
-        <AdminCategoryManager />
-        <AdminBrandManager />
+      <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
+              Catalogo
+            </p>
+            <p className="text-sm text-neutral-600">
+              Gestiona categorias y marcas desde un modulo dedicado.
+            </p>
+          </div>
+          <Link
+            href="/admin/catalog"
+            className="inline-flex h-9 items-center rounded-lg border border-indigo-300 px-3 text-xs font-semibold text-indigo-700 transition hover:border-indigo-400 hover:text-indigo-800"
+          >
+            Abrir modulo
+          </Link>
+        </div>
       </section>
     </div>
   );

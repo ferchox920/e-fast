@@ -5,11 +5,25 @@ import { clearUser, setSession, setUser, updateAccessToken } from '@/store/slice
 import { reset as resetNotifications } from '@/store/slices/notificationsSlice';
 import { clearAll as clearAllWishes } from '@/store/slices/wishesSlice';
 import type { OAuthProvider } from '@/types/user';
+import type { AppDispatch, RootState } from '@/store';
 
 type LoginBody = { email: string; password: string; rememberMe?: boolean };
 type RefreshBody = { refresh_token: string };
 type VerifyEmailBody = { email: string };
+type PasswordResetRequestBody = { email: string };
+type PasswordResetConfirmBody = { token: string; new_password: string };
 type VerifyConfirmParams = { token: string };
+type OAuthConfigItem = {
+  provider: OAuthProvider | string;
+  client_id: string;
+};
+type OAuthConfigResponse = {
+  providers: OAuthConfigItem[];
+};
+type OAuthExchangeBody = {
+  provider: OAuthProvider | string;
+  id_token: string;
+};
 type OAuthUpsertBody = {
   provider: OAuthProvider | string;
   sub: string;
@@ -42,6 +56,31 @@ const getScopesFromAccessToken = (accessToken: string): string[] => {
   }
 };
 
+const applySessionFromTokenPair = (
+  data: TokenPair,
+  dispatch: AppDispatch,
+  rememberMe: boolean,
+) => {
+  const scopes =
+    Array.isArray(data.scopes) && data.scopes.length > 0
+      ? data.scopes
+      : getScopesFromAccessToken(data.access_token);
+
+  dispatch(resetNotifications());
+  dispatch(clearAllWishes());
+  dispatch(
+    setSession({
+      accessToken: data.access_token,
+      refreshToken: rememberMe ? data.refresh_token : null,
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
+      scopes,
+      issuedAt: Date.now(),
+    }),
+  );
+  dispatch(setUser(data.user));
+};
+
 export const authApi = baseApi.injectEndpoints({
   // <- Clave para evitar el error de “override already-existing endpointName ...”
   overrideExisting: true,
@@ -61,25 +100,7 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const rememberMe = arg.rememberMe ?? true;
-          const scopes =
-            Array.isArray(data.scopes) && data.scopes.length > 0
-              ? data.scopes
-              : getScopesFromAccessToken(data.access_token);
-
-          dispatch(resetNotifications());
-          dispatch(clearAllWishes());
-          dispatch(
-            setSession({
-              accessToken: data.access_token,
-              refreshToken: rememberMe ? data.refresh_token : null,
-              tokenType: data.token_type,
-              expiresIn: data.expires_in,
-              scopes,
-              issuedAt: Date.now(),
-            }),
-          );
-          dispatch(setUser(data.user));
+          applySessionFromTokenPair(data, dispatch, arg.rememberMe ?? true);
         } catch {
           // No-op: la UI maneja el error del endpoint.
         }
@@ -130,6 +151,45 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    requestPasswordReset: build.mutation<void, PasswordResetRequestBody>({
+      query: (body) => ({
+        url: '/auth/password/reset/request',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    confirmPasswordReset: build.mutation<void, PasswordResetConfirmBody>({
+      query: (body) => ({
+        url: '/auth/password/reset/confirm',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    oauthConfig: build.query<OAuthConfigResponse, void>({
+      query: () => ({
+        url: '/auth/oauth/config',
+      }),
+    }),
+
+    oauthExchange: build.mutation<TokenPair, OAuthExchangeBody & { rememberMe?: boolean }>({
+      query: ({ provider, id_token }) => ({
+        url: '/auth/oauth/exchange',
+        method: 'POST',
+        body: { provider, id_token },
+      }),
+      invalidatesTags: ['User'],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          applySessionFromTokenPair(data, dispatch, arg.rememberMe ?? true);
+        } catch {
+          // No-op: la UI maneja el error del endpoint.
+        }
+      },
+    }),
+
     oauthUpsert: build.mutation<TokenPair, OAuthUpsertBody>({
       query: (body) => ({
         url: '/auth/oauth/upsert',
@@ -140,34 +200,30 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const scopes =
-            Array.isArray(data.scopes) && data.scopes.length > 0
-              ? data.scopes
-              : getScopesFromAccessToken(data.access_token);
-
-          dispatch(resetNotifications());
-          dispatch(clearAllWishes());
-          dispatch(
-            setSession({
-              accessToken: data.access_token,
-              refreshToken: data.refresh_token,
-              tokenType: data.token_type,
-              expiresIn: data.expires_in,
-              scopes,
-              issuedAt: Date.now(),
-            }),
-          );
-          dispatch(setUser(data.user));
+          applySessionFromTokenPair(data, dispatch, true);
         } catch {
           // No-op: la UI maneja el error del endpoint.
         }
       },
     }),
 
-    logout: build.mutation<void, void>({
-      // Backend no expone /auth/logout por ahora.
-      // Conservamos el hook para centralizar el flujo de cierre de sesion.
-      queryFn: async () => ({ data: undefined }),
+    logout: build.mutation<null, void>({
+      queryFn: async (_arg, api, _extraOptions, fetchWithBQ) => {
+        const state = api.getState() as RootState;
+        const refreshToken = state.user.session.refreshToken;
+        if (!refreshToken) {
+          return { data: null };
+        }
+        const response = await fetchWithBQ({
+          url: '/auth/logout',
+          method: 'POST',
+          body: { refresh_token: refreshToken },
+        });
+        if (response.error) {
+          return { error: response.error };
+        }
+        return { data: null };
+      },
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
@@ -188,6 +244,10 @@ export const {
   useRequestVerifyEmailMutation,
   useVerifyEmailConfirmQuery,
   useLazyVerifyEmailConfirmQuery,
+  useRequestPasswordResetMutation,
+  useConfirmPasswordResetMutation,
+  useOauthConfigQuery,
+  useOauthExchangeMutation,
   useOauthUpsertMutation,
   useLogoutMutation,
 } = authApi;

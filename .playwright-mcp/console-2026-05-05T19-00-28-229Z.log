@@ -1,0 +1,7 @@
+[     207ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js:14537
+[    5735ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[    5737ms] [LOG] [Fast Refresh] done in 104ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809
+[   19997ms] [ERROR] Access to fetch at 'http://127.0.0.1:8000/api/v1/orders/from-cart' from origin 'http://127.0.0.1:3000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://127.0.0.1:3000/checkout:0
+[   19997ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://127.0.0.1:8000/api/v1/orders/from-cart:0
+[  128751ms] [LOG] [Fast Refresh] rebuilding @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5949
+[  128813ms] [LOG] [Fast Refresh] done in 139ms @ http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_cf1d9188._.js:5809

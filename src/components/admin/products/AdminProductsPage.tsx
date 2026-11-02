@@ -18,7 +18,12 @@ import {
   type ReadonlyURLSearchParams,
 } from 'next/navigation';
 import { useGetProductsQuery } from '@/store/api/productApi';
-import { useGetCategoriesQuery, useListAllBrandsAdminQuery } from '@/store/api/catalogApi';
+import {
+  useGetCategoriesQuery,
+  useListAllBrandsAdminQuery,
+  useUpdateBrandAdminMutation,
+  useUpdateCategoryAdminMutation,
+} from '@/store/api/catalogApi';
 import type { ProductVariant } from '@/types/product';
 import type { Brand, Category } from '@/types/catalog';
 
@@ -83,6 +88,12 @@ export default function AdminProductsPage() {
 
   const [selection, setSelection] = useState<SelectionState>({});
   const [searchInput, setSearchInput] = useState('');
+  const [categoryEditMode, setCategoryEditMode] = useState(false);
+  const [categoryNameDraft, setCategoryNameDraft] = useState('');
+  const [categoryFeedback, setCategoryFeedback] = useState<string | null>(null);
+  const [brandEditMode, setBrandEditMode] = useState(false);
+  const [brandNameDraft, setBrandNameDraft] = useState('');
+  const [brandFeedback, setBrandFeedback] = useState<string | null>(null);
 
   const { search, category, brand, stock, page } = useMemo(
     () => buildQueryParams(searchParams),
@@ -127,9 +138,31 @@ export default function AdminProductsPage() {
 
   const { data: categoriesData } = useGetCategoriesQuery();
   const { data: brandsData } = useListAllBrandsAdminQuery();
+  const [updateCategory, updateCategoryState] = useUpdateCategoryAdminMutation();
+  const [updateBrand, updateBrandState] = useUpdateBrandAdminMutation();
 
   const categoryOptions = useMemo<Category[]>(() => categoriesData ?? [], [categoriesData]);
   const brandOptions = useMemo<Brand[]>(() => brandsData ?? [], [brandsData]);
+  const selectedCategory = useMemo(
+    () => categoryOptions.find((item) => String(item.id) === category) ?? null,
+    [categoryOptions, category],
+  );
+  const selectedBrand = useMemo(
+    () => brandOptions.find((item) => String(item.id) === brand) ?? null,
+    [brandOptions, brand],
+  );
+
+  useEffect(() => {
+    setCategoryEditMode(false);
+    setCategoryFeedback(null);
+    setCategoryNameDraft(selectedCategory?.name ?? '');
+  }, [selectedCategory?.name]);
+
+  useEffect(() => {
+    setBrandEditMode(false);
+    setBrandFeedback(null);
+    setBrandNameDraft(selectedBrand?.name ?? '');
+  }, [selectedBrand?.name]);
 
   const products = useMemo(() => data?.items ?? [], [data?.items]);
   const totalPages = data?.pages ?? 1;
@@ -215,6 +248,54 @@ export default function AdminProductsPage() {
     startTransition(() => {
       updateQuery({ q: null, category: null, brand: null, stock: null, page: '1' });
     });
+  };
+
+  const handleCategoryRename = async () => {
+    if (!selectedCategory) return;
+    const nextName = categoryNameDraft.trim();
+    if (!nextName) {
+      setCategoryFeedback('El nombre no puede estar vacio.');
+      return;
+    }
+    if (nextName === selectedCategory.name) {
+      setCategoryEditMode(false);
+      setCategoryFeedback(null);
+      return;
+    }
+    try {
+      await updateCategory({
+        categoryId: String(selectedCategory.id),
+        body: { name: nextName },
+      }).unwrap();
+      setCategoryEditMode(false);
+      setCategoryFeedback('Categoria actualizada.');
+    } catch {
+      setCategoryFeedback('No se pudo actualizar la categoria.');
+    }
+  };
+
+  const handleBrandRename = async () => {
+    if (!selectedBrand) return;
+    const nextName = brandNameDraft.trim();
+    if (!nextName) {
+      setBrandFeedback('El nombre no puede estar vacio.');
+      return;
+    }
+    if (nextName === selectedBrand.name) {
+      setBrandEditMode(false);
+      setBrandFeedback(null);
+      return;
+    }
+    try {
+      await updateBrand({
+        brandId: String(selectedBrand.id),
+        body: { name: nextName },
+      }).unwrap();
+      setBrandEditMode(false);
+      setBrandFeedback('Marca actualizada.');
+    } catch {
+      setBrandFeedback('No se pudo actualizar la marca.');
+    }
   };
 
   const goToPage = (nextPage: number) => {
@@ -323,6 +404,124 @@ export default function AdminProductsPage() {
           Crear producto
         </Link>
       </div>
+
+      {selectedCategory ? (
+        <section className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Categoria filtrada
+              </p>
+              {!categoryEditMode ? (
+                <p className="text-sm text-neutral-700">
+                  {selectedCategory.name}{' '}
+                  <span className="text-neutral-400">/{selectedCategory.slug}</span>
+                </p>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={categoryNameDraft}
+                    onChange={(event) => setCategoryNameDraft(event.target.value)}
+                    className="h-9 rounded-lg border border-neutral-200 px-3 text-sm text-neutral-700"
+                    disabled={updateCategoryState.isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCategoryRename}
+                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                    disabled={updateCategoryState.isLoading}
+                  >
+                    {updateCategoryState.isLoading ? 'Guardando...' : 'Guardar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryEditMode(false);
+                      setCategoryNameDraft(selectedCategory.name);
+                      setCategoryFeedback(null);
+                    }}
+                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600"
+                    disabled={updateCategoryState.isLoading}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
+            {!categoryEditMode ? (
+              <button
+                type="button"
+                onClick={() => setCategoryEditMode(true)}
+                className="rounded-md border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-700"
+              >
+                Modificar nombre
+              </button>
+            ) : null}
+          </div>
+          {categoryFeedback ? (
+            <p className="mt-2 text-xs text-neutral-500">{categoryFeedback}</p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {selectedBrand ? (
+        <section className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Marca filtrada
+              </p>
+              {!brandEditMode ? (
+                <p className="text-sm text-neutral-700">
+                  {selectedBrand.name}{' '}
+                  <span className="text-neutral-400">/{selectedBrand.slug ?? 'sin-slug'}</span>
+                </p>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={brandNameDraft}
+                    onChange={(event) => setBrandNameDraft(event.target.value)}
+                    className="h-9 rounded-lg border border-neutral-200 px-3 text-sm text-neutral-700"
+                    disabled={updateBrandState.isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBrandRename}
+                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                    disabled={updateBrandState.isLoading}
+                  >
+                    {updateBrandState.isLoading ? 'Guardando...' : 'Guardar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBrandEditMode(false);
+                      setBrandNameDraft(selectedBrand.name);
+                      setBrandFeedback(null);
+                    }}
+                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-600"
+                    disabled={updateBrandState.isLoading}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
+            {!brandEditMode ? (
+              <button
+                type="button"
+                onClick={() => setBrandEditMode(true)}
+                className="rounded-md border border-indigo-300 px-3 py-1.5 text-xs font-semibold text-indigo-700"
+              >
+                Modificar nombre
+              </button>
+            ) : null}
+          </div>
+          {brandFeedback ? <p className="mt-2 text-xs text-neutral-500">{brandFeedback}</p> : null}
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-neutral-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-4 py-3 text-sm">

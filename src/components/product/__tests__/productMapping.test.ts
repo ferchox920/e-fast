@@ -28,6 +28,7 @@ const createVariant = (id: string): ProductVariantRead => ({
   color_name: 'Negro',
   stock_on_hand: 10,
   stock_reserved: 0,
+  weight_grams: 300,
   reorder_point: 1,
   reorder_qty: 1,
   allow_backorder: false,
@@ -38,6 +39,16 @@ const createVariant = (id: string): ProductVariantRead => ({
   color_hex: null,
   release_at: null,
   primary_supplier_id: null,
+});
+
+const createVariantWithStock = (
+  id: string,
+  { active, stockOnHand, stockReserved }: { active: boolean; stockOnHand: number; stockReserved?: number },
+): ProductVariantRead => ({
+  ...createVariant(id),
+  active,
+  stock_on_hand: stockOnHand,
+  stock_reserved: stockReserved ?? 0,
 });
 
 const createImage = (id: string, overrides: Partial<ProductImageRead> = {}): ProductImageRead => ({
@@ -87,5 +98,19 @@ describe('mapProductToCard', () => {
 
     expect(card.defaultVariantId).toBe('var-1');
     expect(card.badges).toEqual(['Inactivo']);
+  });
+
+  it('prefers active variant with stock as default variant', () => {
+    const product = {
+      ...baseProduct(),
+      variants: [
+        createVariantWithStock('var-1', { active: true, stockOnHand: 0 }),
+        createVariantWithStock('var-2', { active: true, stockOnHand: 5 }),
+      ],
+    };
+
+    const card = mapProductToCard(product);
+
+    expect(card.defaultVariantId).toBe('var-2');
   });
 });

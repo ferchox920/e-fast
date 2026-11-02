@@ -83,15 +83,42 @@ export default function ProductCard({
   const primaryImageUrl =
     imageUrl ?? product.primary_image?.url ?? product.images?.[0]?.url ?? FALLBACK_IMAGE;
   const primaryAltText = imageAlt ?? product.primary_image?.alt_text ?? title;
+  const selectedVariant =
+    product.variants?.find((variant) => String(variant.id) === String(defaultVariantId)) ??
+    product.variants?.[0] ??
+    null;
   const resolvedVariantId =
-    defaultVariantId ?? (product.variants?.[0]?.id ? String(product.variants[0].id) : null);
+    defaultVariantId ??
+    (selectedVariant?.id ? String(selectedVariant.id) : null) ??
+    (product.variants?.[0]?.id ? String(product.variants[0].id) : null);
+  const displayPrice = selectedVariant?.price_override ?? product.price;
+  const availableStock = selectedVariant
+    ? Math.max((selectedVariant.stock_on_hand ?? 0) - (selectedVariant.stock_reserved ?? 0), 0)
+    : 0;
+  const isAvailable =
+    product.active &&
+    !!selectedVariant &&
+    (availableStock > 0 || selectedVariant.allow_backorder || selectedVariant.allow_preorder);
+  const availabilityLabel = !product.active
+    ? 'No disponible'
+    : availableStock > 0
+      ? `Stock ${availableStock}`
+      : selectedVariant?.allow_backorder
+        ? 'Backorder'
+        : selectedVariant?.allow_preorder
+          ? 'Preorder'
+          : 'Sin stock';
 
   const isProcessing = ensuringCart || addingCartItem;
-  const addDisabled = isProcessing || !resolvedVariantId;
+  const addDisabled = isProcessing || !resolvedVariantId || !isAvailable;
 
   const handleAddToCart = async () => {
     if (!resolvedVariantId) {
       setFeedback({ type: 'error', message: 'Selecciona una variante disponible.' });
+      return;
+    }
+    if (!isAvailable) {
+      setFeedback({ type: 'error', message: 'Este producto no esta disponible en este momento.' });
       return;
     }
 
@@ -118,7 +145,7 @@ export default function ProductCard({
   };
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:shadow-md">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <Link
         href={`/products/${slug}`}
         className="group relative block aspect-4/3"
@@ -139,7 +166,7 @@ export default function ProductCard({
             {badges.map((badge) => (
               <span
                 key={badge}
-                className="rounded-full bg-indigo-500 px-2 py-0.5 text-xs font-semibold text-white shadow"
+                className="rounded-full bg-stone-900 px-2 py-0.5 text-xs font-semibold text-white shadow"
               >
                 {badge}
               </span>
@@ -147,29 +174,35 @@ export default function ProductCard({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={(event) => {
-            event.preventDefault();
-            onToggleFavorite?.(productId);
-          }}
-          aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-neutral-500 transition hover:bg-white hover:text-red-500"
-        >
-          {isFavorite ? '\u2665' : '\u2661'}
-        </button>
+        {onToggleFavorite ? (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              onToggleFavorite(productId);
+            }}
+            aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            className="absolute right-3 top-3 rounded-full bg-white/90 p-2 text-neutral-500 transition hover:bg-white hover:text-red-500"
+          >
+            {isFavorite ? '\u2665' : '\u2661'}
+          </button>
+        ) : null}
       </Link>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <header className="space-y-1">
           <Link
             href={`/products/${slug}`}
-            className="line-clamp-2 text-sm font-semibold text-neutral-900 transition hover:text-indigo-600"
+            className="line-clamp-2 text-sm font-semibold text-neutral-900 transition hover:text-stone-700"
           >
             {title}
           </Link>
-          <div className="text-lg font-semibold text-indigo-600">
-            {formatCurrency(product.price, currency)}
+          <div className="text-lg font-semibold text-stone-900">{formatCurrency(displayPrice, currency)}</div>
+          <p className="text-xs font-medium text-stone-500">{availabilityLabel}</p>
+          <div className="h-px w-full bg-stone-100" />
+          <p className="text-xs uppercase tracking-wide text-stone-400">{selectedVariant?.sku ?? 'Sin SKU'}</p>
+          <div className="text-xs text-stone-500">
+            {selectedVariant ? `${selectedVariant.color_name} / ${selectedVariant.size_label}` : 'Sin variantes'}
           </div>
           {rating !== undefined && rating !== null && (
             <p className="flex items-center gap-1 text-xs text-amber-500">
@@ -183,14 +216,14 @@ export default function ProductCard({
         </header>
 
         {description ? (
-          <p className="line-clamp-3 text-sm text-neutral-500">{description}</p>
+          <p className="line-clamp-2 text-sm text-neutral-500">{description}</p>
         ) : null}
 
         <div className="mt-auto flex flex-col gap-2 text-sm">
           <div className="flex items-center justify-between gap-2">
             <Link
               href={`/products/${slug}`}
-              className="flex items-center gap-2 rounded-full border border-neutral-200 px-3 py-1.5 text-neutral-600 transition hover:border-neutral-300 hover:text-neutral-900"
+              className="flex items-center gap-2 rounded-full border border-stone-300 px-3 py-1.5 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
             >
               Ver detalle
             </Link>
@@ -198,9 +231,9 @@ export default function ProductCard({
               type="button"
               onClick={handleAddToCart}
               disabled={addDisabled}
-              className="rounded-full bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full bg-stone-900 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-400"
             >
-              {isProcessing ? 'Agregando...' : 'Agregar'}
+              {isProcessing ? 'Agregando...' : isAvailable ? 'Agregar' : 'Sin stock'}
             </button>
           </div>
           {feedback && (

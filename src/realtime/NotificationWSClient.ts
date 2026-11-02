@@ -128,9 +128,13 @@ export class NotificationWSClient {
   private preferredWsBaseIndex = 0;
   private hasConnectedInCurrentSession = false;
   private refreshedAfterUnauthorized = false;
-  private readonly getFreshToken?: TokenProvider;
+  private getFreshToken?: TokenProvider;
 
   constructor(getFreshToken?: TokenProvider) {
+    this.getFreshToken = getFreshToken;
+  }
+
+  setTokenProvider(getFreshToken?: TokenProvider) {
     this.getFreshToken = getFreshToken;
   }
 

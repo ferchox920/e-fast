@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch, useLogoutHandler } from '@/store/hooks';
 import { setUser } from '@/store/slices/userSlice';
 import { useLazyMeQuery } from '@/store/api/usersApi';
+import { useGetCategoriesQuery } from '@/store/api/catalogApi';
+import { useGetProductsQuery } from '@/store/api/productApi';
 import NavBar from './NavBar';
 import type { NavBarCategoryGroup } from './NavBar';
 
@@ -16,8 +18,10 @@ export default function Header() {
 
   const [triggerFetchMe, { data: fetchedUser, isFetching: isFetchingMe }] = useLazyMeQuery();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { data: categoriesData } = useGetCategoriesQuery();
+  const { data: productsData } = useGetProductsQuery({ limit: 100, offset: 0 });
 
-  const categoryGroups: NavBarCategoryGroup[] = [
+  const fallbackGroups: NavBarCategoryGroup[] = [
     {
       id: 'men',
       name: '\u2642 Hombres',
@@ -37,6 +41,42 @@ export default function Header() {
       ],
     },
   ];
+
+  const categoriesWithProducts = new Set(
+    (productsData?.items ?? [])
+      .map((product) => product.category_id)
+      .filter((value): value is string => typeof value === 'string' && value.length > 0)
+      .map((value) => String(value)),
+  );
+
+  const apiCategories = (categoriesData ?? []).filter((category) => {
+    if (category.active === false) return false;
+    if (categoriesWithProducts.size === 0) return true;
+    return categoriesWithProducts.has(String(category.id));
+  });
+  const categoryGroups: NavBarCategoryGroup[] = apiCategories.length
+    ? [
+        {
+          id: 'men',
+          name: '\u2642 Hombres',
+          items: apiCategories.map((category) => ({
+            id: `men-${String(category.id)}`,
+            name: category.name,
+            slug: `hombres/${category.slug}`,
+          })),
+        },
+        {
+          id: 'women',
+          name: '\u2640 Mujeres',
+          items: apiCategories.map((category) => ({
+            id: `women-${String(category.id)}`,
+            name: category.name,
+            slug: `mujeres/${category.slug}`,
+          })),
+        },
+      ]
+    : fallbackGroups;
+
   useEffect(() => {
     if (token && !user && !isFetchingMe) triggerFetchMe();
     if (fetchedUser) dispatch(setUser(fetchedUser));
@@ -59,7 +99,7 @@ export default function Header() {
   return (
     <NavBar
       brandHref="/"
-      brandLabel="MyApp"
+      brandLabel="MyApp Atelier"
       categoryGroups={categoryGroups}
       user={user}
       onLogout={handleLogout}

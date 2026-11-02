@@ -4,6 +4,7 @@ import type {
   CartItemCreatePayload,
   CartItemRemovePayload,
   CartItemUpdatePayload,
+  CartMergePayload,
   CartRead,
 } from '@/types/cart';
 import { getOrCreateGuestToken } from '@/lib/guestToken';
@@ -36,11 +37,26 @@ export const cartApi = baseApi.injectEndpoints({
         const guestToken = resolveGuestToken(args?.guestToken ?? null);
         return {
           url: '/cart',
-          params: guestToken ? { guest_token: guestToken } : undefined,
+          method: 'POST',
+          body: {
+            guest_token: guestToken ?? null,
+            currency: 'ARS',
+          },
         };
       },
       providesTags: (result) =>
         result ? [{ type: 'Cart', id: 'CURRENT' }] : [{ type: 'Cart', id: 'MISSING' }],
+    }),
+
+    mergeGuestCart: build.mutation<CartRead, CartMergePayload>({
+      query: ({ guestToken }) => ({
+        url: '/cart/merge',
+        method: 'POST',
+        body: {
+          guest_token: guestToken,
+        },
+      }),
+      invalidatesTags: [{ type: 'Cart', id: 'CURRENT' }],
     }),
 
     addCartItem: build.mutation<CartRead, CartItemCreatePayload>({
@@ -92,6 +108,7 @@ export const {
   useCreateOrGetCartMutation,
   useGetCartQuery,
   useLazyGetCartQuery,
+  useMergeGuestCartMutation,
   useAddCartItemMutation,
   useUpdateCartItemMutation,
   useRemoveCartItemMutation,

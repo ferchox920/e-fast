@@ -5,6 +5,7 @@ import {
   useListNotificationsQuery,
   useUpdateNotificationMutation,
 } from '@/store/api/notificationsApi';
+import { useRefreshMutation } from '@/store/api/authApi';
 import { notificationWSClient } from '@/realtime/NotificationWSClient';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -96,15 +97,50 @@ export const useUnreadCounter = () => {
 export const useNotificationStream = () => {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state) => state.user?.session?.accessToken ?? null);
+  const refreshToken = useAppSelector((state) => state.user?.session?.refreshToken ?? null);
   const status = useAppSelector((state) => state.user?.status ?? 'idle');
+  const shouldConnect = Boolean(NOTIFICATIONS_WS_ENABLED && token && status === 'authenticated');
+  const [refreshSession] = useRefreshMutation();
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    if (!NOTIFICATIONS_WS_ENABLED || !token || status !== 'authenticated') {
+    notificationWSClient.setTokenProvider(async () => {
+      if (!refreshToken) {
+        return null;
+      }
+
+      try {
+        const refreshed = await refreshSession({ refresh_token: refreshToken }).unwrap();
+        return refreshed.access_token;
+      } catch (error) {
+        console.warn('useNotificationStream: failed to refresh websocket session', error);
+        return null;
+      }
+    });
+
+    return () => {
+      notificationWSClient.setTokenProvider();
+    };
+  }, [refreshSession, refreshToken]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (!shouldConnect) {
       notificationWSClient.disconnect();
+    }
+  }, [shouldConnect]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (!shouldConnect || !token) {
       return;
     }
 
@@ -122,9 +158,8 @@ export const useNotificationStream = () => {
 
     return () => {
       unsubscribe();
-      notificationWSClient.disconnect();
     };
-  }, [dispatch, status, token]);
+  }, [dispatch, shouldConnect, token]);
 };
 
 export const useNotificationConnectionStatus = () => {

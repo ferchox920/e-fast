@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ReduxProvider from '@/store/providers/ReduxProvider';
 import NotificationStreamManager from '@/notifications/NotificationStreamManager';
+import WishlistSyncManager from '@/wishes/WishlistSyncManager';
 
 export const metadata: Metadata = {
   title: 'MyApp',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh antialiased bg-white text-neutral-900">
         <ReduxProvider>
           <NotificationStreamManager />
+          <WishlistSyncManager />
           {children}
         </ReduxProvider>
       </body>

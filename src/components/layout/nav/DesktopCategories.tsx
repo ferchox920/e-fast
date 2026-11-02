@@ -64,7 +64,7 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
   if (!categoryGroups.length) return null;
 
   return (
-    <nav className="hidden items-center gap-4 md:flex">
+    <nav className="hidden items-center gap-5 md:flex">
       {categoryGroups.map((group) => {
         const isActive = activeGroupId === group.id;
         return (
@@ -82,8 +82,8 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
             <button
               type="button"
               className={`text-sm font-medium transition ${
-                isActive ? 'text-indigo-600' : 'text-gray-600 hover:text-gray-900'
-              } focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
+                isActive ? 'text-stone-950' : 'text-stone-600 hover:text-stone-900'
+              } focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2`}
               onFocus={() => openGroup(group.id)}
               onClick={() => handleToggleClick(group.id)}
               aria-haspopup="menu"
@@ -97,7 +97,7 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
               id={`category-panel-${group.id}`}
               onMouseEnter={() => openGroup(group.id)}
               onMouseLeave={scheduleClose}
-              className={`absolute left-0 mt-3 min-w-60 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 transition duration-200 focus:outline-none ${
+              className={`absolute left-0 mt-3 min-w-64 overflow-hidden rounded-2xl border border-stone-200 bg-white/95 shadow-2xl shadow-stone-900/10 backdrop-blur transition duration-200 focus:outline-none ${
                 isActive
                   ? 'visible translate-y-0 opacity-100'
                   : 'invisible -translate-y-2 opacity-0'
@@ -113,7 +113,7 @@ export default function DesktopCategories({ categoryGroups }: DesktopCategoriesP
                   <Link
                     key={item.id}
                     href={`/categorias/${item.slug}`}
-                    className="block px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-indigo-600"
+                    className="block px-4 py-2 text-sm text-stone-700 transition hover:bg-stone-100 hover:text-stone-950"
                     role="menuitem"
                     onClick={() => openGroup(null)}
                   >

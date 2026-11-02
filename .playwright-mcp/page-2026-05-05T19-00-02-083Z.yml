@@ -1,0 +1,122 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - navigation [ref=e8]:
+          - button "♂ Hombres" [ref=e10]
+          - button "♀ Mujeres" [ref=e12]
+        - link "MyApp Atelier" [ref=e14] [cursor=pointer]:
+          - /url: /
+        - generic [ref=e15]:
+          - button "Abrir buscador" [ref=e16]:
+            - img [ref=e17]
+            - generic [ref=e20]: Buscar productos
+          - link "Ir a mi cuenta" [ref=e22] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e23]
+            - generic [ref=e26]: Mi cuenta
+          - link "Abrir lista de deseos" [ref=e27] [cursor=pointer]:
+            - /url: /lista-deseos
+            - img [ref=e28]
+            - generic [ref=e30]: Lista de deseos
+          - button "Abrir carrito" [ref=e32]:
+            - img [ref=e33]
+            - generic [ref=e38]: Carrito de compras
+      - generic:
+        - dialog:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /
+                  - text: MyApp Atelier
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                  - searchbox
+                - button: Cerrar
+            - generic:
+              - generic:
+                - heading [level=3]: Busquedas populares
+                - generic:
+                  - button: Sneakers blancas
+                  - button: Blazer negro
+                  - button: Bolso tote
+                  - button: Pantalones cargo
+                  - button: Vestido midi
+    - main [ref=e39]:
+      - main [ref=e40]:
+        - generic [ref=e41]:
+          - heading "Nuestro catálogo" [level=1] [ref=e42]
+          - paragraph [ref=e43]: Descubrí las novedades, filtrá por tus categorías favoritas y encontrá lo que buscás en segundos.
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - text: Busqueda
+              - searchbox "Busqueda" [ref=e47]
+            - generic [ref=e48]:
+              - text: Categoria
+              - combobox "Categoria" [disabled] [ref=e49]:
+                - option "Cargando categorias..." [selected]
+                - option "Accesorios"
+                - option "Electronica"
+                - option "Ropa Hombre"
+            - generic [ref=e50]:
+              - text: Marca
+              - combobox "Marca" [disabled] [ref=e51]:
+                - option "Cargando marcas..." [selected]
+                - option "Andina Outdoor"
+                - option "Brand-ca18759c-0442-407d-8df0-72523ed70a3d"
+                - option "Norte Denim"
+          - generic [ref=e52]:
+            - button "Buscando..." [disabled] [ref=e53]
+            - button "Limpiar" [ref=e54]
+        - generic [ref=e117]: Mostrando 0 de 0 productos
+    - contentinfo [ref=e118]:
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: Marca
+          - paragraph [ref=e123]: MyApp Atelier
+          - paragraph [ref=e124]: Moda urbana y essentials de temporada.
+        - region "Navegacion de tienda" [ref=e125]:
+          - heading "Tienda" [level=3] [ref=e126]
+          - list [ref=e127]:
+            - listitem [ref=e128]:
+              - link "Novedades" [ref=e129] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e130]:
+              - link "Mas populares" [ref=e131] [cursor=pointer]:
+                - /url: /products?sort_by=popularity_score&sort_order=desc
+            - listitem [ref=e132]:
+              - link "Hombre" [ref=e133] [cursor=pointer]:
+                - /url: /categorias/hombres/ropa
+            - listitem [ref=e134]:
+              - link "Mujer" [ref=e135] [cursor=pointer]:
+                - /url: /categorias/mujeres/ropa
+        - region "Navegacion de soporte" [ref=e136]:
+          - heading "Soporte" [level=3] [ref=e137]
+          - list [ref=e138]:
+            - listitem [ref=e139]:
+              - link "Mi cuenta" [ref=e140] [cursor=pointer]:
+                - /url: /mi-cuenta
+            - listitem [ref=e141]:
+              - link "Iniciar sesion" [ref=e142] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e143]:
+              - link "Crear cuenta" [ref=e144] [cursor=pointer]:
+                - /url: /registro
+            - listitem [ref=e145]:
+              - link "Notificaciones" [ref=e146] [cursor=pointer]:
+                - /url: /notifications
+            - listitem [ref=e147]:
+              - link "Ayuda de compra" [ref=e148] [cursor=pointer]:
+                - /url: /checkout
+      - generic [ref=e150]:
+        - paragraph [ref=e151]: © 2026 MyApp. All rights reserved.
+        - generic [ref=e152]:
+          - link "Politica de privacidad" [ref=e153] [cursor=pointer]:
+            - /url: /privacidad
+          - link "Terminos y condiciones" [ref=e154] [cursor=pointer]:
+            - /url: /terminos
